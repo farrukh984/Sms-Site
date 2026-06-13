@@ -205,6 +205,17 @@ namespace Site.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> GetUserDetails(int userId)
+        {
+            var user = await _db.Users.FindAsync(userId);
+            if (user == null) return NotFound();
+            return Json(new {
+                username = user.FullName ?? user.Username,
+                avatar = user.ProfilePicture ?? "/images/default-avatar.svg"
+            });
+        }
+
+        [HttpGet]
         public async Task<IActionResult> GetContacts()
         {
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);

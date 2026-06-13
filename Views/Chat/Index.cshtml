@@ -969,7 +969,7 @@
 <style>
   /* Custom Emoji Picker CSS */
   #emojiPickerWidget {
-      transition: all 0.25s cubic-bezier(0.1, 0.8, 0.3, 1);
+      transition: opacity 0.15s ease, transform 0.15s ease;
   }
   .emoji-tab-btn {
       transition: all 0.2s ease;
@@ -1841,6 +1841,22 @@
 
         // --- Reaction Info Modal Logic ---
         var activeReactionDetailsList = null;
+        var userDetailsCache = {};
+
+        function fetchUserReactionDetails(userId, callback) {
+            if (userDetailsCache[userId]) {
+                callback(userDetailsCache[userId]);
+                return;
+            }
+            $.get("/Chat/GetUserDetails?userId=" + userId, function(res) {
+                userDetailsCache[userId] = res;
+                callback(res);
+            }).fail(function() {
+                var fallback = { username: "User", avatar: "/images/default-avatar.svg" };
+                userDetailsCache[userId] = fallback;
+                callback(fallback);
+            });
+        }
 
         function openReactionsInfoModal(messageId) {
             var msgWrapper = document.querySelector('.message-wrapper[data-msgid="' + messageId + '"]');
@@ -1968,11 +1984,14 @@
                 var isMe = item.userId.toString() === currentUserId.toString();
                 var displayAction = isMe ? '<span style="font-size: 11px; color: var(--accent-red); cursor: pointer; display: block; margin-top: 4px; font-weight: 600;" onclick="removeMyReaction(' + messageId + ')">Tap to remove</span>' : '';
 
+                var initialName = item.username;
+                var initialAvatar = item.userAvatar;
+
                 div.innerHTML = `
                     <div style="display:flex; align-items:center; gap:12px;">
-                        <img class="reaction-user-avatar" src="${item.userAvatar}" onerror="this.src='/images/default-avatar.svg'" />
+                        <img class="reaction-user-avatar" src="${initialAvatar}" onerror="this.src='/images/default-avatar.svg'" />
                         <div>
-                            <div style="font-size:14px; font-weight:700; color:white;">${item.username} ${isMe ? ' (You)' : ''}</div>
+                            <div class="reaction-user-name" style="font-size:14px; font-weight:700; color:white;">${initialName} ${isMe ? ' (You)' : ''}</div>
                             <div class="reaction-user-time">${formattedTime}</div>
                             ${displayAction}
                         </div>
@@ -1980,6 +1999,14 @@
                     <div style="font-size:24px; user-select:none;">${item.emoji}</div>
                 `;
                 listContainer.appendChild(div);
+
+                // Fetch real name and avatar asynchronously from backend
+                fetchUserReactionDetails(item.userId, function(details) {
+                    var nameEl = div.querySelector('.reaction-user-name');
+                    var avatarEl = div.querySelector('.reaction-user-avatar');
+                    if (nameEl) nameEl.textContent = details.username + (isMe ? ' (You)' : '');
+                    if (avatarEl) avatarEl.src = details.avatar;
+                });
             });
         }
 
@@ -3648,7 +3675,9 @@
             // Position emoji picker relative to the target message bubble
             var msgWrapper = document.querySelector('.message-wrapper[data-msgid="' + activeContextMsgId + '"]');
             if (msgWrapper) {
-                var msgRect = msgWrapper.getBoundingClientRect();
+                var bubbleEl = msgWrapper.querySelector('.message-bubble');
+                var targetEl = bubbleEl || msgWrapper;
+                var msgRect = targetEl.getBoundingClientRect();
                 var pickerW = 330;
                 var pickerH = 380;
                 // Place picker above the message if there's room, otherwise below
@@ -3997,11 +4026,17 @@
             document.getElementById("messageFileInput").click();
         }
 
-        function handleSelectedFile() {
-            var fileInput = document.getElementById("messageFileInput");
-            if (fileInput.files.length === 0 || !activeChatId) return;
+        function handleSelectedFile(fileFromEvent) {
+            var file = null;
+            if (fileFromEvent instanceof File || fileFromEvent instanceof Blob) {
+                file = fileFromEvent;
+            } else {
+                var fileInput = document.getElementById("messageFileInput");
+                if (fileInput.files.length === 0) return;
+                file = fileInput.files[0];
+            }
+            if (!file || !activeChatId) return;
 
-            var file = fileInput.files[0];
             pendingAttachmentFile = file;
             pendingAttachmentType = fileAttachmentType;
 
@@ -4012,7 +4047,7 @@
             var previewName = document.getElementById("attachmentPreviewName");
             var previewSize = document.getElementById("attachmentPreviewSize");
 
-            previewName.textContent = file.name;
+            previewName.textContent = file.name || (pendingAttachmentType === "Image" ? "pasted_image.png" : "attachment");
             var sizeKB = (file.size / 1024).toFixed(1);
             previewSize.textContent = sizeKB > 1024 ? (sizeKB / 1024).toFixed(1) + ' MB' : sizeKB + ' KB';
 
@@ -4038,8 +4073,72 @@
             input.focus();
             document.getElementById('sendOrMicIcon').className = 'fas fa-paper-plane';
 
-            fileInput.value = "";
+            var fileInput = document.getElementById("messageFileInput");
+            if (fileInput) fileInput.value = "";
         }
+
+        // Clipboard Paste Event Listener (Pasting screenshots / images)
+        document.addEventListener('paste', function(event) {
+            if (!activeChatId) return;
+            
+            // Check if active element is an input where user wants to paste text normally
+            var activeEl = document.activeElement;
+            var isTextInput = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA');
+
+            var items = (event.clipboardData || event.originalEvent.clipboardData).items;
+            for (var i = 0; i < items.length; i++) {
+                if (items[i].kind === 'file') {
+                    var blob = items[i].getAsFile();
+                    if (blob) {
+                        event.preventDefault();
+                        var fileType = "Document";
+                        if (blob.type.startsWith('image/')) {
+                            fileType = "Image";
+                        } else if (blob.type.startsWith('video/')) {
+                            fileType = "Video";
+                        } else if (blob.type.startsWith('audio/')) {
+                            fileType = "Audio";
+                        }
+                        fileAttachmentType = fileType;
+                        handleSelectedFile(blob);
+                        break;
+                    }
+                }
+            }
+        });
+
+        // Drag and Drop Event Listeners
+        document.addEventListener('dragover', function(e) {
+            if (!activeChatId) return;
+            e.preventDefault();
+            e.stopPropagation();
+        });
+
+        document.addEventListener('dragenter', function(e) {
+            if (!activeChatId) return;
+            e.preventDefault();
+            e.stopPropagation();
+        });
+
+        document.addEventListener('drop', function(e) {
+            if (!activeChatId) return;
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (e.dataTransfer && e.dataTransfer.files.length > 0) {
+                var file = e.dataTransfer.files[0];
+                var fileType = "Document";
+                if (file.type.startsWith('image/')) {
+                    fileType = "Image";
+                } else if (file.type.startsWith('video/')) {
+                    fileType = "Video";
+                } else if (file.type.startsWith('audio/')) {
+                    fileType = "Audio";
+                }
+                fileAttachmentType = fileType;
+                handleSelectedFile(file);
+            }
+        });
 
         function cancelAttachmentPreview() {
             pendingAttachmentFile = null;
