@@ -29,6 +29,33 @@ namespace Site.Controllers
             _imageUploadService = imageUploadService;
         }
 
+        [HttpGet]
+        public async Task<IActionResult> ClearDb()
+        {
+            try
+            {
+                _db.Messages.RemoveRange(_db.Messages);
+                _db.ChatParticipants.RemoveRange(_db.ChatParticipants);
+                _db.Chats.RemoveRange(_db.Chats);
+                _db.StatusViewers.RemoveRange(_db.StatusViewers);
+                _db.Statuses.RemoveRange(_db.Statuses);
+                _db.ChannelMessages.RemoveRange(_db.ChannelMessages);
+                _db.ChannelFollowers.RemoveRange(_db.ChannelFollowers);
+                _db.Channels.RemoveRange(_db.Channels);
+                _db.CommunityGroups.RemoveRange(_db.CommunityGroups);
+                _db.Communities.RemoveRange(_db.Communities);
+                _db.Contacts.RemoveRange(_db.Contacts);
+                _db.UserServices.RemoveRange(_db.UserServices);
+                _db.Users.RemoveRange(_db.Users);
+                await _db.SaveChangesAsync();
+                return Content("Database cleared successfully! All users, contacts, and chats have been deleted.");
+            }
+            catch (Exception ex)
+            {
+                return Content("Error clearing database: " + ex.Message + "\n" + ex.InnerException?.Message);
+            }
+        }
+
         private string NormalizePhoneNumber(string number)
         {
             if (string.IsNullOrEmpty(number)) return string.Empty;
