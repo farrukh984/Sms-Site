@@ -336,7 +336,15 @@ namespace Site.Controllers
             _db.Messages.Add(message);
             await _db.SaveChangesAsync();
 
-            return Json(new { fileUrl = fileUrl, messageId = message.Id, fileName = file.FileName });
+            // Fetch reply content if any
+            string? replyContent = null;
+            if (replyToMessageId.HasValue)
+            {
+                var repMsg = await _db.Messages.FindAsync(replyToMessageId.Value);
+                if (repMsg != null) replyContent = repMsg.Content;
+            }
+
+            return Json(new { fileUrl = fileUrl, messageId = message.Id, fileName = file.FileName, replyToMessageContent = replyContent });
         }
 
         [HttpPost]

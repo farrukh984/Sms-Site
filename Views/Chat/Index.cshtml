@@ -235,34 +235,6 @@
 
                 <!-- Text / Voice Input elements & Send button wrapper -->
                 <div style="display: flex; align-items: center; gap: 15px; width: 100%; position: relative;">
-                    <!-- Emoji Picker Container -->
-                    <div id="emojiPickerWidget" style="display: none; position: absolute; bottom: 70px; left: 10px; width: 330px; height: 380px; background: rgba(26, 27, 32, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(20px); z-index: 1000; flex-direction: column;">
-                        <!-- Header: search bar -->
-                        <div style="padding: 12px 14px 8px 14px; display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); gap: 10px;">
-                            <div style="position: relative; flex: 1;">
-                                <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.3); font-size: 13px;"></i>
-                                <input type="text" id="emojiSearchInput" placeholder="Search emoji..." oninput="searchEmojis()" style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; padding: 6px 12px 6px 32px; color: white; font-size: 13px; outline: none; border: 1px solid rgba(255,255,255,0.05); transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--accent-red)'" onblur="this.style.borderColor='rgba(255,255,255,0.05)'" />
-                            </div>
-                            <button onclick="toggleEmojiPicker()" style="background: none; border: none; color: rgba(255,255,255,0.5); cursor: pointer; font-size: 14px; padding: 2px;"><i class="fas fa-times"></i></button>
-                        </div>
-                        
-                        <!-- Category Tabs -->
-                        <div id="emojiCategoryTabs" style="display: flex; justify-content: space-around; padding: 8px 6px; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.1); font-size: 15px;">
-                            <span class="emoji-tab-btn active" onclick="selectEmojiCategory('Smileys', this)" style="cursor: pointer; opacity: 0.6; padding: 2px 6px;" title="Smileys & People">😃</span>
-                            <span class="emoji-tab-btn" onclick="selectEmojiCategory('Hands', this)" style="cursor: pointer; opacity: 0.6; padding: 2px 6px;" title="Gestures & Hands">👍</span>
-                            <span class="emoji-tab-btn" onclick="selectEmojiCategory('Hearts', this)" style="cursor: pointer; opacity: 0.6; padding: 2px 6px;" title="Hearts & Love">❤️</span>
-                            <span class="emoji-tab-btn" onclick="selectEmojiCategory('Animals', this)" style="cursor: pointer; opacity: 0.6; padding: 2px 6px;" title="Animals & Nature">🐶</span>
-                            <span class="emoji-tab-btn" onclick="selectEmojiCategory('Food', this)" style="cursor: pointer; opacity: 0.6; padding: 2px 6px;" title="Food & Drinks">🍔</span>
-                            <span class="emoji-tab-btn" onclick="selectEmojiCategory('Activities', this)" style="cursor: pointer; opacity: 0.6; padding: 2px 6px;" title="Activities & Travel">⚽</span>
-                            <span class="emoji-tab-btn" onclick="selectEmojiCategory('Objects', this)" style="cursor: pointer; opacity: 0.6; padding: 2px 6px;" title="Objects & Symbols">💡</span>
-                        </div>
-                        
-                        <!-- Emoji Container List -->
-                        <div id="emojiPickerContent" style="flex: 1; overflow-y: auto; padding: 12px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; align-content: start; justify-items: center; font-size: 22px;">
-                            <!-- Emojis populated dynamically -->
-                        </div>
-                    </div>
-
                     <div class="chat-input-container" style="background: #1b1d22 !important; border: 1px solid transparent !important; box-shadow: inset 4px 4px 10px #131418, inset -4px -4px 10px #23262c !important; border-radius: 30px;">
                         <button class="chat-input-action-btn" onclick="toggleEmojiPicker()" title="Emoji"><i class="far fa-smile" style="color: var(--accent-red); font-size: 18px;"></i></button>
                         <input type="text" id="chatMessageInput" class="chat-input-box" placeholder="Type a message" oninput="handleTyping()" onkeydown="handleInputKeydown(event)" />
@@ -695,6 +667,34 @@
         <div id="reactionUsersList" style="flex: 1; overflow-y: auto; padding: 16px 20px; box-sizing: border-box;">
             <!-- Populated dynamically -->
         </div>
+    </div>
+</div>
+
+<!-- Custom Emoji Picker Container -->
+<div id="emojiPickerWidget" style="display: none; position: fixed; width: 330px; height: 380px; background: rgba(26, 27, 32, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(20px); z-index: 106000; flex-direction: column;">
+    <!-- Header: search bar -->
+    <div style="padding: 12px 14px 8px 14px; display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); gap: 10px;">
+        <div style="position: relative; flex: 1;">
+            <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.3); font-size: 13px;"></i>
+            <input type="text" id="emojiSearchInput" placeholder="Search emoji..." oninput="searchEmojis()" style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; padding: 6px 12px 6px 32px; color: white; font-size: 13px; outline: none; border: 1px solid rgba(255,255,255,0.05); transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--accent-red)'" onblur="this.style.borderColor='rgba(255,255,255,0.05)'" />
+        </div>
+        <button onclick="toggleEmojiPicker()" style="background: none; border: none; color: rgba(255,255,255,0.5); cursor: pointer; font-size: 14px; padding: 2px;"><i class="fas fa-times"></i></button>
+    </div>
+    
+    <!-- Category Tabs -->
+    <div id="emojiCategoryTabs" style="display: flex; justify-content: space-around; padding: 8px 6px; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.1); font-size: 15px;">
+        <span class="emoji-tab-btn active" onclick="selectEmojiCategory('Smileys', this)" style="cursor: pointer; opacity: 0.6; padding: 2px 6px;" title="Smileys & People">😃</span>
+        <span class="emoji-tab-btn" onclick="selectEmojiCategory('Hands', this)" style="cursor: pointer; opacity: 0.6; padding: 2px 6px;" title="Gestures & Hands">👍</span>
+        <span class="emoji-tab-btn" onclick="selectEmojiCategory('Hearts', this)" style="cursor: pointer; opacity: 0.6; padding: 2px 6px;" title="Hearts & Love">❤️</span>
+        <span class="emoji-tab-btn" onclick="selectEmojiCategory('Animals', this)" style="cursor: pointer; opacity: 0.6; padding: 2px 6px;" title="Animals & Nature">🐶</span>
+        <span class="emoji-tab-btn" onclick="selectEmojiCategory('Food', this)" style="cursor: pointer; opacity: 0.6; padding: 2px 6px;" title="Food & Drinks">🍔</span>
+        <span class="emoji-tab-btn" onclick="selectEmojiCategory('Activities', this)" style="cursor: pointer; opacity: 0.6; padding: 2px 6px;" title="Activities & Travel">⚽</span>
+        <span class="emoji-tab-btn" onclick="selectEmojiCategory('Objects', this)" style="cursor: pointer; opacity: 0.6; padding: 2px 6px;" title="Objects & Symbols">💡</span>
+    </div>
+    
+    <!-- Emoji Container List -->
+    <div id="emojiPickerContent" style="flex: 1; overflow-y: auto; padding: 12px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; align-content: start; justify-items: center; font-size: 22px;">
+        <!-- Emojis populated dynamically -->
     </div>
 </div>
 
@@ -1758,33 +1758,62 @@
             });
         }
 
-        function toggleEmojiPicker(mode, messageId) {
+        function toggleEmojiPicker(mode, messageId, left, top) {
             var picker = document.getElementById("emojiPickerWidget");
-            if (picker.style.display === "flex") {
+            
+            if (picker.style.display === "flex" && currentEmojiPickerMode === (mode || "input") && (currentEmojiPickerMode !== "reaction" || currentEmojiReactionMsgId === messageId)) {
                 picker.style.display = "none";
-            } else {
-                currentEmojiPickerMode = mode || "input";
-                currentEmojiReactionMsgId = messageId || null;
-
-                document.getElementById("emojiSearchInput").value = "";
-
-                if (currentEmojiPickerMode === "reaction") {
-                    picker.style.bottom = "auto";
-                    picker.style.top = "50%";
-                    picker.style.left = "50%";
-                    picker.style.transform = "translate(-50%, -50%)";
-                    picker.style.position = "fixed";
-                } else {
-                    picker.style.bottom = "70px";
-                    picker.style.top = "auto";
-                    picker.style.left = "10px";
-                    picker.style.transform = "none";
-                    picker.style.position = "absolute";
-                }
-
-                picker.style.display = "flex";
-                renderEmojiPickerCategories();
+                return;
             }
+
+            currentEmojiPickerMode = mode || "input";
+            currentEmojiReactionMsgId = messageId || null;
+
+            document.getElementById("emojiSearchInput").value = "";
+            picker.style.display = "flex";
+            picker.style.position = "fixed";
+            picker.style.zIndex = "106000";
+
+            var pickerW = 330;
+            var pickerH = 380;
+
+            if (currentEmojiPickerMode === "reaction") {
+                var parsedLeft = parseFloat(left) || (window.innerWidth / 2 - pickerW / 2);
+                var parsedTop = parseFloat(top) || (window.innerHeight / 2 - pickerH / 2);
+
+                if (parsedLeft + pickerW > window.innerWidth) {
+                    parsedLeft = window.innerWidth - pickerW - 16;
+                }
+                if (parsedLeft < 10) parsedLeft = 10;
+
+                if (parsedTop + pickerH > window.innerHeight) {
+                    parsedTop = window.innerHeight - pickerH - 16;
+                }
+                if (parsedTop < 10) parsedTop = 10;
+
+                picker.style.left = parsedLeft + 'px';
+                picker.style.top = parsedTop + 'px';
+            } else {
+                var emojiBtn = document.querySelector(".chat-input-container button[onclick='toggleEmojiPicker()']");
+                if (emojiBtn) {
+                    var rect = emojiBtn.getBoundingClientRect();
+                    var parsedLeft = rect.left;
+                    var parsedTop = rect.top - pickerH - 10;
+
+                    if (parsedLeft + pickerW > window.innerWidth) {
+                        parsedLeft = window.innerWidth - pickerW - 16;
+                    }
+                    if (parsedLeft < 10) parsedLeft = 10;
+                    if (parsedTop < 10) parsedTop = 10;
+
+                    picker.style.left = parsedLeft + 'px';
+                    picker.style.top = parsedTop + 'px';
+                } else {
+                    picker.style.left = "20px";
+                    picker.style.top = (window.innerHeight - pickerH - 90) + 'px';
+                }
+            }
+            renderEmojiPickerCategories();
         }
 
         function onEmojiSelected(emoji) {
@@ -3613,8 +3642,31 @@
 
         function showFullEmojiReact() {
             if (!activeContextMsgId) return;
-            document.getElementById('messageContextMenu').style.display = 'none';
-            toggleEmojiPicker('reaction', activeContextMsgId);
+            var menu = document.getElementById('messageContextMenu');
+            menu.style.display = 'none';
+
+            // Position emoji picker relative to the target message bubble
+            var msgWrapper = document.querySelector('.message-wrapper[data-msgid="' + activeContextMsgId + '"]');
+            if (msgWrapper) {
+                var msgRect = msgWrapper.getBoundingClientRect();
+                var pickerW = 330;
+                var pickerH = 380;
+                // Place picker above the message if there's room, otherwise below
+                var topPos = msgRect.top - pickerH - 10;
+                if (topPos < 10) topPos = msgRect.bottom + 10;
+                // Prevent overflowing bottom
+                if (topPos + pickerH > window.innerHeight - 10) topPos = window.innerHeight - pickerH - 16;
+                if (topPos < 10) topPos = 10;
+
+                // Horizontal: align near the message
+                var leftPos = msgRect.left;
+                if (leftPos + pickerW > window.innerWidth - 10) leftPos = window.innerWidth - pickerW - 16;
+                if (leftPos < 10) leftPos = 10;
+
+                toggleEmojiPicker('reaction', activeContextMsgId, leftPos + 'px', topPos + 'px');
+            } else {
+                toggleEmojiPicker('reaction', activeContextMsgId);
+            }
         }
 
         function reactToMsg(emoji, targetMsgId) {
