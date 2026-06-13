@@ -1858,6 +1858,51 @@
             });
         }
 
+        function updateMessageReactionsInDOM(messageId, reactionsJson) {
+            var wrapper = document.querySelector('.message-wrapper[data-msgid="' + messageId + '"]');
+            if (!wrapper) return;
+            var bubble = wrapper.querySelector('.message-bubble');
+            if (!bubble) return;
+            
+            var existingReactions = bubble.querySelector('.message-reactions');
+            if (existingReactions) {
+                existingReactions.remove();
+            }
+
+            if (!reactionsJson || reactionsJson === "{}" || reactionsJson === "") {
+                return;
+            }
+
+            try {
+                var parsedReactions = typeof reactionsJson === 'string' ? JSON.parse(reactionsJson) : reactionsJson;
+                var emojis = [];
+                for (var uId in parsedReactions) {
+                    var item = parsedReactions[uId];
+                    var emoji = (typeof item === 'string') ? item : (item.emoji || item.Emoji || "");
+                    if (emoji) emojis.push(emoji);
+                }
+                if (emojis.length > 0) {
+                    var uniqueEmojis = [...new Set(emojis)];
+                    var isOutgoing = wrapper.classList.contains('outgoing');
+                    var encReactions = encodeURIComponent(typeof reactionsJson === 'string' ? reactionsJson : JSON.stringify(reactionsJson));
+                    
+                    var reactionsDiv = document.createElement('div');
+                    reactionsDiv.className = 'message-reactions';
+                    reactionsDiv.setAttribute('onclick', 'event.stopPropagation(); openReactionsInfoModal(' + messageId + ')');
+                    reactionsDiv.setAttribute('data-reactions-json', encReactions);
+                    reactionsDiv.style.cssText = 'position:absolute; bottom:-12px; ' + (isOutgoing ? 'right:5px;' : 'left:5px;') + ' background:#2A2B2F; border:1px solid rgba(255,255,255,0.15); border-radius:12px; padding:2px 6px; font-size:12px; display:flex; gap:2px; box-shadow:0 2px 5px rgba(0,0,0,0.2); z-index:2; cursor:pointer; user-select:none;';
+                    reactionsDiv.title = 'View reactions';
+                    
+                    var countSpan = emojis.length > 1 ? '<span style="font-size:10px; color:white; margin-left:2px; font-weight:600;">' + emojis.length + '</span>' : '';
+                    reactionsDiv.innerHTML = uniqueEmojis.join('') + ' ' + countSpan;
+                    
+                    bubble.appendChild(reactionsDiv);
+                }
+            } catch (e) {
+                console.error("DOM reaction update error:", e);
+            }
+        }
+
         function openReactionsInfoModal(messageId) {
             var msgWrapper = document.querySelector('.message-wrapper[data-msgid="' + messageId + '"]');
             if (!msgWrapper) return;
@@ -2496,8 +2541,7 @@
 
             connection.on("MessageReacted", function(chatId, messageId, reactionsJson) {
                 if (chatId == activeChatId) {
-                    // Quick way: fetch history to get full msg object, or just manipulate DOM
-                    loadChatHistory(chatId);
+                    updateMessageReactionsInDOM(messageId, reactionsJson);
                 }
             });
 
@@ -3705,7 +3749,7 @@
 
             $.post("/Chat/ReactToMessage", { messageId: msgId, emoji: emoji }, function(res) {
                 if(res.success) {
-                    connection.invoke("BroadcastReaction", activeChatId.toString(), msgId.toString(), res.reactions);
+                    connection.invoke("BroadcastReaction", activeChatId.toString(), parseInt(msgId), res.reactions);
                 }
             });
         }
