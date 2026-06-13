@@ -23,6 +23,7 @@ namespace Site.Hubs
             var userId = Context.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             if (!string.IsNullOrEmpty(userId))
             {
+                await Groups.AddToGroupAsync(Context.ConnectionId, $"User_{userId}");
                 OnlineUsers.AddOrUpdate(userId, 1, (key, count) => count + 1);
                 if (OnlineUsers[userId] == 1) 
                 {
@@ -55,7 +56,7 @@ namespace Site.Hubs
                                 await _db.SaveChangesAsync();
                                 await Clients.All.SendAsync("UserOnlineStatus", userId, false, user.LastSeen.Value.ToString("o"));
                                 return;
-                            }
+                             }
                         }
                         await Clients.All.SendAsync("UserOnlineStatus", userId, false, null);
                     }
@@ -94,17 +95,62 @@ namespace Site.Hubs
 
         public async Task SendMessage(string chatId, string senderId, string senderName, string content, string type, string? fileUrl, int messageId, int? replyToMessageId, string? replyToMessageContent)
         {
-            await Clients.Group(chatId).SendAsync("ReceiveMessage", chatId, senderId, senderName, content, type, fileUrl, DateTime.UtcNow.ToString("o"), messageId, replyToMessageId, replyToMessageContent);
+            if (int.TryParse(chatId, out int cId))
+            {
+                var participantIds = _db.ChatParticipants
+                    .Where(cp => cp.ChatId == cId)
+                    .Select(cp => cp.UserId.ToString())
+                    .ToList();
+
+                foreach (var pId in participantIds)
+                {
+                    await Clients.Group($"User_{pId}").SendAsync("ReceiveMessage", chatId, senderId, senderName, content, type, fileUrl, DateTime.UtcNow.ToString("o"), messageId, replyToMessageId, replyToMessageContent);
+                }
+            }
+            else
+            {
+                await Clients.Group(chatId).SendAsync("ReceiveMessage", chatId, senderId, senderName, content, type, fileUrl, DateTime.UtcNow.ToString("o"), messageId, replyToMessageId, replyToMessageContent);
+            }
         }
 
         public async Task BroadcastDelete(string chatId, int messageId)
         {
-            await Clients.Group(chatId).SendAsync("MessageDeleted", chatId, messageId);
+            if (int.TryParse(chatId, out int cId))
+            {
+                var participantIds = _db.ChatParticipants
+                    .Where(cp => cp.ChatId == cId)
+                    .Select(cp => cp.UserId.ToString())
+                    .ToList();
+
+                foreach (var pId in participantIds)
+                {
+                    await Clients.Group($"User_{pId}").SendAsync("MessageDeleted", chatId, messageId);
+                }
+            }
+            else
+            {
+                await Clients.Group(chatId).SendAsync("MessageDeleted", chatId, messageId);
+            }
         }
 
         public async Task BroadcastReaction(string chatId, int messageId, string reactionsJson)
         {
-            await Clients.Group(chatId).SendAsync("MessageReacted", chatId, messageId, reactionsJson);
+            if (int.TryParse(chatId, out int cId))
+            {
+                var participantIds = _db.ChatParticipants
+                    .Where(cp => cp.ChatId == cId)
+                    .Select(cp => cp.UserId.ToString())
+                    .ToList();
+
+                foreach (var pId in participantIds)
+                {
+                    await Clients.Group($"User_{pId}").SendAsync("MessageReacted", chatId, messageId, reactionsJson);
+                }
+            }
+            else
+            {
+                await Clients.Group(chatId).SendAsync("MessageReacted", chatId, messageId, reactionsJson);
+            }
         }
 
         public async Task SendTyping(string chatId, string userId, bool isTyping)

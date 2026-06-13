@@ -871,8 +871,8 @@
                     <i class="fas fa-phone-alt" style="font-size:16px;"></i>
                 </div>
                 <div class="contact-phone-group">
-                    <div class="contact-country-sel">
-                        <span>ðŸ‡²ðŸ‡¾</span>
+                    <div class="Rx-country-sel" style="display: flex; align-items: center; gap: 4px; padding: 0 8px; border-right: 1px solid var(--border-color); cursor: pointer;">
+                        <span>&#x1F1F2;&#x1F1FE;</span>
                         <span>+60</span>
                         <i class="fas fa-chevron-down" style="font-size:10px; color:var(--text-muted);"></i>
                     </div>
@@ -1234,12 +1234,12 @@
 <div id="messageContextMenu" class="wa-ctx-menu">
     <!-- Emoji Reaction Bar -->
     <div class="wa-ctx-emoji-bar">
-        <span class="wa-ctx-emoji" onclick="reactToMsg('ðŸ‘')" title="Like">ðŸ‘</span>
-        <span class="wa-ctx-emoji" onclick="reactToMsg('â¤ï¸')" title="Love">â¤ï¸</span>
-        <span class="wa-ctx-emoji" onclick="reactToMsg('ðŸ˜‚')" title="Haha">ðŸ˜‚</span>
-        <span class="wa-ctx-emoji" onclick="reactToMsg('ðŸ˜®')" title="Wow">ðŸ˜®</span>
-        <span class="wa-ctx-emoji" onclick="reactToMsg('ðŸ˜¢')" title="Sad">ðŸ˜¢</span>
-        <span class="wa-ctx-emoji" onclick="reactToMsg('ðŸ™')" title="Thanks">ðŸ™</span>
+        <span class="wa-ctx-emoji" onclick="reactToMsg('&#x1F44D;')" title="Like">&#x1F44D;</span>
+        <span class="wa-ctx-emoji" onclick="reactToMsg('&#x2764;&#xFE0F;')" title="Love">&#x2764;&#xFE0F;</span>
+        <span class="wa-ctx-emoji" onclick="reactToMsg('&#x1F602;')" title="Haha">&#x1F602;</span>
+        <span class="wa-ctx-emoji" onclick="reactToMsg('&#x1F62E;')" title="Wow">&#x1F62E;</span>
+        <span class="wa-ctx-emoji" onclick="reactToMsg('&#x1F622;')" title="Sad">&#x1F622;</span>
+        <span class="wa-ctx-emoji" onclick="reactToMsg('&#x1F64F;')" title="Thanks">&#x1F64F;</span>
         <span class="wa-ctx-emoji wa-ctx-emoji-plus" onclick="showFullEmojiReact()" title="More">+</span>
     </div>
     <!-- Action List -->
@@ -2422,9 +2422,9 @@
                     // --- Duration for audio (from audio element or time display) ---
                     var rDur = '';
                     var isVoiceReply = origType === 'Audio' || rc === 'Voice Message' || rc === 'Voice message' ||
-                        rc.startsWith('ðŸŽ¤') || /\.(webm|mp3|ogg|wav|m4a|opus|aac)$/i.test(rc);
+                        rc.startsWith('\uD83C\uDFA4') || /\.(webm|mp3|ogg|wav|m4a|opus|aac)$/i.test(rc);
 
-                    // 1. Try to parse from embedded string first: "ðŸŽ¤[Name] 0:24"
+                    // 1. Try to parse from embedded string first: "\uD83C\uDFA4[Name] 0:24"
                     var fm = rc.match(/(\d+:\d+)/);
                     if (fm) rDur = fm[1];
 
@@ -2440,8 +2440,8 @@
                     
                     if (!replyAuthor) { var nm = rc.match(/\[([^\]]+)\]/); if (nm) replyAuthor = nm[1]; }
 
-                    var isImageReply = origType === 'Image' || rc.startsWith('ðŸ“·') || rc === 'Photo' || /\.(jpg|jpeg|png|gif|webp)$/i.test(rc);
-                    var isDocReply   = origType === 'Document' || rc.startsWith('ðŸ“„') || rc === 'Document';
+                    var isImageReply = origType === 'Image' || rc.startsWith('\uD83D\uDCF7') || rc === 'Photo' || /\.(jpg|jpeg|png|gif|webp)$/i.test(rc);
+                    var isDocReply   = origType === 'Document' || rc.startsWith('\uD83D\uDCC4') || rc === 'Document';
 
                     var rAuthorHtml = replyAuthor
                         ? '<div style="font-size:11px;font-weight:700;color:var(--accent-red);margin-bottom:2px;">' + replyAuthor + '</div>'
@@ -3542,7 +3542,7 @@
         function toggleEmojiPicker() {
             // Pre-fill some emojis as typing shortcut
             var input = document.getElementById("chatMessageInput");
-            input.value += " ðŸ˜Š ";
+            input.value += " \uD83D\uDE0A ";
             handleTyping();
             input.focus();
         }
