@@ -469,14 +469,38 @@ namespace Site.Controllers
             var message = await _db.Messages.FindAsync(messageId);
             if (message == null) return NotFound();
 
-            // Very simple JSON dictionary for reactions: { "userId": "emoji" }
-            var reactions = new Dictionary<string, string>();
+            var reactions = new Dictionary<string, ReactionDetail>();
             if (!string.IsNullOrEmpty(message.Reactions))
             {
-                try { reactions = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(message.Reactions); } catch {}
+                try
+                {
+                    reactions = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, ReactionDetail>>(message.Reactions, new System.Text.Json.JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                }
+                catch
+                {
+                    try
+                    {
+                        var oldReactions = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(message.Reactions);
+                        if (oldReactions != null)
+                        {
+                            reactions = new Dictionary<string, ReactionDetail>();
+                            foreach (var kvp in oldReactions)
+                            {
+                                reactions[kvp.Key] = new ReactionDetail
+                                {
+                                    Emoji = kvp.Value,
+                                    Username = "User",
+                                    UserAvatar = "/images/default-avatar.svg",
+                                    ReactedAt = DateTime.UtcNow
+                                };
+                            }
+                        }
+                    }
+                    catch {}
+                }
             }
 
-            if (reactions == null) reactions = new Dictionary<string, string>();
+            if (reactions == null) reactions = new Dictionary<string, ReactionDetail>();
 
             if (string.IsNullOrEmpty(emoji))
             {
@@ -484,7 +508,17 @@ namespace Site.Controllers
             }
             else
             {
-                reactions[currentUserId.ToString()] = emoji;
+                var user = await _db.Users.FindAsync(currentUserId);
+                var fullName = !string.IsNullOrEmpty(user?.FullName) ? user.FullName : user?.Username ?? "User";
+                var avatar = !string.IsNullOrEmpty(user?.ProfilePicture) ? user.ProfilePicture : "/images/default-avatar.svg";
+
+                reactions[currentUserId.ToString()] = new ReactionDetail
+                {
+                    Emoji = emoji,
+                    Username = fullName,
+                    UserAvatar = avatar,
+                    ReactedAt = DateTime.UtcNow
+                };
             }
 
             message.Reactions = System.Text.Json.JsonSerializer.Serialize(reactions);
@@ -992,5 +1026,13 @@ namespace Site.Controllers
                 currentUserIsAdmin = currentUserIsAdmin
             });
         }
+    }
+
+    public class ReactionDetail
+    {
+        public string Emoji { get; set; } = string.Empty;
+        public string Username { get; set; } = string.Empty;
+        public string UserAvatar { get; set; } = string.Empty;
+        public DateTime ReactedAt { get; set; } = DateTime.UtcNow;
     }
 }

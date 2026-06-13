@@ -234,14 +234,42 @@
                 <input type="file" id="messageFileInput" style="display: none;" onchange="handleSelectedFile()" />
 
                 <!-- Text / Voice Input elements & Send button wrapper -->
-                <div style="display: flex; align-items: center; gap: 15px; width: 100%;">
+                <div style="display: flex; align-items: center; gap: 15px; width: 100%; position: relative;">
+                    <!-- Emoji Picker Container -->
+                    <div id="emojiPickerWidget" style="display: none; position: absolute; bottom: 70px; left: 10px; width: 330px; height: 380px; background: rgba(26, 27, 32, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(20px); z-index: 1000; flex-direction: column;">
+                        <!-- Header: search bar -->
+                        <div style="padding: 12px 14px 8px 14px; display: flex; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); gap: 10px;">
+                            <div style="position: relative; flex: 1;">
+                                <i class="fas fa-search" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.3); font-size: 13px;"></i>
+                                <input type="text" id="emojiSearchInput" placeholder="Search emoji..." oninput="searchEmojis()" style="width: 100%; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; padding: 6px 12px 6px 32px; color: white; font-size: 13px; outline: none; border: 1px solid rgba(255,255,255,0.05); transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--accent-red)'" onblur="this.style.borderColor='rgba(255,255,255,0.05)'" />
+                            </div>
+                            <button onclick="toggleEmojiPicker()" style="background: none; border: none; color: rgba(255,255,255,0.5); cursor: pointer; font-size: 14px; padding: 2px;"><i class="fas fa-times"></i></button>
+                        </div>
+                        
+                        <!-- Category Tabs -->
+                        <div id="emojiCategoryTabs" style="display: flex; justify-content: space-around; padding: 8px 6px; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.1); font-size: 15px;">
+                            <span class="emoji-tab-btn active" onclick="selectEmojiCategory('Smileys', this)" style="cursor: pointer; opacity: 0.6; padding: 2px 6px;" title="Smileys & People">😃</span>
+                            <span class="emoji-tab-btn" onclick="selectEmojiCategory('Hands', this)" style="cursor: pointer; opacity: 0.6; padding: 2px 6px;" title="Gestures & Hands">👍</span>
+                            <span class="emoji-tab-btn" onclick="selectEmojiCategory('Hearts', this)" style="cursor: pointer; opacity: 0.6; padding: 2px 6px;" title="Hearts & Love">❤️</span>
+                            <span class="emoji-tab-btn" onclick="selectEmojiCategory('Animals', this)" style="cursor: pointer; opacity: 0.6; padding: 2px 6px;" title="Animals & Nature">🐶</span>
+                            <span class="emoji-tab-btn" onclick="selectEmojiCategory('Food', this)" style="cursor: pointer; opacity: 0.6; padding: 2px 6px;" title="Food & Drinks">🍔</span>
+                            <span class="emoji-tab-btn" onclick="selectEmojiCategory('Activities', this)" style="cursor: pointer; opacity: 0.6; padding: 2px 6px;" title="Activities & Travel">⚽</span>
+                            <span class="emoji-tab-btn" onclick="selectEmojiCategory('Objects', this)" style="cursor: pointer; opacity: 0.6; padding: 2px 6px;" title="Objects & Symbols">💡</span>
+                        </div>
+                        
+                        <!-- Emoji Container List -->
+                        <div id="emojiPickerContent" style="flex: 1; overflow-y: auto; padding: 12px; display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; align-content: start; justify-items: center; font-size: 22px;">
+                            <!-- Emojis populated dynamically -->
+                        </div>
+                    </div>
+
                     <div class="chat-input-container" style="background: #1b1d22 !important; border: 1px solid transparent !important; box-shadow: inset 4px 4px 10px #131418, inset -4px -4px 10px #23262c !important; border-radius: 30px;">
                         <button class="chat-input-action-btn" onclick="toggleEmojiPicker()" title="Emoji"><i class="far fa-smile" style="color: var(--accent-red); font-size: 18px;"></i></button>
                         <input type="text" id="chatMessageInput" class="chat-input-box" placeholder="Type a message" oninput="handleTyping()" onkeydown="handleInputKeydown(event)" />
                         <button class="chat-input-action-btn" onclick="toggleAttachmentSheet()" title="Attach file"><i class="fas fa-paperclip" style="color: var(--accent-red); font-size: 18px;"></i></button>
                         <button class="chat-input-action-btn d-none d-md-flex" title="Camera"><i class="fas fa-camera" style="color: var(--accent-red); font-size: 18px;"></i></button>
                     </div>
-
+ 
                     <!-- Microphone/Send Toggle Button -->
                     <button class="neu-btn neu-btn-circle active" id="sendOrMicBtn" onclick="sendOrRecord()" style="width: 50px; height: 50px; background: var(--accent-red); color: white; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" title="Send or Record">
                         <i id="sendOrMicIcon" class="fas fa-microphone" style="font-size: 16px;"></i>
@@ -649,6 +677,27 @@
     </div>
 </div>
 
+<!-- Message Reactions Info Modal Backdrop -->
+<div class="contacts-modal-backdrop" id="reactionDetailsModal" style="display: none; z-index: 106000;" onclick="handleReactionModalBackdropClick(event)">
+    <div class="contacts-modal" style="max-width: 420px; width: 90%; height: 450px; display: flex; flex-direction: column; overflow: hidden; border-radius: 24px; border: 1px solid rgba(255,255,255,0.08); background: #16181c; box-shadow: 0 20px 50px rgba(0,0,0,0.6); backdrop-filter: blur(20px);">
+        <!-- Modal Header -->
+        <div class="contacts-modal-header" style="padding: 18px 24px 12px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: space-between;">
+            <h3 style="margin: 0; font-size: 17px; font-weight: 700; color: white;">Reactions</h3>
+            <button class="neu-btn neu-btn-circle" onclick="closeReactionDetailsModal()" style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; box-shadow: none; background: rgba(255,255,255,0.05); border: none;">
+                <i class="fas fa-times" style="font-size: 13px; color: var(--text-secondary);"></i>
+            </button>
+        </div>
+        <!-- Modal Tabs -->
+        <div id="reactionTabs" style="display: flex; gap: 4px; padding: 4px 16px; border-bottom: 1px solid rgba(255,255,255,0.05); overflow-x: auto; scrollbar-width: none; background: rgba(0,0,0,0.15);">
+            <!-- Populated dynamically: e.g. All, 👍, ❤️ -->
+        </div>
+        <!-- Modal Content User List -->
+        <div id="reactionUsersList" style="flex: 1; overflow-y: auto; padding: 16px 20px; box-sizing: border-box;">
+            <!-- Populated dynamically -->
+        </div>
+    </div>
+</div>
+
 <!-- Camera Capture Modal Backdrop -->
 <div class="contacts-modal-backdrop" id="cameraModal" style="display: none;">
     <div class="contacts-modal" style="max-width: 450px;">
@@ -918,6 +967,95 @@
 
 <!-- WhatsApp-Style Audio/Video Calling Screen Overlay -->
 <style>
+  /* Custom Emoji Picker CSS */
+  #emojiPickerWidget {
+      transition: all 0.25s cubic-bezier(0.1, 0.8, 0.3, 1);
+  }
+  .emoji-tab-btn {
+      transition: all 0.2s ease;
+      font-size: 16px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      user-select: none;
+  }
+  .emoji-tab-btn:hover {
+      background: rgba(255, 255, 255, 0.05);
+  }
+  .emoji-tab-btn.active {
+      background: rgba(254, 76, 76, 0.15) !important;
+      opacity: 1 !important;
+      transform: scale(1.1);
+  }
+  .emoji-item {
+      cursor: pointer;
+      transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275), background 0.1s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 8px;
+      user-select: none;
+  }
+  .emoji-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      transform: scale(1.25);
+  }
+
+  /* Reaction Info Modal Custom Styles */
+  #reactionDetailsModal .contacts-modal {
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .reaction-modal-tab {
+      cursor: pointer;
+      padding: 8px 16px;
+      border-bottom: 2px solid transparent;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+  }
+  .reaction-modal-tab:hover {
+      color: white;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 6px 6px 0 0;
+  }
+  .reaction-modal-tab.active {
+      color: var(--accent-red);
+      border-bottom-color: var(--accent-red);
+  }
+  .reaction-user-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.01);
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      margin-bottom: 8px;
+      transition: all 0.2s ease;
+  }
+  .reaction-user-item:hover {
+      background: rgba(255, 255, 255, 0.03);
+      border-color: rgba(255, 255, 255, 0.06);
+  }
+  .reaction-user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  .reaction-user-time {
+      font-size: 11px;
+      color: var(--text-muted);
+  }
+
   @@keyframes typingDot {
       0%, 100% { opacity: 0.3; transform: translateY(0); }
       50% { opacity: 1; transform: translateY(-3px); }
@@ -1337,6 +1475,499 @@
         var currentUserAvatar = "@(!string.IsNullOrEmpty(currentUser?.ProfilePicture) ? currentUser.ProfilePicture : "/images/default-avatar.svg")";
         var activeChatId = null;
         var activeOtherUserId = null;
+        
+        // --- Custom Emoji Search Picker & Reactions Details Modal ---
+        var currentEmojiPickerMode = "input";
+        var currentEmojiReactionMsgId = null;
+
+        const emojiList = [
+            // Smileys
+            { emoji: "😀", cat: "Smileys", tags: "smile face happy grin joy" },
+            { emoji: "😃", cat: "Smileys", tags: "smile face happy joy grin laugh" },
+            { emoji: "😄", cat: "Smileys", tags: "smile face happy joy grin laugh" },
+            { emoji: "😁", cat: "Smileys", tags: "grin face happy smile teeth" },
+            { emoji: "😆", cat: "Smileys", tags: "laugh face happy smile haha" },
+            { emoji: "😅", cat: "Smileys", tags: "sweat laugh face happy cold sweat" },
+            { emoji: "😂", cat: "Smileys", tags: "joy tears face laugh cry haha lol" },
+            { emoji: "🤣", cat: "Smileys", tags: "rofl laugh face cry tears lol" },
+            { emoji: "😊", cat: "Smileys", tags: "smile blush face happy proud" },
+            { emoji: "😇", cat: "Smileys", tags: "halo angel face innocent heaven" },
+            { emoji: "🙂", cat: "Smileys", tags: "slightly smile face" },
+            { emoji: "🙃", cat: "Smileys", tags: "upside down face silly crazy" },
+            { emoji: "😉", cat: "Smileys", tags: "wink face play flirt" },
+            { emoji: "😌", cat: "Smileys", tags: "relieved face peace calm" },
+            { emoji: "😍", cat: "Smileys", tags: "heart eyes love face adore sweet" },
+            { emoji: "🥰", cat: "Smileys", tags: "hearts love face warm affection blush" },
+            { emoji: "😘", cat: "Smileys", tags: "kiss blow kiss face love heart" },
+            { emoji: "😋", cat: "Smileys", tags: "yum tongue delicious food face hungry" },
+            { emoji: "😛", cat: "Smileys", tags: "tongue face play silly" },
+            { emoji: "😜", cat: "Smileys", tags: "wink tongue face crazy silly" },
+            { emoji: "🤪", cat: "Smileys", tags: "zany crazy face silly eye wild" },
+            { emoji: "🤨", cat: "Smileys", tags: "eyebrow face suspicious query huh" },
+            { emoji: "🧐", cat: "Smileys", tags: "monocle face smart study investigate" },
+            { emoji: "🤓", cat: "Smileys", tags: "nerd glasses face smart study geek" },
+            { emoji: "😎", cat: "Smileys", tags: "sunglasses cool face style sun chill" },
+            { emoji: "🤩", cat: "Smileys", tags: "star eyes amazed face excited wow" },
+            { emoji: "🥳", cat: "Smileys", tags: "party horn face celebrate birthday" },
+            { emoji: "😏", cat: "Smileys", tags: "smirk face sly flirt" },
+            { emoji: "😒", cat: "Smileys", tags: "unamused face unhappy bored meh" },
+            { emoji: "😞", cat: "Smileys", tags: "disappointed face sad sorry regret" },
+            { emoji: "😔", cat: "Smileys", tags: "pensive face sad thoughtful sorry" },
+            { emoji: "😟", cat: "Smileys", tags: "worried face concern anxiety" },
+            { emoji: "😕", cat: "Smileys", tags: "confused face puzzle query meh" },
+            { emoji: "🙁", cat: "Smileys", tags: "frown sad face" },
+            { emoji: "☹️", cat: "Smileys", tags: "sad frown face" },
+            { emoji: "😣", cat: "Smileys", tags: "persevere struggle face pain hard" },
+            { emoji: "😖", cat: "Smileys", tags: "confounded face struggle pain" },
+            { emoji: "😫", cat: "Smileys", tags: "tired stretch yawn face exhaust" },
+            { emoji: "😩", cat: "Smileys", tags: "weary tired face cry groan" },
+            { emoji: "🥺", cat: "Smileys", tags: "pleading eyes beg sad face cute" },
+            { emoji: "😢", cat: "Smileys", tags: "cry tear face sad hurt sorrow" },
+            { emoji: "😭", cat: "Smileys", tags: "sob cry heavy tears face sad" },
+            { emoji: "😤", cat: "Smileys", tags: "steam nose face win anger proud" },
+            { emoji: "😠", cat: "Smileys", tags: "angry face mad annoy" },
+            { emoji: "😡", cat: "Smileys", tags: "pout angry face mad red furious" },
+            { emoji: "🤬", cat: "Smileys", tags: "swear face angry bad words curse" },
+            { emoji: "🤯", cat: "Smileys", tags: "explode head mind blown face shock" },
+            { emoji: "😳", cat: "Smileys", tags: "flushed blush face embarrassed shock stare" },
+            { emoji: "🥵", cat: "Smileys", tags: "hot sweat face red summer heat" },
+            { emoji: "🥶", cat: "Smileys", tags: "cold blue face ice winter freeze" },
+            { emoji: "😱", cat: "Smileys", tags: "scream fear face shock gasp horror" },
+            { emoji: "🤔", cat: "Smileys", tags: "think query question face ponder" },
+            { emoji: "🫣", cat: "Smileys", tags: "peeking eye hide scary face" },
+            { emoji: "🤫", cat: "Smileys", tags: "shush quiet silence face secret" },
+            { emoji: "🤥", cat: "Smileys", tags: "lie pinocchio nose face fake" },
+            { emoji: "😬", cat: "Smileys", tags: "grimace face teeth nervous awkward" },
+            { emoji: "🙄", cat: "Smileys", tags: "roll eyes face bored annoy" },
+            { emoji: "😴", cat: "Smileys", tags: "sleep zzz tired night face" },
+            { emoji: "👻", cat: "Smileys", tags: "ghost scary halloween" },
+            { emoji: "💀", cat: "Smileys", tags: "skull death danger dead bones" },
+            { emoji: "👽", cat: "Smileys", tags: "alien space ufo" },
+            { emoji: "🤖", cat: "Smileys", tags: "robot toy machine science" },
+            { emoji: "🎃", cat: "Smileys", tags: "pumpkin halloween jack lantern" },
+            // Hands
+            { emoji: "👋", cat: "Hands", tags: "wave hello hand bye greeting" },
+            { emoji: "🤚", cat: "Hands", tags: "backhand stop hand raise" },
+            { emoji: "✋", cat: "Hands", tags: "stop high five hand raise" },
+            { emoji: "👌", cat: "Hands", tags: "ok hand deal agree fine perfect" },
+            { emoji: "🤌", cat: "Hands", tags: "pinched fingers Italian gesture demand" },
+            { emoji: "✌️", cat: "Hands", tags: "victory peace two sign hand" },
+            { emoji: "🤞", cat: "Hands", tags: "crossed fingers luck hope wish" },
+            { emoji: "🤟", cat: "Hands", tags: "love you sign gesture hand" },
+            { emoji: "🤘", cat: "Hands", tags: "rock on horns sign heavy metal" },
+            { emoji: "🤙", cat: "Hands", tags: "call me phone gesture hand" },
+            { emoji: "👈", cat: "Hands", tags: "point left finger hand" },
+            { emoji: "👉", cat: "Hands", tags: "point right finger hand" },
+            { emoji: "👆", cat: "Hands", tags: "point up finger hand" },
+            { emoji: "👇", cat: "Hands", tags: "point down finger hand" },
+            { emoji: "👍", cat: "Hands", tags: "thumbs up like good yes agree ok" },
+            { emoji: "👎", cat: "Hands", tags: "thumbs down dislike bad no disagree" },
+            { emoji: "✊", cat: "Hands", tags: "fist raise power strength" },
+            { emoji: "👊", cat: "Hands", tags: "punch hit fist strike boom" },
+            { emoji: "👏", cat: "Hands", tags: "clap hands applaud praise well done" },
+            { emoji: "🙌", cat: "Hands", tags: "raise hands celebrate hooray success" },
+            { emoji: "🙏", cat: "Hands", tags: "pray please thank you hands bow" },
+            { emoji: "💪", cat: "Hands", tags: "muscle strong power gym workout" },
+            // Hearts
+            { emoji: "❤️", cat: "Hearts", tags: "red heart love romance passion" },
+            { emoji: "🧡", cat: "Hearts", tags: "orange heart love friendship" },
+            { emoji: "💛", cat: "Hearts", tags: "yellow heart love friendship" },
+            { emoji: "💚", cat: "Hearts", tags: "green heart love envy jealousy" },
+            { emoji: "💙", cat: "Hearts", tags: "blue heart love trust peace" },
+            { emoji: "💜", cat: "Hearts", tags: "purple heart love honor royalty" },
+            { emoji: "🖤", cat: "Hearts", tags: "black heart sorrow dark gothic" },
+            { emoji: "🤍", cat: "Hearts", tags: "white heart pure peace" },
+            { emoji: "🤎", cat: "Hearts", tags: "brown heart chocolate warmth" },
+            { emoji: "💔", cat: "Hearts", tags: "broken heart heartbreak sad split" },
+            { emoji: "❤️‍🔥", cat: "Hearts", tags: "heart on fire burn love" },
+            { emoji: "❣️", cat: "Hearts", tags: "exclamation heart exclamation mark" },
+            { emoji: "💕", cat: "Hearts", tags: "two hearts love pink sweet" },
+            { emoji: "💞", cat: "Hearts", tags: "revolving hearts love pink" },
+            { emoji: "💓", cat: "Hearts", tags: "beating heart pulse love pink" },
+            { emoji: "💗", cat: "Hearts", tags: "growing heart love pink gradient" },
+            { emoji: "💖", cat: "Hearts", tags: "sparkling heart love pink shiny" },
+            { emoji: "💘", cat: "Hearts", tags: "cupid arrow heart love romance" },
+            { emoji: "💝", cat: "Hearts", tags: "ribbon gift heart love present" },
+            // Animals & Nature
+            { emoji: "🐶", cat: "Animals", tags: "dog puppy pet canine face" },
+            { emoji: "🐱", cat: "Animals", tags: "cat kitten pet feline face" },
+            { emoji: "🐭", cat: "Animals", tags: "mouse rat rodent face" },
+            { emoji: "🐹", cat: "Animals", tags: "hamster pet rodent face" },
+            { emoji: "🐰", cat: "Animals", tags: "bunny rabbit pet face" },
+            { emoji: "🦊", cat: "Animals", tags: "fox wild face" },
+            { emoji: "🐻", cat: "Animals", tags: "bear wild face" },
+            { emoji: "🐼", cat: "Animals", tags: "panda bamboo china face" },
+            { emoji: "🐨", cat: "Animals", tags: "koala australia face" },
+            { emoji: "🐯", cat: "Animals", tags: "tiger cat wild stripe face" },
+            { emoji: "🦁", cat: "Animals", tags: "lion king wild cat face" },
+            { emoji: "🐮", cat: "Animals", tags: "cow cattle farm milk face" },
+            { emoji: "🐷", cat: "Animals", tags: "pig farm pork face" },
+            { emoji: "🐸", cat: "Animals", tags: "frog amphibian pond green face" },
+            { emoji: "🐵", cat: "Animals", tags: "monkey ape face" },
+            { emoji: "🐔", cat: "Animals", tags: "chicken farm rooster bird face" },
+            { emoji: "🐧", cat: "Animals", tags: "penguin ice bird" },
+            { emoji: "🐦", cat: "Animals", tags: "bird fly nature" },
+            { emoji: "🐤", cat: "Animals", tags: "chick bird yellow" },
+            { emoji: "🦅", cat: "Animals", tags: "eagle bird prey fly" },
+            { emoji: "🦉", cat: "Animals", tags: "owl bird night wisdom" },
+            { emoji: "🐝", cat: "Animals", tags: "bee honey insect yellow black sting" },
+            { emoji: "🐛", cat: "Animals", tags: "bug caterpillar insect crawl" },
+            { emoji: "🦋", cat: "Animals", tags: "butterfly insect wing beauty fly" },
+            { emoji: "🕷️", cat: "Animals", tags: "spider insect crawl web scary" },
+            { emoji: "🦂", cat: "Animals", tags: "scorpion insect poison sting tail" },
+            { emoji: "🐢", cat: "Animals", tags: "turtle tortoise shell slow" },
+            { emoji: "🐍", cat: "Animals", tags: "snake serpent reptile crawl hiss" },
+            { emoji: "🦖", cat: "Animals", tags: "t-rex dinosaur t rex extinct" },
+            { emoji: "🐙", cat: "Animals", tags: "octopus sea tentacle fish water" },
+            { emoji: "🦈", cat: "Animals", tags: "shark fish sea tooth danger swim" },
+            { emoji: "🐬", cat: "Animals", tags: "dolphin sea mammal swim smart" },
+            { emoji: "🌲", cat: "Nature", tags: "pine tree evergreen forest wood" },
+            { emoji: "🌳", cat: "Nature", tags: "deciduous tree forest green wood" },
+            { emoji: "🌴", cat: "Nature", tags: "palm tree beach island tropical" },
+            { emoji: "🌵", cat: "Nature", tags: "cactus desert spike green plant" },
+            { emoji: "🍀", cat: "Nature", tags: "four leaf clover luck green plant" },
+            { emoji: "🍁", cat: "Nature", tags: "maple leaf autumn orange Canada" },
+            { emoji: "🌸", cat: "Nature", tags: "cherry blossom flower pink spring bloom" },
+            { emoji: "🌹", cat: "Nature", tags: "rose flower red love romance plant" },
+            { emoji: "🌻", cat: "Nature", tags: "sunflower flower yellow sun seed" },
+            { emoji: "🌱", cat: "Nature", tags: "seedling grow green leaf plant dirt" },
+            { emoji: "🌿", cat: "Nature", tags: "herb leaf green cook plant" },
+            { emoji: "🍄", cat: "Nature", tags: "mushroom fungus forest poison" },
+            // Food
+            { emoji: "🍎", cat: "Food", tags: "apple fruit red sweet healthy" },
+            { emoji: "🍌", cat: "Food", tags: "banana fruit yellow sweet healthy peel" },
+            { emoji: " watermelon", cat: "Food", emoji: "🍉", tags: "watermelon fruit green pink seed summer" },
+            { emoji: "🍓", cat: "Food", tags: "strawberry fruit red sweet berry" },
+            { emoji: "🍒", cat: "Food", tags: "cherries fruit red sweet pair" },
+            { emoji: " Pineapple", cat: "Food", emoji: "🍍", tags: "pineapple fruit tropical yellow spike sweet" },
+            { emoji: "🥥", cat: "Food", tags: "coconut fruit brown tropical milk" },
+            { emoji: "🥑", cat: "Food", tags: "avocado fruit green pit toast healthy" },
+            { emoji: "🥕", cat: "Food", tags: "carrot vegetable orange root healthy rabbit" },
+            { emoji: "🌽", cat: "Food", tags: "corn maize cob yellow farm sweet" },
+            { emoji: "🍔", cat: "Food", tags: "hamburger burger meat cheese fast food fastfood junk" },
+            { emoji: "🍟", cat: "Food", tags: "french fries potato fast food junk salty" },
+            { emoji: "🍕", cat: "Food", tags: "pizza slice cheese Italian fast food" },
+            { emoji: "🌭", cat: "Food", tags: "hotdog sausage bread fast food junk" },
+            { emoji: " Sandwich", cat: "Food", emoji: "🥪", tags: "sandwich bread lunch cheese meat" },
+            { emoji: "🍳", cat: "Food", tags: "cooking egg fry pan breakfast kitchen" },
+            { emoji: "🍿", cat: "Food", tags: "popcorn cinema corn snack movie salty" },
+            { emoji: "🍣", cat: "Food", tags: "sushi raw fish rice Japan food" },
+            { emoji: "🍰", cat: "Food", tags: "shortcake cake slice sweet dessert cherry" },
+            { emoji: "🎂", cat: "Food", tags: "birthday cake candle sweet bake celebrate" },
+            { emoji: "🍫", cat: "Food", tags: "chocolate bar sweet candy dessert brown" },
+            { emoji: "☕", cat: "Drinks", tags: "coffee tea cup mug hot drink morning caffeine" },
+            { emoji: "🍺", cat: "Drinks", tags: "beer glass mug foam drink alcohol pub" },
+            { emoji: "🍻", cat: "Drinks", tags: "clinking beers mugs toast cheers party alcohol" },
+            { emoji: "🥂", cat: "Drinks", tags: "champagne glasses clinking toast cheers celebrate party" },
+            { emoji: "🍷", cat: "Drinks", tags: "wine glass red alcohol drink grape" },
+            { emoji: "🥃", cat: "Drinks", tags: "whiskey tumbler glass alcohol drink liquor" },
+            { emoji: "🥤", cat: "Drinks", tags: "soda straw cup fast food drink cold" },
+            // Activities
+            { emoji: "⚽", cat: "Activities", tags: "soccer football ball sport play game" },
+            { emoji: "🏀", cat: "Activities", tags: "basketball ball sport play game hoop" },
+            { emoji: "🏈", cat: "Activities", tags: "football american ball sport play game" },
+            { emoji: "🎾", cat: "Activities", tags: "tennis racket ball sport play game" },
+            { emoji: "🎱", cat: "Activities", tags: "pool 8ball billiard black ball game" },
+            { emoji: "🎮", cat: "Activities", tags: "gamepad controller video game console play" },
+            { emoji: "🏆", cat: "Activities", tags: "trophy cup winner gold award success prize" },
+            { emoji: "🥇", cat: "Activities", tags: "gold medal winner first award" },
+            { emoji: "🎨", cat: "Activities", tags: "palette art paint drawing creative color" },
+            { emoji: "🎬", cat: "Activities", tags: "clapperboard movie cinema film director board" },
+            { emoji: "🎤", cat: "Activities", tags: "microphone sing music song audio vocal" },
+            { emoji: "🎧", cat: "Activities", tags: "headphones music listen audio song" },
+            { emoji: "🎸", cat: "Activities", tags: "guitar instrument music song rock acoustic" },
+            { emoji: "🚗", cat: "Travel", tags: "car automobile red drive road travel" },
+            { emoji: "✈️", cat: "Travel", tags: "airplane plane fly airport travel vacation sky" },
+            { emoji: "🚀", cat: "Travel", tags: "rocket space launch ship speed fly" },
+            // Objects & Symbols
+            { emoji: "⌚", cat: "Objects", tags: "watch time wrist clock" },
+            { emoji: "📱", cat: "Objects", tags: "phone mobile smartphone screen call digital" },
+            { emoji: "💻", cat: "Objects", tags: "laptop computer screen work tech office" },
+            { emoji: "💡", cat: "Objects", tags: "lightbulb light bulb idea energy genius glow" },
+            { emoji: "💵", cat: "Objects", tags: "dollar cash money bill green paper wealth" },
+            { emoji: "✉️", cat: "Objects", tags: "envelope letter mail send inbox paper" },
+            { emoji: "🔑", cat: "Objects", tags: "key lock open house access secure" },
+            { emoji: "🔒", cat: "Objects", tags: "lock closed secure privacy safe key" },
+            { emoji: "🔔", cat: "Objects", tags: "bell ring notification alert sound" },
+            { emoji: "🔥", cat: "Symbols", tags: "fire flame hot burn cook match trend lit" },
+            { emoji: "✨", cat: "Symbols", tags: "sparkles shine clean magic fancy star" },
+            { emoji: "⭐", cat: "Symbols", tags: "star yellow gold rank favorite rate" },
+            { emoji: "💥", cat: "Symbols", tags: "collision boom bang explode spark pop" },
+            { emoji: "💯", cat: "Symbols", tags: "hundred 100 perfect exam grade score win" },
+            { emoji: "🎉", cat: "Symbols", tags: "popper party celebrate birthday congrats" }
+        ];
+
+        function renderEmojiPickerCategories() {
+            selectEmojiCategory('Smileys', document.querySelector("#emojiCategoryTabs .emoji-tab-btn"));
+        }
+
+        function selectEmojiCategory(category, element) {
+            document.querySelectorAll("#emojiCategoryTabs .emoji-tab-btn").forEach(btn => {
+                btn.classList.remove("active");
+            });
+            if (element) {
+                element.classList.add("active");
+            }
+
+            var content = document.getElementById("emojiPickerContent");
+            content.innerHTML = "";
+
+            var filtered = emojiList.filter(e => e.cat === category);
+            filtered.forEach(item => {
+                var span = document.createElement("span");
+                span.className = "emoji-item";
+                span.textContent = item.emoji;
+                span.onclick = function() {
+                    onEmojiSelected(item.emoji);
+                };
+                content.appendChild(span);
+            });
+        }
+
+        function searchEmojis() {
+            var query = document.getElementById("emojiSearchInput").value.trim().toLowerCase();
+            var content = document.getElementById("emojiPickerContent");
+            content.innerHTML = "";
+
+            document.querySelectorAll("#emojiCategoryTabs .emoji-tab-btn").forEach(btn => {
+                btn.classList.remove("active");
+            });
+
+            if (query === "") {
+                selectEmojiCategory('Smileys', document.querySelector("#emojiCategoryTabs .emoji-tab-btn"));
+                return;
+            }
+
+            var matched = emojiList.filter(item => {
+                return item.tags.indexOf(query) !== -1 || item.emoji === query;
+            });
+
+            if (matched.length === 0) {
+                content.innerHTML = '<div style="grid-column: span 7; text-align: center; color: var(--text-muted); font-size: 13px; padding-top: 20px;">No emojis found.</div>';
+                return;
+            }
+
+            matched.forEach(item => {
+                var span = document.createElement("span");
+                span.className = "emoji-item";
+                span.textContent = item.emoji;
+                span.onclick = function() {
+                    onEmojiSelected(item.emoji);
+                };
+                content.appendChild(span);
+            });
+        }
+
+        function toggleEmojiPicker(mode, messageId) {
+            var picker = document.getElementById("emojiPickerWidget");
+            if (picker.style.display === "flex") {
+                picker.style.display = "none";
+            } else {
+                currentEmojiPickerMode = mode || "input";
+                currentEmojiReactionMsgId = messageId || null;
+
+                document.getElementById("emojiSearchInput").value = "";
+
+                if (currentEmojiPickerMode === "reaction") {
+                    picker.style.bottom = "auto";
+                    picker.style.top = "50%";
+                    picker.style.left = "50%";
+                    picker.style.transform = "translate(-50%, -50%)";
+                    picker.style.position = "fixed";
+                } else {
+                    picker.style.bottom = "70px";
+                    picker.style.top = "auto";
+                    picker.style.left = "10px";
+                    picker.style.transform = "none";
+                    picker.style.position = "absolute";
+                }
+
+                picker.style.display = "flex";
+                renderEmojiPickerCategories();
+            }
+        }
+
+        function onEmojiSelected(emoji) {
+            if (currentEmojiPickerMode === "reaction") {
+                reactToMsg(emoji, currentEmojiReactionMsgId);
+                document.getElementById("emojiPickerWidget").style.display = "none";
+            } else {
+                var input = document.getElementById("chatMessageInput");
+                input.value += emoji;
+                handleTyping();
+                input.focus();
+            }
+        }
+
+        // Close emoji picker when clicking outside
+        document.addEventListener("mousedown", function(e) {
+            var picker = document.getElementById("emojiPickerWidget");
+            var emojiBtn = document.querySelector(".chat-input-container button[onclick='toggleEmojiPicker()']");
+            if (picker && picker.style.display === "flex") {
+                if (!picker.contains(e.target) && (!emojiBtn || !emojiBtn.contains(e.target))) {
+                    picker.style.display = "none";
+                }
+            }
+        });
+
+        // --- Reaction Info Modal Logic ---
+        var activeReactionDetailsList = null;
+
+        function openReactionsInfoModal(messageId) {
+            var msgWrapper = document.querySelector('.message-wrapper[data-msgid="' + messageId + '"]');
+            if (!msgWrapper) return;
+            var reactionsPill = msgWrapper.querySelector('.message-reactions');
+            if (!reactionsPill) return;
+
+            var reactionsJsonStr = decodeURIComponent(reactionsPill.getAttribute('data-reactions-json') || '{}');
+            var parsedReactions = {};
+            try {
+                parsedReactions = JSON.parse(reactionsJsonStr);
+            } catch(e) {
+                console.error("Failed to parse reactions JSON:", e);
+                return;
+            }
+
+            var list = [];
+            for (var uId in parsedReactions) {
+                var item = parsedReactions[uId];
+                if (typeof item === 'string') {
+                    list.push({
+                        userId: uId,
+                        emoji: item,
+                        username: "User",
+                        userAvatar: "/images/default-avatar.svg",
+                        reactedAt: new Date().toISOString()
+                    });
+                } else if (item && typeof item === 'object') {
+                    list.push({
+                        userId: uId,
+                        emoji: item.emoji || item.Emoji || "",
+                        username: item.username || item.Username || "User",
+                        userAvatar: item.userAvatar || item.UserAvatar || "/images/default-avatar.svg",
+                        reactedAt: item.reactedAt || item.ReactedAt || new Date().toISOString()
+                    });
+                }
+            }
+
+            if (list.length === 0) return;
+            activeReactionDetailsList = list;
+
+            var tabsContainer = document.getElementById("reactionTabs");
+            tabsContainer.innerHTML = "";
+
+            var allTab = document.createElement("div");
+            allTab.className = "reaction-modal-tab active";
+            allTab.innerHTML = 'All <span>' + list.length + '</span>';
+            allTab.onclick = function() {
+                filterReactionList('all', this);
+            };
+            tabsContainer.appendChild(allTab);
+
+            var emojiCounts = {};
+            list.forEach(item => {
+                emojiCounts[item.emoji] = (emojiCounts[item.emoji] || 0) + 1;
+            });
+
+            for (var emoji in emojiCounts) {
+                (function(e) {
+                    var tab = document.createElement("div");
+                    tab.className = "reaction-modal-tab";
+                    tab.innerHTML = e + ' <span>' + emojiCounts[e] + '</span>';
+                    tab.onclick = function() {
+                        filterReactionList(e, this);
+                    };
+                    tabsContainer.appendChild(tab);
+                })(emoji);
+            }
+
+            renderReactionUsers(list, messageId);
+            document.getElementById("reactionDetailsModal").style.display = "flex";
+        }
+
+        function filterReactionList(emoji, tabElement) {
+            document.querySelectorAll("#reactionTabs .reaction-modal-tab").forEach(tab => {
+                tab.classList.remove("active");
+            });
+            if (tabElement) tabElement.classList.add("active");
+
+            var messageId = currentEmojiReactionMsgId; // fallback or track msg context
+            if (emoji === 'all') {
+                renderReactionUsers(activeReactionDetailsList, messageId);
+            } else {
+                var filtered = activeReactionDetailsList.filter(item => item.emoji === emoji);
+                renderReactionUsers(filtered, messageId);
+            }
+        }
+
+        function renderReactionUsers(items, messageId) {
+            var listContainer = document.getElementById("reactionUsersList");
+            listContainer.innerHTML = "";
+
+            if (!items || items.length === 0) {
+                listContainer.innerHTML = '<div style="text-align:center; color:var(--text-muted); padding: 40px 0;">No reactions found.</div>';
+                return;
+            }
+
+            items.forEach(item => {
+                var div = document.createElement("div");
+                div.className = "reaction-user-item";
+
+                var date = new Date(item.reactedAt);
+                var hours = date.getHours();
+                var minutes = date.getMinutes();
+                var ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12;
+                hours = hours ? hours : 12;
+                minutes = minutes < 10 ? '0' + minutes : minutes;
+                var timeStr = hours + ':' + minutes + ' ' + ampm;
+
+                var today = new Date();
+                var yesterday = new Date();
+                yesterday.setDate(today.getDate() - 1);
+
+                var dayStr = "";
+                if (date.toDateString() === today.toDateString()) {
+                    dayStr = "Today";
+                } else if (date.toDateString() === yesterday.toDateString()) {
+                    dayStr = "Yesterday";
+                } else {
+                    dayStr = date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+                }
+                var formattedTime = dayStr + " at " + timeStr;
+
+                var isMe = item.userId.toString() === currentUserId.toString();
+                var displayAction = isMe ? '<span style="font-size: 11px; color: var(--accent-red); cursor: pointer; display: block; margin-top: 4px; font-weight: 600;" onclick="removeMyReaction(' + messageId + ')">Tap to remove</span>' : '';
+
+                div.innerHTML = `
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <img class="reaction-user-avatar" src="${item.userAvatar}" onerror="this.src='/images/default-avatar.svg'" />
+                        <div>
+                            <div style="font-size:14px; font-weight:700; color:white;">${item.username} ${isMe ? ' (You)' : ''}</div>
+                            <div class="reaction-user-time">${formattedTime}</div>
+                            ${displayAction}
+                        </div>
+                    </div>
+                    <div style="font-size:24px; user-select:none;">${item.emoji}</div>
+                `;
+                listContainer.appendChild(div);
+            });
+        }
+
+        function removeMyReaction(msgId) {
+            closeReactionDetailsModal();
+            reactToMsg("", msgId);
+        }
+
+        function closeReactionDetailsModal() {
+            document.getElementById("reactionDetailsModal").style.display = "none";
+        }
+
+        function handleReactionModalBackdropClick(e) {
+            if (e.target.id === "reactionDetailsModal") {
+                closeReactionDetailsModal();
+            }
+        }
 
         // --- WebRTC Call Logic ---
         var peerConnection;
@@ -2600,17 +3231,24 @@
             if (reactionsJson && reactionsJson !== "{}" && reactionsJson !== "") {
                 try {
                     var parsedReactions = typeof reactionsJson === 'string' ? JSON.parse(reactionsJson) : reactionsJson;
-                    var emojis = Object.values(parsedReactions);
+                    var emojis = [];
+                    for (var uId in parsedReactions) {
+                        var item = parsedReactions[uId];
+                        var emoji = (typeof item === 'string') ? item : (item.emoji || item.Emoji || "");
+                        if (emoji) emojis.push(emoji);
+                    }
                     if (emojis.length > 0) {
-                        // Unique emojis and count
                         var uniqueEmojis = [...new Set(emojis)];
+                        var encReactions = encodeURIComponent(typeof reactionsJson === 'string' ? reactionsJson : JSON.stringify(reactionsJson));
                         reactionsHtml = `
-                            <div class="message-reactions" style="position:absolute; bottom:-12px; ${isOutgoing ? 'right:5px;' : 'left:5px;'} background:#2A2B2F; border:1px solid rgba(255,255,255,0.1); border-radius:12px; padding:2px 6px; font-size:12px; display:flex; gap:2px; box-shadow:0 2px 5px rgba(0,0,0,0.2); z-index:2;">
-                                ${uniqueEmojis.join('')} ${emojis.length > 1 ? '<span style="font-size:10px; color:white; margin-left:2px;">'+emojis.length+'</span>' : ''}
+                            <div class="message-reactions" onclick="event.stopPropagation(); openReactionsInfoModal(${messageId})" data-reactions-json="${encReactions}" style="position:absolute; bottom:-12px; ${isOutgoing ? 'right:5px;' : 'left:5px;'} background:#2A2B2F; border:1px solid rgba(255,255,255,0.15); border-radius:12px; padding:2px 6px; font-size:12px; display:flex; gap:2px; box-shadow:0 2px 5px rgba(0,0,0,0.2); z-index:2; cursor:pointer; user-select:none;" title="View reactions">
+                                ${uniqueEmojis.join('')} ${emojis.length > 1 ? '<span style="font-size:10px; color:white; margin-left:2px; font-weight:600;">'+emojis.length+'</span>' : ''}
                             </div>
                         `;
                     }
-                } catch(e) {}
+                } catch(e) {
+                    console.error("reactions rendering error:", e);
+                }
             }
 
             var safeContent = content ? encodeURIComponent(content) : "";
@@ -2974,17 +3612,19 @@
         }
 
         function showFullEmojiReact() {
-            // Could open a full emoji picker - for now show toast
-            showToast('<i class="far fa-smile" style="margin-right:8px;"></i>Full emoji picker coming soon', 'info');
+            if (!activeContextMsgId) return;
+            document.getElementById('messageContextMenu').style.display = 'none';
+            toggleEmojiPicker('reaction', activeContextMsgId);
         }
 
-        function reactToMsg(emoji) {
+        function reactToMsg(emoji, targetMsgId) {
+            var msgId = targetMsgId || activeContextMsgId;
             document.getElementById('messageContextMenu').style.display = 'none';
-            if(!activeContextMsgId) return;
+            if(!msgId) return;
 
-            $.post("/Chat/ReactToMessage", { messageId: activeContextMsgId, emoji: emoji }, function(res) {
+            $.post("/Chat/ReactToMessage", { messageId: msgId, emoji: emoji }, function(res) {
                 if(res.success) {
-                    connection.invoke("BroadcastReaction", activeChatId.toString(), activeContextMsgId, res.reactions);
+                    connection.invoke("BroadcastReaction", activeChatId.toString(), msgId.toString(), res.reactions);
                 }
             });
         }
@@ -3679,14 +4319,6 @@
                     item.style.display = "none";
                 }
             });
-        }
-
-        function toggleEmojiPicker() {
-            // Pre-fill some emojis as typing shortcut
-            var input = document.getElementById("chatMessageInput");
-            input.value += " \uD83D\uDE0A ";
-            handleTyping();
-            input.focus();
         }
 
         function searchMessages() {
