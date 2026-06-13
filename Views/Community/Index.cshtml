@@ -1,0 +1,656 @@
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Communities";
+    Layout = "~/Views/Shared/_Layout_Chat.cshtml";
+    var currentUser = ViewBag.CurrentUser as Site.Models.Users;
+}
+
+<div class="chat-app-layout">
+    <!-- Column 1 (Far Left Navigation Menu) -->
+    @await Html.PartialAsync("_NavSidebar", "Community")
+
+
+    <!-- Column 2 (Middle Communities List) -->
+    <div class="chat-list-panel" style="position: relative;">
+        <!-- Panel A: Main Communities List -->
+        <div id="communitiesListContainer" style="display: flex; flex-direction: column; height: 100%;">
+            <div class="chat-panel-header">
+                <div class="chat-panel-title-bar">
+                    <h2>Communities</h2>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="neu-btn neu-btn-circle" onclick="openCommunityIntroModal()" style="width: 36px; height: 36px; display:flex; align-items:center; justify-content:center;" title="New Community"><i class="fas fa-plus" style="font-size:13px;"></i></button>
+                    </div>
+                </div>
+
+                <div class="chat-search-container">
+                    <input type="text" id="communitySearchInput" class="neu-input" placeholder="Search communities..." onkeyup="filterCommunities()" />
+                </div>
+            </div>
+
+            <div class="chat-list-scrollable" id="communitiesContainer" style="padding: 10px 8px;">
+                <!-- Loaded dynamically via JS -->
+                <div style="text-align: center; color: var(--text-muted); margin-top: 40px; font-size: 14px;">Loading communities...</div>
+            </div>
+        </div>
+
+        <!-- Panel B: New Community Form (WhatsApp-style) -->
+        <div id="newCommunityFormContainer" style="display: none; flex-direction: column; height: 100%;">
+            <div class="chat-panel-header" style="padding: 25px 20px 15px; border-bottom: 1px solid var(--border-color);">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button class="neu-btn neu-btn-circle hover-glow" onclick="backToCommunitiesList()" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;" title="Back"><i class="fas fa-arrow-left" style="font-size: 13px;"></i></button>
+                    <h2 style="font-size: 20px; font-weight: 700; margin: 0;">New community</h2>
+                </div>
+            </div>
+
+            <div class="chat-list-scrollable" style="padding: 25px 20px;">
+                <!-- Hint banner -->
+                <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: var(--bg-card); border-radius: 14px; margin-bottom: 25px; border: 1px solid var(--border-color);">
+                    <i class="far fa-lightbulb" style="color: var(--accent-red); font-size: 16px;"></i>
+                    <span style="font-size: 12.5px; color: var(--text-secondary); line-height: 1.4;">See examples of different communities. <a href="#" style="color: var(--accent-red); text-decoration: none; font-weight: 600;">Learn more</a></span>
+                </div>
+
+                <!-- Avatar upload -->
+                <div style="text-align: center; margin-bottom: 30px; position: relative;">
+                    <div class="avatar-upload-container" style="width: 130px; height: 130px; margin: 0 auto;">
+                        <div class="avatar-preview" style="width: 130px; height: 130px; border-radius: 50%; border: none; background: #2a2b30; display: flex; align-items: center; justify-content: center; position: relative;">
+                            <img src="/images/group-avatar.png" id="newCommunityAvatarPreview" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />
+                            <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 50%; background: rgba(0,0,0,0.4); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0.8; cursor: pointer;" onclick="$('#newCommunityAvatarInput').click()">
+                                <i class="fas fa-camera" style="font-size: 24px; color: white;"></i>
+                                <span style="font-size: 11px; font-weight: 600; color: white; margin-top: 6px;">Add community<br>icon</span>
+                            </div>
+                        </div>
+                        <input type="file" id="newCommunityAvatarInput" style="display: none;" accept="image/*" onchange="previewCommunityAvatar(event)" />
+                    </div>
+                </div>
+
+                <!-- Community Name Input -->
+                <div class="neu-input-group" style="border-bottom: 1.5px solid var(--accent-red); margin-bottom: 25px; padding-bottom: 5px;">
+                    <label class="neu-input-label" style="font-size: 12px; color: var(--accent-red);">Community name</label>
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <input type="text" id="newCommunityName" class="neu-input" placeholder="Community name" onkeyup="checkNewCommunityForm()" style="background: transparent; border: none; box-shadow: none; padding: 5px 0; font-size: 16px; flex: 1; color: white;" />
+                        <span style="font-size: 18px; cursor: pointer; color: var(--text-secondary);"><i class="far fa-smile"></i></span>
+                    </div>
+                </div>
+
+                <!-- Community Description -->
+                <div class="neu-input-group" style="background: var(--bg-card); padding: 12px 18px; border-radius: 12px; margin-bottom: 35px;">
+                    <label class="neu-input-label" style="font-size: 11px;">Community description</label>
+                    <div style="display: flex; gap: 10px; align-items: flex-start;">
+                        <textarea id="newCommunityDesc" class="neu-input" placeholder="Hi everyone! This community is for members to chat in topic-based groups and get important announcements." style="background: transparent; border: none; box-shadow: none; padding: 0; font-size: 14px; height: 110px; resize: none; flex: 1; color: white; line-height: 1.5;"></textarea>
+                        <span style="font-size: 18px; cursor: pointer; color: var(--text-secondary); margin-top: 4px;"><i class="far fa-smile"></i></span>
+                    </div>
+                </div>
+
+                <!-- Create button -->
+                <div style="text-align: center;">
+                    <button class="neu-btn" id="submitCreateCommunityBtn" disabled onclick="submitCreateCommunity()" style="width: 100%; border-radius: 24px; padding: 14px; background: #2a2b30; color: #64666f; border: none; cursor: default; font-weight: 600; font-size: 15px; box-shadow: none;">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Column 3 (Main Community Workspace) -->
+    <div class="chat-workspace-panel" id="communityWorkspacePanel">
+        <!-- Default Welcome / Intro State (WhatsApp-style) -->
+        <div class="chat-welcome-state" id="emptyCommunityState" style="height: 100%; display: flex; flex-direction: column;">
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; text-align: center;">
+                <!-- Community Icon -->
+                <div style="width: 160px; height: 160px; border-radius: 50%; background: linear-gradient(135deg, rgba(254, 76, 76, 0.08), rgba(254, 76, 76, 0.02)); display: flex; align-items: center; justify-content: center; margin-bottom: 30px; position: relative;">
+                    <div style="width: 120px; height: 120px; border-radius: 50%; background: var(--bg-panel); box-shadow: var(--shadow-outset); display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,0.04);">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-red)" stroke-width="1.5" style="width: 56px; height: 56px;"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                    </div>
+                    <!-- Small green accent badge -->
+                    <div style="position: absolute; bottom: 10px; right: 10px; width: 36px; height: 36px; background: #25D366; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(37,211,102,0.4); border: 2.5px solid var(--bg-main);">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" style="width: 15px; height: 15px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    </div>
+                </div>
+
+                <h3 style="font-size: 26px; font-weight: 700; color: white; margin: 0 0 12px; font-family: 'Outfit', sans-serif;">Create communities</h3>
+                <p style="font-size: 15px; color: var(--text-secondary); max-width: 440px; margin: 0 0 20px; line-height: 1.6;">Bring members together in topic-based groups and easily send them admin announcements.</p>
+
+                <!-- See example communities link -->
+                <a href="#" style="color: var(--accent-red); font-size: 14px; font-weight: 600; text-decoration: none; margin-bottom: 30px; display: inline-block;" class="hover-glow">See example communities</a>
+
+                <!-- Get Started Button -->
+                <button class="neu-btn neu-btn-red hover-lift" onclick="openCommunityIntroModal()" style="padding: 12px 36px; border-radius: 12px; font-size: 15px; font-weight: 700;">
+                    Get started
+                </button>
+            </div>
+
+            <div style="text-align: center; padding: 15px; color: var(--text-muted); font-size: 12px; display: flex; align-items: center; justify-content: center; gap: 6px; border-top: 1px solid var(--border-color);">
+                <span>🔒</span> Your personal messages in communities are end-to-end encrypted
+            </div>
+        </div>
+
+        <!-- Active Chat Window (For community group chats) -->
+        <div class="chat-workspace-panel" id="activeCommunityChatState" style="display: none; height: 100%; flex-direction: column;">
+            <!-- Group Header -->
+            <div class="chat-header">
+                <div class="chat-header-user">
+                    <button class="chat-input-action-btn d-md-none" onclick="goBackToCommunityList(event)" style="margin-right: 10px; border:none; background:transparent;"><i class="fas fa-arrow-left" style="font-size:16px; color: var(--accent-red);"></i></button>
+                    <div class="chat-item-avatar">
+                        <img src="/images/group-avatar.png" id="activeChatAvatar" alt="Avatar" />
+                    </div>
+                    <div>
+                        <div class="chat-header-name" id="activeChatName">Group Name</div>
+                        <div class="chat-header-status" id="activeChatDesc">Community group</div>
+                    </div>
+                </div>
+                <div class="chat-header-actions">
+                    <!-- Manage Community Actions if Owner -->
+                    <button class="neu-btn" id="linkGroupBtn" onclick="openLinkGroupModal()" style="display: none; font-size: 12px; padding: 8px 16px;">Link Group</button>
+                </div>
+            </div>
+
+            <!-- Messages Feed -->
+            <div class="chat-message-feed" id="communityMessagesFeed">
+                <!-- Injected via JS -->
+            </div>
+
+            <!-- Message Input Bar (Conditional) -->
+            <div class="chat-input-bar" id="communityChatInputBar" style="display: flex;">
+                <input type="file" id="communityFileInput" style="display: none;" onchange="uploadCommunityFile()" />
+                <button class="chat-input-action-btn" onclick="triggerCommunityFileUpload()" title="Attach file">📎</button>
+
+                <div class="chat-input-container">
+                    <input type="text" id="communityMessageInput" class="chat-input-box" placeholder="Type a message..." onkeydown="handleCommunityInputKeydown(event)" />
+                </div>
+                <button class="neu-btn neu-btn-circle active" onclick="sendCommunityMessage()" style="width: 50px; height: 50px; background: var(--accent-red); color: white;" title="Send message">
+                    <span>➤</span>
+                </button>
+            </div>
+
+            <!-- Read-only footer (If announcements group and not admin) -->
+            <div class="channel-read-only-footer" id="communityReadOnlyFooter" style="display: none; text-align: center; padding: 15px; background: var(--bg-panel); color: var(--text-secondary); font-size: 13px; font-weight: 500; border-top: 1px solid var(--border-color);">
+                🔇 Only community admins can post announcements here.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CREATE COMMUNITY INTRO MODAL (WhatsApp-style) -->
+<div class="contacts-modal-backdrop" id="createCommunityIntroModal" style="display: none;">
+    <div class="contacts-modal" style="max-width: 440px; background: var(--bg-card); padding: 30px; border-radius: 28px; text-align: center; box-shadow: var(--shadow-outset); border: 1px solid var(--border-color);">
+        <div style="text-align: right; margin-top: -10px; margin-right: -10px; margin-bottom: 10px;">
+            <span style="font-size: 20px; color: var(--text-secondary); cursor: pointer;" onclick="closeCommunityIntroModal()">✕</span>
+        </div>
+        <div style="margin-bottom: 25px;">
+            <span style="font-size: 64px; display: inline-block; filter: drop-shadow(0 0 10px rgba(254,76,76,0.3));">👥🏘️👥</span>
+        </div>
+        <h3 style="font-size: 20px; font-weight: 700; color: white; margin-bottom: 20px; font-family: var(--font-family);">Create a community to bring groups together</h3>
+
+        <div style="text-align: left; margin-bottom: 30px; font-size: 13.5px; display: flex; flex-direction: column; gap: 20px;">
+            <div style="display: flex; gap: 15px;">
+                <span style="font-size: 22px; color: var(--accent-red); line-height: 1;">🏘️</span>
+                <div>
+                    <strong style="color: white; display: block; margin-bottom: 3px; font-size: 14px;">Bring together a neighborhood, school or more</strong>
+                    <span style="color: var(--text-secondary);">Create topic-based groups for members, and easily send them admin announcements.</span>
+                </div>
+            </div>
+            <div style="display: flex; gap: 15px;">
+                <span style="font-size: 22px; color: var(--accent-red); line-height: 1;">📋</span>
+                <div>
+                    <strong style="color: white; display: block; margin-bottom: 3px; font-size: 14px;">Organize your groups under one umbrella</strong>
+                    <span style="color: var(--text-secondary);">Link existing group chats to your community so members can find and join them easily.</span>
+                </div>
+            </div>
+            <div style="display: flex; gap: 15px;">
+                <span style="font-size: 22px; color: var(--accent-red); line-height: 1;">📢</span>
+                <div>
+                    <strong style="color: white; display: block; margin-bottom: 3px; font-size: 14px;">Send announcements to all members</strong>
+                    <span style="color: var(--text-secondary);">Broadcast important updates to everyone in your community at once.</span>
+                </div>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 15px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+            <button class="neu-btn" style="padding: 10px 24px; border-radius: 20px; background: transparent; border: none; box-shadow: none; font-size: 14px;" onclick="closeCommunityIntroModal()">Close</button>
+            <button class="neu-btn neu-btn-red" style="padding: 10px 24px; border-radius: 20px; border: none; font-size: 14px;" onclick="continueToCommunityForm()">Get started</button>
+        </div>
+    </div>
+</div>
+
+<!-- LINK GROUP MODAL -->
+<div class="contacts-modal-backdrop" id="linkGroupModal" style="display: none;">
+    <div class="contacts-modal" style="max-width: 380px;">
+        <div class="contacts-modal-header">
+            <h3>Link Group Chats</h3>
+            <button class="neu-btn neu-btn-circle" onclick="closeLinkGroupModal()" style="width: 32px; height: 32px; font-size: 11px;">✕</button>
+        </div>
+        <div class="contacts-modal-list" id="availableGroupsList" style="max-height: 250px; overflow-y: auto; padding: 10px;">
+            <!-- Loaded dynamically via JS -->
+        </div>
+        <div style="padding: 15px; border-top: 1px solid var(--border-color); text-align: right;">
+            <button class="neu-btn" onclick="closeLinkGroupModal()">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- USER PROFILE DRAWER -->
+<div class="detail-drawer" id="profileDrawer" style="display: none; position: fixed; right: 0; top: 0; height: 100vh; z-index: 100; width: 350px; background: var(--bg-panel); border-left: 1px solid var(--border-color);">
+    <div class="drawer-header">
+        <h4>My Profile</h4>
+        <button class="neu-btn neu-btn-circle" onclick="toggleProfileDrawer()" style="width: 32px; height: 32px; font-size: 11px;">✕</button>
+    </div>
+    <div class="drawer-content" style="padding: 20px;">
+        <div class="drawer-profile-info" style="text-align: center; margin-bottom: 30px;">
+            <div class="drawer-avatar" style="width: 100px; height: 100px; border-radius: 50%; margin: 0 auto 15px; overflow: hidden; border: 2px solid var(--border-color);">
+                <img src="@(currentUser?.ProfilePicture ?? "/images/default-avatar.svg")" style="width: 100%; height: 100%; object-fit: cover;" />
+            </div>
+            <div class="drawer-title" style="font-size: 18px; font-weight: 700; color: white;">@(currentUser?.FullName ?? currentUser?.Username)</div>
+            <div class="drawer-subtitle" style="font-size: 14px; color: var(--text-secondary);">@currentUser?.MobileNumber</div>
+        </div>
+        <div class="drawer-option-row">
+            <span class="row-label">Username</span>
+            <span style="font-weight: 500; font-size: 14px;">@currentUser?.Username</span>
+        </div>
+        <div class="drawer-option-row">
+            <span class="row-label">Email</span>
+            <span style="font-weight: 500; font-size: 14px;">@currentUser?.Email</span>
+        </div>
+        <div class="drawer-option-row">
+            <span class="row-label">Joined</span>
+            <span style="font-weight: 500; font-size: 14px;">@currentUser?.CreatedAt.ToString("MMMM dd, yyyy")</span>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    let myCommunities = [];
+    let activeCommunity = null;
+    let activeChat = null;
+
+    $(document).ready(function () {
+        loadCommunities();
+    });
+
+    function viewOwnProfile() {
+        toggleProfileDrawer();
+    }
+
+    function toggleProfileDrawer() {
+        $('#profileDrawer').toggle();
+    }
+
+    // ─── Intro Modal ───────────────────────────
+    function openCommunityIntroModal() {
+        $('#createCommunityIntroModal').show();
+    }
+
+    function closeCommunityIntroModal() {
+        $('#createCommunityIntroModal').hide();
+    }
+
+    function continueToCommunityForm() {
+        closeCommunityIntroModal();
+        // Switch to create form panel
+        $('#communitiesListContainer').hide();
+        $('#newCommunityFormContainer').css('display', 'flex');
+
+        // Reset form fields
+        $('#newCommunityName').val('');
+        $('#newCommunityDesc').val('');
+        $('#newCommunityAvatarInput').val('');
+        $('#newCommunityAvatarPreview').attr('src', '/images/group-avatar.png');
+        checkNewCommunityForm();
+    }
+
+    function backToCommunitiesList() {
+        $('#newCommunityFormContainer').hide();
+        $('#communitiesListContainer').css('display', 'flex');
+    }
+
+    // ─── Avatar Preview ────────────────────────
+    function previewCommunityAvatar(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            $('#newCommunityAvatarPreview').attr('src', e.target.result);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // ─── Create Button State ───────────────────
+    function checkNewCommunityForm() {
+        const nameVal = $('#newCommunityName').val().trim();
+        const btn = $('#submitCreateCommunityBtn');
+        if (nameVal.length > 0) {
+            btn.prop('disabled', false);
+            btn.css({
+                'background': 'var(--accent-red)',
+                'color': 'white',
+                'cursor': 'pointer',
+                'box-shadow': 'var(--shadow-red)'
+            });
+        } else {
+            btn.prop('disabled', true);
+            btn.css({
+                'background': '#2a2b30',
+                'color': '#64666f',
+                'cursor': 'default',
+                'box-shadow': 'none'
+            });
+        }
+    }
+
+    // ─── Submit Create ─────────────────────────
+    function submitCreateCommunity() {
+        const name = $('#newCommunityName').val().trim();
+        const desc = $('#newCommunityDesc').val().trim();
+        if (!name) return;
+
+        const formData = new FormData();
+        formData.append('name', name);
+        formData.append('description', desc);
+        const avatarFile = $('#newCommunityAvatarInput')[0].files[0];
+        if (avatarFile) {
+            formData.append('avatar', avatarFile);
+        }
+
+        $.ajax({
+            url: '/Community/CreateCommunity',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                if (response.success) {
+                    backToCommunitiesList();
+                    loadCommunities();
+                } else {
+                    alert('Failed to create community.');
+                }
+            },
+            error: function () {
+                alert('Error creating community.');
+            }
+        });
+    }
+
+    // ─── Load Communities ───────────────────────
+    function loadCommunities() {
+        $.get('/Community/GetMyCommunities', function (data) {
+            myCommunities = data;
+            renderCommunitiesList();
+        });
+    }
+
+    function renderCommunitiesList() {
+        const container = $('#communitiesContainer');
+        container.empty();
+
+        if (myCommunities.length === 0) {
+            container.append('<div style="text-align: center; color: var(--text-muted); margin-top: 40px; font-size: 14px;">Create a community to group chats.</div>');
+            return;
+        }
+
+        myCommunities.forEach(c => {
+            const groupsHtml = c.groups.map(g => `
+                <div class="community-group-item ${activeChat && activeChat.chatId === g.chatId ? 'active' : ''}" onclick="selectCommunityChat(${c.id}, ${g.chatId}, ${g.isAnnouncement}, '${g.chatName}')" style="display: flex; align-items: center; padding: 8px 12px; margin-left: 20px; border-radius: 12px; margin-top: 5px; cursor: pointer; transition: var(--transition);">
+                    <span style="font-size: 14px; margin-right: 10px;">${g.isAnnouncement ? '📢' : '💬'}</span>
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-size: 13.5px; font-weight: 500; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${g.chatName}</div>
+                        <div style="font-size: 11px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${g.lastMessageText}</div>
+                    </div>
+                </div>
+            `).join('');
+
+            const card = $(`
+                <div class="community-card" style="margin-bottom: 15px; padding-bottom: 8px; border-bottom: 1px solid var(--border-color);">
+                    <div style="display: flex; align-items: center; gap: 12px; padding: 8px;">
+                        <img src="${c.avatar}" style="width: 42px; height: 42px; border-radius: 12px; object-fit: cover;" />
+                        <div>
+                            <div style="font-size: 15px; font-weight: 700; color: white;">${c.name} ${c.isOwner ? '👑' : ''}</div>
+                            <div style="font-size: 11px; color: var(--text-secondary);">${c.description || 'Community'}</div>
+                        </div>
+                    </div>
+                    <div class="community-subgroups-list">
+                        ${groupsHtml}
+                    </div>
+                </div>
+            `);
+
+            container.append(card);
+        });
+    }
+
+    // ─── Select Community Chat ──────────────────
+    function selectCommunityChat(communityId, chatId, isAnnouncement, chatName) {
+        const comm = myCommunities.find(c => c.id === communityId);
+        if (!comm) return;
+
+        activeCommunity = comm;
+        activeChat = {
+            chatId: chatId,
+            isAnnouncement: isAnnouncement,
+            chatName: chatName,
+            isOwner: comm.isOwner
+        };
+
+        renderCommunitiesList();
+
+        $('#emptyCommunityState').hide();
+        $('#activeCommunityChatState').css('display', 'flex');
+
+        if (window.innerWidth <= 768) {
+            $('.chat-list-panel').hide();
+            $('#communityWorkspacePanel').css('display', 'flex');
+        }
+
+        $('#activeChatAvatar').attr('src', comm.avatar);
+        $('#activeChatName').text(chatName);
+        $('#activeChatDesc').text(isAnnouncement ? 'Admins broadcast announcements here' : 'Community group conversation');
+
+        // Manage Link group buttons
+        if (comm.isOwner && isAnnouncement) {
+            $('#linkGroupBtn').show();
+        } else {
+            $('#linkGroupBtn').hide();
+        }
+
+        // Manage Input Bar permissions
+        if (isAnnouncement && !comm.isOwner) {
+            $('#communityChatInputBar').hide();
+            $('#communityReadOnlyFooter').show();
+        } else {
+            $('#communityChatInputBar').show();
+            $('#communityReadOnlyFooter').hide();
+        }
+
+        loadChatHistory(chatId);
+    }
+
+    function goBackToCommunityList(event) {
+        if(event) event.stopPropagation();
+        if (window.innerWidth <= 768) {
+            $('.chat-list-panel').css('display', 'flex');
+            $('#communityWorkspacePanel').hide();
+        }
+    }
+
+    // ─── Message Feed ───────────────────────────
+    function loadChatHistory(chatId) {
+        const feed = $('#communityMessagesFeed');
+        feed.empty().append('<div style="text-align: center; color: var(--text-muted); padding: 20px;">Loading messages...</div>');
+
+        $.get(`/Chat/GetChatHistory?chatId=${chatId}`, function (data) {
+            feed.empty();
+            if (data.length === 0) {
+                feed.append('<div style="text-align: center; color: var(--text-muted); padding: 40px; font-size: 14px;">No messages in this group.</div>');
+                return;
+            }
+
+            data.forEach(msg => {
+                const isMine = msg.senderId === @(currentUser?.Id ?? 0);
+                const isMedia = msg.type !== 'Text';
+                let mediaHtml = '';
+
+                if (isMedia) {
+                    if (msg.type === 'Image') {
+                        mediaHtml = `<img src="${msg.fileUrl}" style="max-width: 100%; border-radius: 12px; margin-bottom: 8px;" />`;
+                    } else if (msg.type === 'Video') {
+                        mediaHtml = `<video src="${msg.fileUrl}" controls style="max-width: 100%; border-radius: 12px; margin-bottom: 8px;"></video>`;
+                    } else {
+                        mediaHtml = `<div class="neu-card" style="padding: 10px; margin-bottom: 8px; border-radius: 10px; background: rgba(0,0,0,0.2);"><a href="${msg.fileUrl}" download style="color: var(--accent-red); font-size: 13px;">📄 Attachment</a></div>`;
+                    }
+                }
+
+                const date = new Date(msg.sentAt);
+                const time = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+                const bubble = $(`
+                    <div style="display: flex; justify-content: ${isMine ? 'flex-end' : 'flex-start'}; margin-bottom: 12px;">
+                        <div class="neu-card" style="max-width: 75%; padding: 12px 18px; border-radius: 18px; ${isMine ? 'background: var(--accent-red-alpha); border-color: rgba(254, 76, 76, 0.2);' : ''}">
+                            <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 4px; display: ${isMine ? 'none' : 'block'};">Member #${msg.senderId}</div>
+                            <div style="font-size: 13.5px; color: white;">
+                                ${mediaHtml}
+                                <span>${msg.content}</span>
+                            </div>
+                            <div style="text-align: right; font-size: 10px; color: var(--text-muted); margin-top: 4px;">${time}</div>
+                        </div>
+                    </div>
+                `);
+                feed.append(bubble);
+            });
+
+            feed.scrollTop(feed.prop("scrollHeight"));
+        });
+    }
+
+    // ─── Link Group ─────────────────────────────
+    function openLinkGroupModal() {
+        if (!activeCommunity) return;
+
+        const list = $('#availableGroupsList');
+        list.empty().append('<div style="text-align: center; color: var(--text-muted); padding: 20px;">Loading available groups...</div>');
+        $('#linkGroupModal').show();
+
+        $.get('/Community/GetAvailableGroupsToLink', function (data) {
+            list.empty();
+            if (data.length === 0) {
+                list.append('<div style="text-align: center; color: var(--text-muted); padding: 20px; font-size: 13.5px;">No eligible group chats found to link. Create group chats on the Chats screen first.</div>');
+                return;
+            }
+
+            data.forEach(g => {
+                const row = $(`
+                    <div class="chat-item" style="justify-content: space-between; align-items: center; padding: 10px 14px;">
+                        <div style="font-weight: 500; color: white;">${g.chatName}</div>
+                        <button class="neu-btn neu-btn-red" style="padding: 6px 12px; font-size: 11px; border-radius: 8px;" onclick="linkGroup(${g.id})">Link</button>
+                    </div>
+                `);
+                list.append(row);
+            });
+        });
+    }
+
+    function closeLinkGroupModal() {
+        $('#linkGroupModal').hide();
+    }
+
+    function linkGroup(chatId) {
+        if (!activeCommunity) return;
+
+        $.post('/Community/AddGroupToCommunity', {
+            communityId: activeCommunity.id,
+            chatId: chatId
+        }, function (response) {
+            if (response.success) {
+                closeLinkGroupModal();
+                loadCommunities();
+                setTimeout(() => {
+                    selectCommunityChat(activeCommunity.id, activeChat.chatId, activeChat.isAnnouncement, activeChat.chatName);
+                }, 300);
+            } else {
+                alert(response.message || 'Failed to link group.');
+            }
+        });
+    }
+
+    // ─── Message Input ──────────────────────────
+    function sendCommunityMessage() {
+        if (!activeChat) return;
+        const text = $('#communityMessageInput').val().trim();
+        if (!text) return;
+
+        $.post('/Chat/SaveTextMessage', {
+            chatId: activeChat.chatId,
+            content: text
+        }, function (response) {
+            $('#communityMessageInput').val('');
+            loadChatHistory(activeChat.chatId);
+            loadCommunities();
+        });
+    }
+
+    function handleCommunityInputKeydown(event) {
+        if (event.key === 'Enter') {
+            sendCommunityMessage();
+        }
+    }
+
+    // ─── File Upload ────────────────────────────
+    function triggerCommunityFileUpload() {
+        $('#communityFileInput').click();
+    }
+
+    function uploadCommunityFile() {
+        const fileInput = $('#communityFileInput')[0];
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('chatId', activeChat.chatId);
+        formData.append('type', file.type.startsWith('image/') ? 'Image' : file.type.startsWith('video/') ? 'Video' : 'Document');
+        formData.append('file', file);
+
+        $.ajax({
+            url: '/Chat/UploadAttachment',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                fileInput.value = '';
+                loadChatHistory(activeChat.chatId);
+                loadCommunities();
+            },
+            error: function () {
+                alert('Attachment upload error.');
+            }
+        });
+    }
+
+    // ─── Search Filter ──────────────────────────
+    function filterCommunities() {
+        const query = $('#communitySearchInput').val().toLowerCase();
+        $('.community-card').each(function () {
+            const card = $(this);
+            const title = card.find('div:first div:first').text().toLowerCase();
+            let matchesGroup = false;
+
+            card.find('.community-group-item').each(function () {
+                const groupItem = $(this);
+                const groupName = groupItem.find('div div:first').text().toLowerCase();
+                if (groupName.includes(query)) {
+                    groupItem.show();
+                    matchesGroup = true;
+                } else {
+                    groupItem.hide();
+                }
+            });
+
+            if (title.includes(query) || matchesGroup) {
+                card.show();
+                if (title.includes(query)) {
+                    card.find('.community-group-item').show();
+                }
+            } else {
+                card.hide();
+            }
+        });
+    }
+</script>
+}

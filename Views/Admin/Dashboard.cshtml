@@ -1,0 +1,179 @@
+@{
+    ViewData["Title"] = "Dashboard";
+    ViewData["ActiveNav"] = "Dashboard";
+}
+
+<div class="page-title-area gsap-stagger">
+    <div class="title-left">
+        <div class="title-main">
+            <h1>COMMAND <span class="highlight">CENTER</span></h1>
+        </div>
+        <div class="title-sub">
+            <span class="live-badge">
+                <i class="fas fa-circle"></i> LIVE
+            </span>
+            <p>All systems operational · @DateTime.Now.ToString("dddd, d MMMM yyyy")</p>
+        </div>
+    </div>
+    <div class="title-actions">
+        <div class="time-badge">
+            <i class="far fa-clock"></i> <span id="live-clock">@DateTime.Now.ToString("HH:mm:ss")</span>
+        </div>
+        <a href="/" target="_blank" class="btn-outline">
+            <i class="fas fa-external-link-alt"></i> VIEW SITE
+        </a>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <!-- Stat 1 -->
+    <div class="stat-card-elite gsap-stagger" style="--bottom-line: var(--warning-yellow);">
+        <div class="stat-header">
+            <div class="stat-icon-elite" style="--icon-bg: rgba(241, 196, 15, 0.1); --icon-color: var(--warning-yellow);">
+                <i class="fas fa-coins"></i>
+            </div>
+        </div>
+        <div class="stat-header" style="margin-top: -10px;">
+            <div class="stat-title">Total Revenue</div>
+            <div class="stat-trend trend-up"><i class="fas fa-arrow-trend-up"></i> +0%</div>
+        </div>
+        <div class="stat-value">PKR 0</div>
+        <div class="stat-sub">This month: <span>PKR 0</span></div>
+    </div>
+
+    <!-- Stat 2 -->
+    <div class="stat-card-elite gsap-stagger" style="--bottom-line: rgba(255,255,255,0.1);">
+        <div class="stat-header">
+            <div class="stat-icon-elite" style="--icon-bg: rgba(46, 204, 113, 0.1); --icon-color: var(--success-green);">
+                <i class="fas fa-shopping-bag"></i>
+            </div>
+        </div>
+        <div class="stat-header" style="margin-top: -10px;">
+            <div class="stat-title">Total Purchases</div>
+            <div class="stat-trend trend-up"><i class="fas fa-arrow-up"></i> Active</div>
+        </div>
+        <div class="stat-value">@ViewBag.PurchaseCount</div>
+        <div class="stat-sub">Pending: <span style="color:var(--warning-yellow)">0</span> · Done: <span style="color:var(--success-green)">@ViewBag.PurchaseCount</span></div>
+    </div>
+
+    <!-- Stat 3 -->
+    <div class="stat-card-elite gsap-stagger" style="--bottom-line: var(--info-blue);">
+        <div class="stat-header">
+            <div class="stat-icon-elite" style="--icon-bg: rgba(52, 152, 219, 0.1); --icon-color: var(--info-blue);">
+                <i class="fas fa-users"></i>
+            </div>
+        </div>
+        <div class="stat-header" style="margin-top: -10px;">
+            <div class="stat-title">Registered Users</div>
+            <div class="stat-trend trend-neutral"><i class="fas fa-user-plus"></i> +0</div>
+        </div>
+        <div class="stat-value">@ViewBag.UserCount</div>
+        <div class="stat-sub">+0 joined this month</div>
+    </div>
+
+    <!-- Stat 4 -->
+    <div class="stat-card-elite gsap-stagger" style="--bottom-line: var(--accent-red);">
+        <div class="stat-header">
+            <div class="stat-icon-elite" style="--icon-bg: rgba(255, 51, 51, 0.1); --icon-color: var(--accent-red);">
+                <i class="fas fa-boxes"></i>
+            </div>
+        </div>
+        <div class="stat-header" style="margin-top: -10px;">
+            <div class="stat-title">Services Available</div>
+            <div class="stat-trend trend-up"><i class="fas fa-check"></i> All Active</div>
+        </div>
+        <div class="stat-value">@ViewBag.ServiceCount</div>
+        <div class="stat-sub">Active: <span style="color:var(--warning-yellow)">@ViewBag.ActiveServiceCount</span> items</div>
+    </div>
+</div>
+
+<div class="secondary-stats">
+    <!-- Sec Stat 1 -->
+    <div class="sec-stat-card gsap-stagger">
+        <div class="sec-header">
+            <div class="dot" style="--dot-color: var(--warning-yellow)"></div>
+            PENDING
+        </div>
+        <div class="sec-value">0</div>
+    </div>
+    
+    <!-- Sec Stat 2 -->
+    <div class="sec-stat-card gsap-stagger">
+        <div class="sec-header">
+            <div class="dot" style="--dot-color: var(--info-blue)"></div>
+            PROCESSING
+        </div>
+        <div class="sec-value">0</div>
+    </div>
+    
+    <!-- Sec Stat 3 -->
+    <div class="sec-stat-card gsap-stagger">
+        <div class="sec-header">
+            <div class="dot" style="--dot-color: var(--success-green)"></div>
+            COMPLETED
+        </div>
+        <div class="sec-value">@ViewBag.PurchaseCount</div>
+    </div>
+    
+    <!-- Sec Stat 4 -->
+    <div class="sec-stat-card gsap-stagger">
+        <div class="sec-header">
+            <div class="dot" style="--dot-color: #888"></div>
+            CANCELLED
+        </div>
+        <div class="sec-value">0</div>
+    </div>
+</div>
+
+<!-- Recent Users Table Section -->
+<div class="elite-section gsap-stagger">
+    <div class="section-header-elite">
+        <div class="section-title">
+            <i class="fas fa-chart-line"></i> RECENT REGISTRATIONS
+        </div>
+        <a href="/Admin/Users" class="section-link">ALL USERS <i class="fas fa-arrow-right"></i></a>
+    </div>
+    <div class="table-responsive">
+        <table class="elite-table">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Email</th>
+                    <th>Joined</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var u in ViewBag.RecentUsers)
+                {
+                    <tr>
+                        <td>
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                @if (!string.IsNullOrEmpty(u.ProfilePicture))
+                                {
+                                    <img src="@u.ProfilePicture" style="width:36px;height:36px;border-radius:8px;object-fit:cover;" />
+                                }
+                                else
+                                {
+                                    <div style="width:36px;height:36px;border-radius:8px;background:var(--accent-red);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;">
+                                        @((u.FullName ?? u.Username).Substring(0,1).ToUpper())
+                                    </div>
+                                }
+                                <span style="font-weight:600;">@(u.FullName ?? u.Username)</span>
+                            </div>
+                        </td>
+                        <td style="color:var(--text-muted);">@u.Email</td>
+                        <td style="color:var(--text-muted);">@u.CreatedAt.ToString("MMM d, yyyy")</td>
+                        <td>
+                            @if(u.IsVerified) {
+                                <span class="table-badge badge-outline-green"><i class="fas fa-check" style="margin-right:4px;"></i> Verified</span>
+                            } else {
+                                <span class="table-badge badge-outline-red"><i class="fas fa-times" style="margin-right:4px;"></i> Unverified</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

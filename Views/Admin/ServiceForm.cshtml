@@ -1,0 +1,141 @@
+@model Site.Models.Service
+@{
+    Layout = null;
+    bool isEdit = Model?.Id > 0;
+    string action = isEdit ? "/Admin/EditService" : "/Admin/CreateService";
+    string pageTitle = isEdit ? "Edit Service" : "Create Service";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" /><title>@pageTitle — Admin</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <style>
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        :root{--bg:#080a10;--bg-panel:#0f1117;--bg-card:rgba(255,255,255,.03);--border:rgba(255,255,255,.07);--text:#fff;--text-muted:rgba(255,255,255,.4);--red:#ff4d4f;--green:#25d366;--blue:#5e5ce6}
+        body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+        .sidebar{width:240px;min-height:100vh;background:var(--bg-panel);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0}
+        .sidebar-brand{padding:28px 24px 20px;border-bottom:1px solid var(--border)}
+        .sidebar-brand h2{font-size:18px;font-weight:800}.sidebar-brand h2 span{color:var(--red)}
+        .sidebar-brand p{font-size:11px;color:var(--text-muted);margin-top:2px}
+        .sidebar-nav{padding:16px 12px;flex:1}
+        .nav-label{font-size:10px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px;padding:8px 12px}
+        .nav-link{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:12px;color:var(--text-muted);font-size:14px;font-weight:500;text-decoration:none;transition:all .2s;margin-bottom:2px}
+        .nav-link:hover,.nav-link.active{background:rgba(255,77,79,.1);color:var(--red)}
+        .nav-link i{width:18px;text-align:center}
+        .sidebar-bottom{padding:16px 12px;border-top:1px solid var(--border)}
+        .logout-btn{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:12px;background:rgba(255,77,79,.08);color:var(--red);font-size:14px;font-weight:600;text-decoration:none}
+        .main{margin-left:240px;flex:1;padding:32px;max-width:700px}
+        .back-link{display:inline-flex;align-items:center;gap:8px;color:var(--red);font-size:13px;font-weight:600;text-decoration:none;margin-bottom:24px}
+        .page-header{margin-bottom:32px}
+        .page-header h1{font-size:26px;font-weight:800}
+        .page-header p{color:var(--text-muted);font-size:14px;margin-top:4px}
+        .form-card{background:var(--bg-card);border:1px solid var(--border);border-radius:20px;padding:32px}
+        .field{margin-bottom:20px}
+        label{display:block;font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+        .input-wrap{display:flex;align-items:center;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:0 16px;height:48px;transition:.2s}
+        .input-wrap:focus-within{border-color:var(--red)}
+        .input-wrap i{color:var(--text-muted);font-size:15px;margin-right:10px;width:18px}
+        .input-wrap input,.input-wrap select{background:transparent;border:none;outline:none;color:var(--text);font-size:14px;font-family:inherit;width:100%}
+        .input-wrap select option{background:#0f1117}
+        textarea{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:14px 16px;color:var(--text);font-size:14px;font-family:inherit;width:100%;min-height:80px;resize:vertical;outline:none}
+        textarea:focus{border-color:var(--red)}
+        .icon-preview{width:48px;height:48px;border-radius:12px;background:rgba(255,77,79,.1);display:flex;align-items:center;justify-content:center;font-size:22px;color:var(--red);margin-bottom:12px}
+        .btn-submit{width:100%;height:50px;background:var(--red);border:none;border-radius:14px;color:#fff;font-size:15px;font-weight:700;cursor:pointer;transition:.2s;box-shadow:0 8px 24px rgba(255,77,79,.3)}
+        .btn-submit:hover{transform:translateY(-2px)}
+        .switch-row{display:flex;align-items:center;justify-content:space-between}
+        .switch{position:relative;display:inline-block;width:46px;height:26px}
+        .switch input{opacity:0;width:0;height:0}
+        .slider{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,.1);border-radius:26px;transition:.3s}
+        .slider:before{position:absolute;content:'';height:18px;width:18px;left:3px;bottom:4px;background:rgba(255,255,255,.5);border-radius:50%;transition:.3s}
+        input:checked + .slider{background:var(--green)}
+        input:checked + .slider:before{transform:translateX(20px);background:#fff}
+    </style>
+</head>
+<body>
+    <aside class="sidebar">
+        <div class="sidebar-brand"><h2>Hi<span>SMS SITE</span> Admin</h2><p>Control Panel</p></div>
+        <nav class="sidebar-nav">
+            <div class="nav-label">Main</div>
+            <a href="/Admin/Dashboard" class="nav-link"><i class="fas fa-th-large"></i> Dashboard</a>
+            <a href="/Admin/Users"     class="nav-link"><i class="fas fa-users"></i> Users</a>
+            <a href="/Admin/Services"  class="nav-link active"><i class="fas fa-cubes"></i> Services</a>
+        </nav>
+        <div class="sidebar-bottom"><a href="/Admin/Logout" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a></div>
+    </aside>
+
+    <main class="main">
+        <a href="/Admin/Services" class="back-link"><i class="fas fa-arrow-left"></i> Back to Services</a>
+        <div class="page-header">
+            <h1>@pageTitle</h1>
+            <p>@(isEdit ? "Update this service's details" : "Add a new service for users to purchase")</p>
+        </div>
+
+        <form method="post" action="@action">
+            @if (isEdit) { <input type="hidden" name="Id" value="@Model!.Id" /> }
+
+            <div class="form-card">
+                <div id="iconPreview" class="icon-preview">
+                    <i class="@(Model?.IconClass ?? "fas fa-star")" id="previewIcon"></i>
+                </div>
+
+                <div class="field">
+                    <label>Service Title</label>
+                    <div class="input-wrap">
+                        <i class="fas fa-tag"></i>
+                        <input type="text" name="Title" value="@Model?.Title" placeholder="e.g. Premium Chat Themes" required />
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Description</label>
+                    <textarea name="Description" placeholder="What does this service provide?">@Model?.Description</textarea>
+                </div>
+
+                <div class="field">
+                    <label>Price (USD)</label>
+                    <div class="input-wrap">
+                        <i class="fas fa-dollar-sign"></i>
+                        <input type="number" name="Price" value="@(Model?.Price.ToString("0.00") ?? "4.99")" step="0.01" min="0" required />
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label>Font Awesome Icon Class</label>
+                    <div class="input-wrap">
+                        <i class="fas fa-icons"></i>
+                        <input type="text" name="IconClass" id="iconInput" value="@(Model?.IconClass ?? "fas fa-star")" placeholder="e.g. fas fa-palette" oninput="updateIcon(this.value)" />
+                    </div>
+                </div>
+
+                <div class="field">
+                    <div class="switch-row">
+                        <div>
+                            <label style="margin-bottom:0;">Active</label>
+                            <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Visible to users for purchase</div>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" name="IsActive" value="true" @(Model?.IsActive != false ? "checked" : "") />
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    <i class="@(isEdit ? "fas fa-save" : "fas fa-plus")" style="margin-right:8px;"></i>
+                    @(isEdit ? "Save Changes" : "Create Service")
+                </button>
+            </div>
+        </form>
+    </main>
+
+    <script>
+        function updateIcon(cls) {
+            const el = document.getElementById('previewIcon');
+            el.className = cls;
+        }
+    </script>
+</body>
+</html>

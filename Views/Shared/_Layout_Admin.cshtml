@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] — Elite Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/admin-elite.css" />
+    @RenderSection("Styles", required: false)
+</head>
+<body>
+
+    <!-- Animated Border Lines: TOP -->
+    <div class="border-line-top">
+        <div class="border-runner-top"></div>
+    </div>
+    <!-- Animated Border Lines: LEFT -->
+    <div class="border-line-left">
+        <div class="border-runner-left"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="elite-sidebar" id="eliteSidebar">
+        <div class="sidebar-logo">
+            <div class="logo-icon">
+                <i class="fas fa-gem"></i>
+            </div>
+            <div class="logo-text">
+                <h2>SMS SITE</h2>
+                <p>Elite Admin</p>
+            </div>
+            <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" title="Collapse sidebar">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <div class="nav-category">Main</div>
+            @{
+                var activeNav = ViewData["ActiveNav"]?.ToString() ?? "Dashboard";
+            }
+            <a href="/Admin/Dashboard" class="nav-item @(activeNav == "Dashboard" ? "active" : "")">
+                <i class="fas fa-chart-pie"></i>
+                <span class="nav-text">Dashboard</span>
+            </a>
+            <a href="/Admin/Users" class="nav-item @(activeNav == "Users" ? "active" : "")">
+                <i class="fas fa-users"></i>
+                <span class="nav-text">Users</span>
+            </a>
+            <a href="/Admin/Services" class="nav-item @(activeNav == "Services" ? "active" : "")">
+                <i class="fas fa-cubes"></i>
+                <span class="nav-text">Services</span>
+            </a>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <div class="admin-profile">
+                <img src="/images/default-avatar.svg" class="admin-avatar" alt="Admin"
+                     onerror="this.src='https://ui-avatars.com/api/?name=Admin&background=ff3333&color=fff'" />
+                <div class="admin-info">
+                    <div class="admin-name">Admin</div>
+                    <div class="admin-role">Super Admin</div>
+                </div>
+                <a href="/Auth/Logout" class="logout-btn" title="Logout">
+                    <i class="fas fa-power-off"></i>
+                </a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="elite-main" id="eliteMain">
+        <!-- Header -->
+        <header class="elite-header">
+            <div class="header-left">
+                <button class="mobile-toggle" id="sidebarToggle" title="Toggle menu">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="header-titles">
+                    <div class="app-context">SMS SITE OPS</div>
+                    <div class="breadcrumb">
+                        <i class="fas fa-home"></i> / <span>@ViewData["Title"]</span>
+                    </div>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" placeholder="Search anything..." />
+                </div>
+                <a href="#" class="icon-btn">
+                    <i class="far fa-bell"></i>
+                </a>
+                <a href="/Admin/CreateService" class="btn-new">
+                    <i class="fas fa-plus"></i>
+                    <span class="btn-text">NEW</span>
+                </a>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <div class="dashboard-content">
+            @RenderBody()
+        </div>
+    </main>
+
+    <!-- Overlay for mobile sidebar -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const sidebar   = document.getElementById("eliteSidebar");
+            const main      = document.getElementById("eliteMain");
+            const overlay   = document.getElementById("sidebarOverlay");
+            const mobileBtn = document.getElementById("sidebarToggle");
+            const collapseBtn = document.getElementById("sidebarCollapseBtn");
+
+            // ── Mobile: slide sidebar in/out ──
+            const toggleMobile = () => {
+                sidebar.classList.toggle("open");
+                overlay.classList.toggle("active");
+            };
+            if (mobileBtn) mobileBtn.addEventListener("click", toggleMobile);
+            if (overlay)   overlay.addEventListener("click", toggleMobile);
+
+            // ── Desktop: collapse sidebar to icon-only ──
+            if (collapseBtn) {
+                collapseBtn.addEventListener("click", () => {
+                    sidebar.classList.toggle("collapsed");
+                    main.classList.toggle("sidebar-collapsed");
+                    const icon = collapseBtn.querySelector("i");
+                    if (sidebar.classList.contains("collapsed")) {
+                        icon.className = "fas fa-chevron-right";
+                    } else {
+                        icon.className = "fas fa-chevron-left";
+                    }
+                });
+            }
+
+            // ── GSAP page-enter animation ──
+            gsap.from(".gsap-stagger", {
+                duration: 0.55,
+                y: 24,
+                opacity: 0,
+                stagger: 0.09,
+                ease: "power3.out",
+                clearProps: "all"
+            });
+
+            // ── Live clock ──
+            const clockEl = document.getElementById("live-clock");
+            if (clockEl) {
+                const tick = () => {
+                    clockEl.innerText = new Date().toLocaleTimeString('en-US', { hour12: false });
+                };
+                tick();
+                setInterval(tick, 1000);
+            }
+        });
+    </script>
+    @RenderSection("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,890 @@
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Channels";
+    Layout = "~/Views/Shared/_Layout_Chat.cshtml";
+    var currentUser = ViewBag.CurrentUser as Site.Models.Users;
+}
+
+<div class="chat-app-layout">
+    <!-- Column 1 (Far Left Navigation Menu) -->
+    @await Html.PartialAsync("_NavSidebar", "Channel")
+
+
+    <!-- Column 2 (Middle Channels List) -->
+    <div class="chat-list-panel" style="position: relative;">
+        <!-- Panel A: Main List view -->
+        <div id="channelsListContainer" style="display: flex; flex-direction: column; height: 100%;">
+            <div class="chat-panel-header">
+                <div class="chat-panel-title-bar">
+                    <h2>Channels</h2>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="neu-btn neu-btn-circle" onclick="openChannelIntroModal()" style="width: 36px; height: 36px; display:flex; align-items:center; justify-content:center;" title="Create Channel"><i class="fas fa-plus" style="font-size:13px;"></i></button>
+                    </div>
+                </div>
+
+                <div class="chat-search-container">
+                    <input type="text" id="channelSearchInput" class="neu-input" placeholder="Search channels..." onkeyup="filterChannels()" />
+                </div>
+
+                <div class="chat-filters">
+                    <div class="chat-filter-pill active" id="filterMyChannelsBtn" onclick="toggleChannelFilter('mine')">My Channels</div>
+                    <div class="chat-filter-pill" id="filterDiscoverChannelsBtn" onclick="toggleChannelFilter('discover')">Discover</div>
+                </div>
+            </div>
+
+            <div class="chat-list-scrollable" id="channelsContainer">
+                <!-- Dynamically Loaded channels -->
+                <div style="text-align: center; color: var(--text-muted); margin-top: 40px; font-size: 14px;">Loading channels...</div>
+            </div>
+        </div>
+
+        <!-- Panel B: New Channel Form Creator (Matches exact screenshot layout) -->
+        <div id="newChannelFormContainer" style="display: none; flex-direction: column; height: 100%;">
+            <div class="chat-panel-header" style="padding: 25px 20px 15px; border-bottom: 1px solid var(--border-color);">
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button class="neu-btn neu-btn-circle hover-glow" onclick="backToChannelsList()" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;" title="Back"><i class="fas fa-arrow-left" style="font-size: 13px;"></i></button>
+                    <h2 style="font-size: 20px; font-weight: 700; margin: 0;">New channel</h2>
+                </div>
+            </div>
+            
+            <div class="chat-list-scrollable" style="padding: 25px 20px;">
+                <!-- Avatar upload overlay circle -->
+                <div style="text-align: center; margin-bottom: 30px; position: relative;">
+                    <div class="avatar-upload-container" style="width: 130px; height: 130px; margin: 0 auto;">
+                        <div class="avatar-preview" style="width: 130px; height: 130px; border-radius: 50%; border: none; background: #2a2b30; display: flex; align-items: center; justify-content: center; position: relative;">
+                            <img src="/images/group-avatar.png" id="newChannelAvatarPreview" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;" />
+                            <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 50%; background: rgba(0,0,0,0.4); display: flex; flex-direction: column; align-items: center; justify-content: center; opacity: 0.8; cursor: pointer;" onclick="$('#newChannelAvatarInput').click()">
+                                <i class="fas fa-camera" style="font-size: 24px; color: white;"></i>
+                                <span style="font-size: 11px; font-weight: 600; color: white; margin-top: 6px;">Add channel icon</span>
+                            </div>
+                        </div>
+                        <input type="file" id="newChannelAvatarInput" style="display: none;" accept="image/*" onchange="previewChannelAvatar(event)" />
+                    </div>
+                </div>
+
+                <!-- Input Name -->
+                <div class="neu-input-group" style="border-bottom: 1.5px solid var(--accent-red); margin-bottom: 25px; padding-bottom: 5px;">
+                    <label class="neu-input-label" style="font-size: 12px; color: var(--accent-red);">Channel name</label>
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <input type="text" id="newChannelName" class="neu-input" placeholder="Channel name" onkeyup="checkNewChannelForm()" style="background: transparent; border: none; box-shadow: none; padding: 5px 0; font-size: 16px; flex: 1; color: white;" />
+                        <span style="font-size: 18px; cursor: pointer; color: var(--text-secondary);" onclick="addEmojiToChannelName()"><i class="far fa-smile"></i></span>
+                    </div>
+                </div>
+
+                <!-- Input Description -->
+                <div class="neu-input-group" style="background: var(--bg-card); padding: 12px 18px; border-radius: 12px; margin-bottom: 35px;">
+                    <label class="neu-input-label" style="font-size: 11px;">Channel description</label>
+                    <div style="display: flex; gap: 10px; align-items: flex-start;">
+                        <textarea id="newChannelDesc" class="neu-input" placeholder="Describe your channel. Include information to help people understand what your channel is about." style="background: transparent; border: none; box-shadow: none; padding: 0; font-size: 14px; height: 110px; resize: none; flex: 1; color: white; line-height: 1.5;"></textarea>
+                        <span style="font-size: 18px; cursor: pointer; color: var(--text-secondary); margin-top: 4px;" onclick="addEmojiToChannelDesc()"><i class="far fa-smile"></i></span>
+                    </div>
+                </div>
+
+                <!-- Create button -->
+                <div style="text-align: center;">
+                    <button class="neu-btn" id="submitCreateChannelBtn" disabled onclick="submitCreateChannel()" style="width: 100%; border-radius: 24px; padding: 14px; background: #2a2b30; color: #64666f; border: none; cursor: default; font-weight: 600; font-size: 15px; box-shadow: none;">Create channel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Column 3 (Main Channel Feed / Welcome state) -->
+    <div class="chat-workspace-panel" id="channelWorkspacePanel">
+        <!-- Default Welcome / Discover Dashboard -->
+        <div class="chat-welcome-state" id="emptyChannelState" style="height: 100%; display: flex; flex-direction: column;">
+            <div class="discover-dashboard-header" style="padding: 40px 20px 20px; text-align: center; display: flex; flex-direction: column; align-items: center;">
+                <div class="chat-welcome-icon" style="width: 80px; height: 80px; border-radius: 24px; margin-bottom: 24px; display: flex; align-items: center; justify-content: center;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-red)" stroke-width="1.8" style="width: 40px; height: 40px;"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+                </div>
+                <h3 style="font-size: 26px; font-weight: 700; margin-bottom: 12px; font-family: 'Outfit', sans-serif;">Explore Channels</h3>
+                <p style="font-size: 15px; color: var(--text-secondary); max-width: 440px; line-height: 1.6; margin-bottom: 0;">Stay updated on your favorite topics. Find channels to follow below.</p>
+            </div>
+            
+            <div class="discover-grid-container" style="flex: 1; overflow-y: auto; padding: 20px;">
+                <div class="discover-grid" id="discoverGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px;">
+                    <!-- Public channels dynamically loaded -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Channel Broadcast Feed -->
+        <div class="chat-workspace-panel" id="activeChannelState" style="display: none; height: 100%; flex-direction: column;">
+            <!-- Channel Header -->
+            <div class="chat-header">
+                <div class="chat-header-user">
+                    <button class="chat-input-action-btn d-md-none" onclick="goBackToChannelsList(event)" style="margin-right: 10px; border:none; background:transparent;"><i class="fas fa-arrow-left" style="font-size:16px; color: var(--accent-red);"></i></button>
+                    <div class="chat-item-avatar">
+                        <img src="/images/default-avatar.svg" id="activeChannelAvatar" alt="Avatar" />
+                    </div>
+                    <div>
+                        <div class="chat-header-name" id="activeChannelName">Channel Name</div>
+                        <div class="chat-header-status" id="activeChannelDesc" style="font-size: 12px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 320px;">Channel description here</div>
+                        <div class="chat-header-status" id="activeChannelFollowers" style="font-size: 11px; margin-top: 2px; color: var(--accent-red);">0 followers</div>
+                    </div>
+                </div>
+                <div class="chat-header-actions">
+                    <span style="font-size: 20px; cursor: pointer; margin-right: 15px;" title="Mute Notifications">🔕</span>
+                    <button class="neu-btn" id="channelActionBtn" onclick="toggleChannelFollow()" style="font-size: 12px; padding: 8px 16px;"></button>
+                </div>
+            </div>
+
+            <!-- Broadcast Message Feed -->
+            <div class="chat-message-feed" id="channelMessagesFeed">
+                <!-- Loaded dynamically via JS -->
+            </div>
+
+            <!-- Channel Input Bar (Only visible to the Owner/Creator of the channel) -->
+            <div class="chat-input-bar" id="channelInputBar" style="display: none;">
+                <input type="file" id="channelFileInput" style="display: none;" onchange="uploadChannelFile()" />
+                <button class="chat-input-action-btn" onclick="triggerChannelFileUpload()" title="Attach image/video">📎</button>
+                
+                <div class="chat-input-container">
+                    <input type="text" id="channelMessageInput" class="chat-input-box" placeholder="Broadcast a message..." oninput="toggleChannelSendMic()" onkeydown="handleChannelInputKeydown(event)" />
+                </div>
+                
+                <!-- Dynamic Send/Mic Toggle Button -->
+                <button class="neu-btn neu-btn-circle active" id="channelSendOrMicBtn" onclick="channelSendOrRecord()" style="width: 50px; height: 50px; background: var(--accent-red); color: white;" title="Send or Record">
+                    <span id="channelSendOrMicIcon">🎤</span>
+                </button>
+            </div>
+            
+            <!-- Read-only footer (For followers) -->
+            <div class="channel-read-only-footer" id="channelReadOnlyFooter" style="display: none; text-align: center; padding: 15px; background: var(--bg-panel); color: var(--text-secondary); font-size: 13px; font-weight: 500; border-top: 1px solid var(--border-color);">
+                🔇 Only admins can send messages.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CREATE CHANNEL INTRO INTRODUCTION MODAL (Matches exact screenshot layout) -->
+<div class="contacts-modal-backdrop" id="createChannelIntroModal" style="display: none;">
+    <div class="contacts-modal" style="max-width: 440px; background: var(--bg-card); padding: 30px; border-radius: 28px; text-align: center; box-shadow: var(--shadow-outset); border: 1px solid var(--border-color);">
+        <div style="text-align: right; margin-top: -10px; margin-right: -10px; margin-bottom: 10px;">
+            <span style="font-size: 20px; color: var(--text-secondary); cursor: pointer;" onclick="closeChannelIntroModal()">✕</span>
+        </div>
+        <div style="margin-bottom: 25px;">
+            <!-- Large red channel waves icon logo -->
+            <span style="font-size: 64px; color: var(--accent-red); display: inline-block; filter: drop-shadow(0 0 10px rgba(254,76,76,0.3));">🔴🔊🔴</span>
+        </div>
+        <h3 style="font-size: 20px; font-weight: 700; color: white; margin-bottom: 20px; font-family: var(--font-family);">Create a channel to reach unlimited followers</h3>
+        
+        <div style="text-align: left; margin-bottom: 30px; font-size: 13.5px; display: flex; flex-direction: column; gap: 20px;">
+            <div style="display: flex; gap: 15px;">
+                <span style="font-size: 22px; color: var(--accent-red); line-height: 1;">🌐</span>
+                <div>
+                    <strong style="color: white; display: block; margin-bottom: 3px; font-size: 14px;">Anyone can discover your channel</strong>
+                    <span style="color: var(--text-secondary);">Channels are public, so anyone can find them and see 30 days of history.</span>
+                </div>
+            </div>
+            <div style="display: flex; gap: 15px;">
+                <span style="font-size: 22px; color: var(--accent-red); line-height: 1;">👁️</span>
+                <div>
+                    <strong style="color: white; display: block; margin-bottom: 3px; font-size: 14px;">People see your channel, not you</strong>
+                    <span style="color: var(--text-secondary);">Followers can't see your phone number, profile picture or name, but other admins can.</span>
+                </div>
+            </div>
+            <div style="display: flex; gap: 15px;">
+                <span style="font-size: 22px; color: var(--accent-red); line-height: 1;">🛡️</span>
+                <div>
+                    <strong style="color: white; display: block; margin-bottom: 3px; font-size: 14px;">You're responsible for your channel</strong>
+                    <span style="color: var(--text-secondary);">Your channel needs to follow our guidelines and is reviewed against them.</span>
+                </div>
+            </div>
+        </div>
+        
+        <div style="display: flex; justify-content: flex-end; gap: 15px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+            <button class="neu-btn" style="padding: 10px 24px; border-radius: 20px; background: transparent; border: none; box-shadow: none; font-size: 14px;" onclick="closeChannelIntroModal()">Close</button>
+            <button class="neu-btn neu-btn-red" style="padding: 10px 24px; border-radius: 20px; border: none; font-size: 14px;" onclick="continueToCreateChannel()">Continue</button>
+        </div>
+    </div>
+</div>
+
+<!-- VOICE RECORDING SIMULATOR MODAL (Same as Chat view) -->
+<div class="contacts-modal-backdrop" id="voiceRecordModal" style="display: none;">
+    <div class="contacts-modal" style="max-width: 320px; text-align: center; padding: 25px;">
+        <h4 style="margin: 0 0 10px;">Voice Recorder</h4>
+        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 20px;" id="recordStatus">Recording voice message...</p>
+        
+        <div class="fingerprint-scanner scanning" style="width: 100px; height: 100px; margin-bottom: 25px;">
+            <span style="font-size: 40px; color: var(--accent-red);">🎙️</span>
+        </div>
+
+        <div style="font-size: 20px; font-weight: 700; color: white; margin-bottom: 25px;" id="recordTimer">00:00</div>
+
+        <div style="display: flex; gap: 15px;">
+            <button class="neu-btn" style="flex: 1;" onclick="cancelVoiceRecording()">Cancel</button>
+            <button class="neu-btn neu-btn-red" style="flex: 1;" onclick="stopAndSendVoiceRecording()">Send</button>
+        </div>
+    </div>
+</div>
+
+<!-- USER PROFILE DRAWER (Simulated) -->
+<div class="detail-drawer" id="profileDrawer" style="display: none; position: fixed; right: 0; top: 0; height: 100vh; z-index: 100; width: 350px; background: var(--bg-panel); border-left: 1px solid var(--border-color);">
+    <div class="drawer-header">
+        <h4>My Profile</h4>
+        <button class="neu-btn neu-btn-circle" onclick="toggleProfileDrawer()" style="width: 32px; height: 32px; font-size: 11px;">✕</button>
+    </div>
+    <div class="drawer-content" style="padding: 20px;">
+        <div class="drawer-profile-info" style="text-align: center; margin-bottom: 30px;">
+            <div class="drawer-avatar" style="width: 100px; height: 100px; border-radius: 50%; margin: 0 auto 15px; overflow: hidden; border: 2px solid var(--border-color);">
+                <img src="@(currentUser?.ProfilePicture ?? "/images/default-avatar.svg")" style="width: 100%; height: 100%; object-fit: cover;" />
+            </div>
+            <div class="drawer-title" style="font-size: 18px; font-weight: 700; color: white;">@(currentUser?.FullName ?? currentUser?.Username)</div>
+            <div class="drawer-subtitle" style="font-size: 14px; color: var(--text-secondary);">@currentUser?.MobileNumber</div>
+        </div>
+        <div class="drawer-option-row">
+            <span class="row-label">Username</span>
+            <span style="font-weight: 500; font-size: 14px;">@currentUser?.Username</span>
+        </div>
+        <div class="drawer-option-row">
+            <span class="row-label">Email</span>
+            <span style="font-weight: 500; font-size: 14px;">@currentUser?.Email</span>
+        </div>
+        <div class="drawer-option-row">
+            <span class="row-label">Joined</span>
+            <span style="font-weight: 500; font-size: 14px;">@currentUser?.CreatedAt.ToString("MMMM dd, yyyy")</span>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    let myChannels = [];
+    let discoveredChannels = [];
+    let activeChannel = null; // Currently selected channel object
+    let currentFilter = 'mine'; // 'mine' or 'discover'
+
+    // Voice Recorder States
+    let voiceStream = null;
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let recordInterval = null;
+    let recordTimeSec = 0;
+
+    $(document).ready(function () {
+        loadChannels();
+        loadDiscoverGrid();
+    });
+
+    function viewOwnProfile() {
+        toggleProfileDrawer();
+    }
+
+    function toggleProfileDrawer() {
+        $('#profileDrawer').toggle();
+    }
+
+    // Modal / Creation flow actions
+    function openChannelIntroModal() {
+        $('#createChannelIntroModal').show();
+    }
+
+    function closeChannelIntroModal() {
+        $('#createChannelIntroModal').hide();
+    }
+
+    function continueToCreateChannel() {
+        closeChannelIntroModal();
+        // Shift left column view to create form
+        $('#channelsListContainer').hide();
+        $('#newChannelFormContainer').css('display', 'flex');
+        
+        // Reset input fields
+        $('#newChannelName').val('');
+        $('#newChannelDesc').val('');
+        $('#newChannelAvatarInput').val('');
+        $('#newChannelAvatarPreview').attr('src', '/images/group-avatar.png');
+        checkNewChannelForm();
+    }
+
+    function backToChannelsList() {
+        $('#newChannelFormContainer').hide();
+        $('#channelsListContainer').css('display', 'flex');
+    }
+
+    function previewChannelAvatar(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            $('#newChannelAvatarPreview').attr('src', e.target.result);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function addEmojiToChannelName() {
+        const nameInput = $('#newChannelName');
+        nameInput.val(nameInput.val() + " 😊");
+        checkNewChannelForm();
+        nameInput.focus();
+    }
+
+    function addEmojiToChannelDesc() {
+        const descInput = $('#newChannelDesc');
+        descInput.val(descInput.val() + " 😊");
+        descInput.focus();
+    }
+
+    function checkNewChannelForm() {
+        const nameVal = $('#newChannelName').val().trim();
+        const btn = $('#submitCreateChannelBtn');
+        if (nameVal.length > 0) {
+            btn.prop('disabled', false);
+            btn.css({
+                'background': 'var(--accent-red)',
+                'color': 'white',
+                'cursor': 'pointer',
+                'box-shadow': 'var(--shadow-red)'
+            });
+        } else {
+            btn.prop('disabled', true);
+            btn.css({
+                'background': '#2a2b30',
+                'color': '#64666f',
+                'cursor': 'default',
+                'box-shadow': 'none'
+            });
+        }
+    }
+
+    function submitCreateChannel() {
+        const name = $('#newChannelName').val().trim();
+        const desc = $('#newChannelDesc').val().trim();
+        if (!name) return;
+
+        const formData = new FormData();
+        formData.append('name', name);
+        formData.append('description', desc);
+        const avatarFile = $('#newChannelAvatarInput')[0].files[0];
+        if (avatarFile) {
+            formData.append('avatar', avatarFile);
+        }
+
+        $.ajax({
+            url: '/Channel/CreateChannel',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                if (response.success) {
+                    backToChannelsList();
+                    loadChannels();
+                    setTimeout(() => {
+                        selectChannel(response.channelId);
+                    }, 300);
+                } else {
+                    alert('Failed to create channel.');
+                }
+            },
+            error: function () {
+                alert('Error creating channel.');
+            }
+        });
+    }
+
+    // Load data
+    function loadChannels() {
+        $.get('/Channel/GetMyChannels', function (data) {
+            myChannels = data;
+            if (currentFilter === 'mine') {
+                renderMyChannelsList();
+            }
+        });
+    }
+
+    function loadDiscoverGrid() {
+        $.get('/Channel/DiscoverChannels', function (data) {
+            discoveredChannels = data;
+            renderDiscoverGrid();
+            if (currentFilter === 'discover') {
+                renderDiscoverChannelsList();
+            }
+        });
+    }
+
+    function toggleChannelFilter(filter) {
+        currentFilter = filter;
+        $('.chat-filter-pill').removeClass('active');
+        if (filter === 'mine') {
+            $('#filterMyChannelsBtn').addClass('active');
+            renderMyChannelsList();
+        } else {
+            $('#filterDiscoverChannelsBtn').addClass('active');
+            renderDiscoverChannelsList();
+        }
+    }
+
+    function renderMyChannelsList() {
+        const container = $('#channelsContainer');
+        container.empty();
+
+        if (myChannels.length === 0) {
+            container.append('<div style="text-align: center; color: var(--text-muted); margin-top: 40px; font-size: 14px;">You haven\'t followed or created any channels yet. Click Discover to find channels.</div>');
+            return;
+        }
+
+        myChannels.forEach(c => {
+            const item = $(`
+                <div class="chat-item ${activeChannel && activeChannel.id === c.id ? 'active' : ''}" onclick="selectChannel(${c.id})">
+                    <div class="chat-item-avatar">
+                        <img src="${c.avatar}" alt="Avatar" />
+                    </div>
+                    <div class="chat-item-details">
+                        <div class="chat-item-name">${c.name} ${c.isOwner ? '👑' : ''}</div>
+                        <div class="chat-item-message">${c.lastMessageText}</div>
+                    </div>
+                    <div class="chat-item-meta">
+                        <div class="chat-item-time">${c.lastMessageTime ? formatTime(c.lastMessageTime) : ''}</div>
+                    </div>
+                </div>
+            `);
+            container.append(item);
+        });
+    }
+
+    function renderDiscoverChannelsList() {
+        const container = $('#channelsContainer');
+        container.empty();
+
+        if (discoveredChannels.length === 0) {
+            container.append('<div style="text-align: center; color: var(--text-muted); margin-top: 40px; font-size: 14px;">No new channels to discover.</div>');
+            return;
+        }
+
+        discoveredChannels.forEach(c => {
+            const item = $(`
+                <div class="chat-item" onclick="selectDiscoverChannel(${c.id})">
+                    <div class="chat-item-avatar">
+                        <img src="${c.avatar}" alt="Avatar" />
+                    </div>
+                    <div class="chat-item-details">
+                        <div class="chat-item-name">${c.name}</div>
+                        <div class="chat-item-message">${c.followersCount} followers</div>
+                    </div>
+                </div>
+            `);
+            container.append(item);
+        });
+    }
+
+    function renderDiscoverGrid() {
+        const grid = $('#discoverGrid');
+        grid.empty();
+
+        if (discoveredChannels.length === 0) {
+            grid.append('<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 40px;">No channels to discover right now. Try creating one!</div>');
+            return;
+        }
+
+        discoveredChannels.forEach(c => {
+            const card = $(`
+                <div class="neu-card" style="padding: 20px; text-align: center; border-radius: 20px; max-width: none; display: flex; flex-direction: column; align-items: center; justify-content: space-between;">
+                    <div class="chat-item-avatar" style="width: 65px; height: 65px; margin-bottom: 12px; box-shadow: var(--shadow-outset);">
+                        <img src="${c.avatar}" />
+                    </div>
+                    <h4 style="margin: 0 0 6px; font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; color: white;">${c.name}</h4>
+                    <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 15px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 32px; line-height: 16px;">${c.description || 'No description available'}</p>
+                    <button class="neu-btn neu-btn-red" style="padding: 8px 20px; font-size: 12px; border-radius: 12px; width: 100%;" onclick="followChannel(${c.id}, event)">Follow</button>
+                </div>
+            `);
+            grid.append(card);
+        });
+    }
+
+    function selectChannel(id) {
+        const chan = myChannels.find(c => c.id === id);
+        if (!chan) return;
+
+        activeChannel = chan;
+        renderMyChannelsList(); // refresh active highlight
+
+        $('#emptyChannelState').hide();
+        $('#activeChannelState').css('display', 'flex');
+        
+        if (window.innerWidth <= 768) {
+            $('.chat-list-panel').hide();
+            $('#channelWorkspacePanel').css('display', 'flex');
+        }
+
+        $('#activeChannelAvatar').attr('src', chan.avatar);
+        $('#activeChannelName').text(chan.name);
+        $('#activeChannelDesc').text(chan.description || 'Broadcasting updates');
+        $('#activeChannelFollowers').text(`${chan.followersCount || 0} followers`);
+
+        // Action button follow/unfollow
+        if (chan.isOwner) {
+            $('#channelActionBtn').hide();
+            $('#channelInputBar').show();
+            $('#channelReadOnlyFooter').hide();
+        } else {
+            $('#channelActionBtn').show().text('Unfollow').addClass('neu-btn-red').removeClass('neu-btn-outline');
+            $('#channelInputBar').hide();
+            $('#channelReadOnlyFooter').show();
+        }
+
+        $('#channelMessageInput').val('');
+        toggleChannelSendMic();
+        loadChannelMessages(chan.id);
+    }
+
+    function selectDiscoverChannel(id) {
+        const chan = discoveredChannels.find(c => c.id === id);
+        if (!chan) return;
+
+        $('#emptyChannelState').hide();
+        $('#activeChannelState').css('display', 'flex');
+        
+        if (window.innerWidth <= 768) {
+            $('.chat-list-panel').hide();
+            $('#channelWorkspacePanel').css('display', 'flex');
+        }
+
+        $('#activeChannelAvatar').attr('src', chan.avatar);
+        $('#activeChannelName').text(chan.name);
+        $('#activeChannelDesc').text(chan.description || 'Discover channel to follow');
+        $('#activeChannelFollowers').text(`${chan.followersCount || 0} followers`);
+        $('#channelActionBtn').show().text('Follow').removeClass('neu-btn-red').addClass('neu-btn-outline');
+        $('#channelInputBar').hide();
+        $('#channelReadOnlyFooter').show();
+
+        // Feed preview is empty or shows welcome
+        const feed = $('#channelMessagesFeed');
+        feed.empty().append('<div style="text-align: center; color: var(--text-muted); padding: 40px; font-size: 14px;">Follow this channel to see broadcast messages.</div>');
+        
+        activeChannel = { id: chan.id, isOwner: false, isDiscover: true };
+    }
+
+    function goBackToChannelsList(event) {
+        if(event) event.stopPropagation();
+        if (window.innerWidth <= 768) {
+            $('.chat-list-panel').css('display', 'flex');
+            $('#channelWorkspacePanel').hide();
+        }
+    }
+
+    function followChannel(id, event) {
+        if (event) event.stopPropagation();
+
+        $.post('/Channel/FollowChannel', { channelId: id }, function (response) {
+            if (response.success) {
+                loadChannels();
+                loadDiscoverGrid();
+                setTimeout(() => {
+                    selectChannel(id);
+                }, 300);
+            }
+        });
+    }
+
+    function toggleChannelFollow() {
+        if (!activeChannel) return;
+
+        const isFollowing = !activeChannel.isDiscover;
+        if (isFollowing) {
+            // Unfollow
+            if (confirm(`Unfollow ${activeChannel.name}?`)) {
+                $.post('/Channel/UnfollowChannel', { channelId: activeChannel.id }, function (response) {
+                    if (response.success) {
+                        activeChannel = null;
+                        $('#activeChannelState').hide();
+                        $('#emptyChannelState').show();
+                        loadChannels();
+                        loadDiscoverGrid();
+                    }
+                });
+            }
+        } else {
+            // Follow from discover preview
+            followChannel(activeChannel.id);
+        }
+    }
+
+    // Message lists
+    function loadChannelMessages(channelId) {
+        const feed = $('#channelMessagesFeed');
+        feed.empty().append('<div style="text-align: center; color: var(--text-muted); padding: 20px;">Loading updates...</div>');
+
+        $.get(`/Channel/GetChannelMessages?channelId=${channelId}`, function (data) {
+            feed.empty();
+            if (data.length === 0) {
+                feed.append('<div style="text-align: center; color: var(--text-muted); padding: 40px; font-size: 14px;">No broadcasts yet. Stay tuned!</div>');
+                return;
+            }
+
+            data.forEach(msg => {
+                const isMedia = msg.type !== 'Text';
+                let mediaHtml = '';
+                if (isMedia) {
+                    if (msg.type === 'Image') {
+                        mediaHtml = `<img src="${msg.fileUrl}" style="max-width: 100%; border-radius: 12px; margin-bottom: 8px; box-shadow: var(--shadow-outset);" />`;
+                    } else if (msg.type === 'Video') {
+                        mediaHtml = `<video src="${msg.fileUrl}" controls style="max-width: 100%; border-radius: 12px; margin-bottom: 8px; box-shadow: var(--shadow-outset);"></video>`;
+                    } else if (msg.type === 'Audio') {
+                        mediaHtml = `<audio src="${msg.fileUrl}" controls style="width: 100%; margin-bottom: 8px; outline: none;"></audio>`;
+                    } else {
+                        mediaHtml = `<div class="neu-card" style="padding: 10px; margin-bottom: 8px; border-radius: 10px;"><a href="${msg.fileUrl}" download style="color: var(--accent-red); font-size: 13px;">📄 Download Attachment</a></div>`;
+                    }
+                }
+
+                // Channel messages are rendered centered or styled as full announcements
+                const bubble = $(`
+                    <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+                        <div class="neu-card" style="max-width: 550px; padding: 18px; width: 100%; border-radius: 20px;">
+                            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 12px;">
+                                <img src="${msg.senderAvatar}" style="width: 32px; height: 32px; border-radius: 50%;" />
+                                <div>
+                                    <div style="font-size: 13px; font-weight: 600; color: white;">${msg.senderName}</div>
+                                    <div style="font-size: 10px; color: var(--text-muted);">${formatTime(msg.sentAt)}</div>
+                                </div>
+                            </div>
+                            <div style="font-size: 14px; line-height: 1.5; color: var(--text-primary);">
+                                ${mediaHtml}
+                                <div>${msg.content}</div>
+                            </div>
+                        </div>
+                    </div>
+                `);
+                feed.append(bubble);
+            });
+
+            // Scroll to bottom
+            feed.scrollTop(feed.prop("scrollHeight"));
+        });
+    }
+
+    // Dynamic button icon toggler (Mic vs Send)
+    function toggleChannelSendMic() {
+        const text = $('#channelMessageInput').val().trim();
+        const icon = $('#channelSendOrMicIcon');
+        if (text.length > 0) {
+            icon.text('➤');
+        } else {
+            icon.text('🎤');
+        }
+    }
+
+    // Voice recording trigger
+    function channelSendOrRecord() {
+        const text = $('#channelMessageInput').val().trim();
+        if (text.length > 0) {
+            sendBroadcast();
+        } else {
+            startVoiceRecording();
+        }
+    }
+
+    function startVoiceRecording() {
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+            navigator.mediaDevices.getUserMedia({ 
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                }
+            }).then(function (stream) {
+                voiceStream = stream;
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = function (e) {
+                    audioChunks.push(e.data);
+                };
+
+                mediaRecorder.start();
+
+                // Display recording modal
+                $('#voiceRecordModal').show();
+                recordTimeSec = 0;
+                $('#recordTimer').text('00:00');
+
+                clearInterval(recordInterval);
+                recordInterval = setInterval(function () {
+                    recordTimeSec++;
+                    const mins = Math.floor(recordTimeSec / 60).toString().padStart(2, '0');
+                    const secs = (recordTimeSec % 60).toString().padStart(2, '0');
+                    $('#recordTimer').text(`${mins}:${secs}`);
+                }, 1000);
+            }).catch(function (err) {
+                alert("Could not access microphone: " + err.message);
+            });
+        } else {
+            alert("Voice recording is not supported in this browser.");
+        }
+    }
+
+    function cancelVoiceRecording() {
+        if (mediaRecorder) mediaRecorder.stop();
+        if (voiceStream) voiceStream.getTracks().forEach(t => t.stop());
+        clearInterval(recordInterval);
+        $('#voiceRecordModal').hide();
+    }
+
+    function stopAndSendVoiceRecording() {
+        if (!mediaRecorder) return;
+
+        mediaRecorder.onstop = function () {
+            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+            const file = new File([audioBlob], "voice_message.webm", { type: 'audio/webm' });
+
+            const formData = new FormData();
+            formData.append('channelId', activeChannel.id);
+            formData.append('type', 'Audio');
+            formData.append('file', file);
+            formData.append('content', 'Voice Message 🎙️');
+
+            $.ajax({
+                url: '/Channel/PostChannelMessage',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    if (response.success) {
+                        loadChannelMessages(activeChannel.id);
+                    } else {
+                        alert('Failed to send voice note.');
+                    }
+                },
+                error: function () {
+                    alert('Error sending voice note.');
+                }
+            });
+        };
+
+        mediaRecorder.stop();
+        if (voiceStream) voiceStream.getTracks().forEach(t => t.stop());
+        clearInterval(recordInterval);
+        $('#voiceRecordModal').hide();
+    }
+
+    // File attachments
+    function triggerChannelFileUpload() {
+        $('#channelFileInput').click();
+    }
+
+    function uploadChannelFile() {
+        const fileInput = $('#channelFileInput')[0];
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('channelId', activeChannel.id);
+        formData.append('type', file.type.startsWith('image/') ? 'Image' : file.type.startsWith('video/') ? 'Video' : 'File');
+        formData.append('file', file);
+        formData.append('content', file.name);
+
+        $.ajax({
+            url: '/Channel/PostChannelMessage',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                fileInput.value = '';
+                if (response.success) {
+                    loadChannelMessages(activeChannel.id);
+                } else {
+                    alert('Broadcast upload failed.');
+                }
+            },
+            error: function () {
+                alert('Broadcast upload error.');
+            }
+        });
+    }
+
+    function sendBroadcast() {
+        if (!activeChannel) return;
+        const text = $('#channelMessageInput').val().trim();
+        if (!text) return;
+
+        $.post('/Channel/PostChannelMessage', {
+            channelId: activeChannel.id,
+            content: text,
+            type: 'Text'
+        }, function (response) {
+            if (response.success) {
+                $('#channelMessageInput').val('');
+                toggleChannelSendMic();
+                loadChannelMessages(activeChannel.id);
+            } else {
+                alert('Broadcast failed.');
+            }
+        });
+    }
+
+    function handleChannelInputKeydown(event) {
+        if (event.key === 'Enter') {
+            sendBroadcast();
+        }
+    }
+
+    function filterChannels() {
+        const query = $('#channelSearchInput').val().toLowerCase();
+        // Simply filter in DOM or re-render
+        if (currentFilter === 'mine') {
+            const filtered = myChannels.filter(c => c.name.toLowerCase().includes(query) || (c.description && c.description.toLowerCase().includes(query)));
+            // re-render mine
+            const container = $('#channelsContainer');
+            container.empty();
+            if (filtered.length === 0) {
+                container.append('<div style="text-align: center; color: var(--text-muted); margin-top: 40px; font-size: 14px;">No matching channels.</div>');
+                return;
+            }
+            filtered.forEach(c => {
+                const item = $(`
+                    <div class="chat-item ${activeChannel && activeChannel.id === c.id ? 'active' : ''}" onclick="selectChannel(${c.id})">
+                        <div class="chat-item-avatar">
+                            <img src="${c.avatar}" alt="Avatar" />
+                        </div>
+                        <div class="chat-item-details">
+                            <div class="chat-item-name">${c.name} ${c.isOwner ? '👑' : ''}</div>
+                            <div class="chat-item-message">${c.lastMessageText}</div>
+                        </div>
+                        <div class="chat-item-meta">
+                            <div class="chat-item-time">${c.lastMessageTime ? formatTime(c.lastMessageTime) : ''}</div>
+                        </div>
+                    </div>
+                `);
+                container.append(item);
+            });
+        } else {
+            const filtered = discoveredChannels.filter(c => c.name.toLowerCase().includes(query) || (c.description && c.description.toLowerCase().includes(query)));
+            const container = $('#channelsContainer');
+            container.empty();
+            if (filtered.length === 0) {
+                container.append('<div style="text-align: center; color: var(--text-muted); margin-top: 40px; font-size: 14px;">No matching channels.</div>');
+                return;
+            }
+            filtered.forEach(c => {
+                const item = $(`
+                    <div class="chat-item" onclick="selectDiscoverChannel(${c.id})">
+                        <div class="chat-item-avatar">
+                            <img src="${c.avatar}" alt="Avatar" />
+                        </div>
+                        <div class="chat-item-details">
+                            <div class="chat-item-name">${c.name}</div>
+                            <div class="chat-item-message">${c.followersCount} followers</div>
+                        </div>
+                    </div>
+                `);
+                container.append(item);
+            });
+        }
+    }
+
+    function formatTime(utcString) {
+        const date = new Date(utcString);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffHrs = diffMs / (1000 * 60 * 60);
+
+        if (diffHrs < 24 && date.toDateString() === now.toDateString()) {
+            return date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        } else {
+            return date.toLocaleDateString([], {month: 'short', day: 'numeric'});
+        }
+    }
+</script>
+}

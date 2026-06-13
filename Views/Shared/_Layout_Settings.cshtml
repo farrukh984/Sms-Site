@@ -1,0 +1,24 @@
+@{
+    Layout = "~/Views/Shared/_Layout_Chat.cshtml";
+}
+
+<link rel="stylesheet" href="~/css/setting.css" asp-append-version="true" />
+
+<div class="chat-app-layout settings-layout" style="width:100%; height:100dvh; overflow:hidden; display:flex; flex-direction:row;">
+    <!-- Column 1 (Far Left Navigation Menu) -->
+    @await Html.PartialAsync("_NavSidebar", "Settings")
+
+    <!-- Column 2 (Middle Settings Panel) -->
+    <div class="chat-list-panel" style="background-color: var(--bg-card); overflow-y: auto; flex: 1; min-width: 0;">
+        @await RenderSectionAsync("MiddlePanel", required: false)
+    </div>
+
+    <!-- Column 3 (Main Workspace) -->
+    <div class="chat-workspace-panel" style="background-color: var(--bg-main); overflow-y: auto;">
+        @RenderBody()
+    </div>
+</div>
+
+@section Scripts {
+    @await RenderSectionAsync("Scripts", required: false)
+}

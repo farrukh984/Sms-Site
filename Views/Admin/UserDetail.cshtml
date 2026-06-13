@@ -1,0 +1,126 @@
+@model Site.Models.Users
+@{
+    ViewData["Title"] = "User Details";
+    ViewData["ActiveNav"] = "Users";
+}
+
+<div class="page-title-area gsap-stagger">
+    <div class="title-left">
+        <a href="/Admin/Users" class="section-link" style="margin-bottom: 12px; display: inline-block;">
+            <i class="fas fa-arrow-left"></i> BACK TO USERS
+        </a>
+        <div class="title-main">
+            <h1>USER <span class="highlight">PROFILE</span></h1>
+        </div>
+        <div class="title-sub">
+            <p>Detailed view of user activity and information</p>
+        </div>
+    </div>
+</div>
+
+<div class="elite-section gsap-stagger">
+    <div style="display: flex; align-items: center; gap: 32px;">
+        @if (!string.IsNullOrEmpty(Model.ProfilePicture))
+        {
+            <img src="@Model.ProfilePicture" style="width: 120px; height: 120px; border-radius: 24px; object-fit: cover; border: 2px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.5);" />
+        }
+        else
+        {
+            <div style="width: 120px; height: 120px; border-radius: 24px; background: linear-gradient(135deg, var(--accent-red), #cc0000); display: flex; align-items: center; justify-content: center; font-size: 48px; font-weight: 800; color: white; box-shadow: 0 10px 30px rgba(255, 51, 51, 0.3);">
+                @((Model.FullName ?? Model.Username).Substring(0,1).ToUpper())
+            </div>
+        }
+        
+        <div>
+            <h1 style="font-size: 32px; font-weight: 900; font-style: italic; display: flex; align-items: center; gap: 16px;">
+                @(Model.FullName ?? Model.Username)
+                @if(Model.IsVerified) {
+                    <span class="table-badge badge-outline-green" style="font-size: 12px; font-style: normal;"><i class="fas fa-check"></i> Verified</span>
+                } else {
+                    <span class="table-badge badge-outline-red" style="font-size: 12px; font-style: normal;"><i class="fas fa-times"></i> Unverified</span>
+                }
+            </h1>
+            <div style="display: flex; align-items: center; gap: 16px; margin-top: 8px;">
+                <span style="color: var(--accent-red); font-weight: 700;">@@@Model.Username</span>
+                <span style="color: var(--border-color);">|</span>
+                <span style="color: var(--text-muted);"><i class="fas fa-envelope"></i> @Model.Email</span>
+                <span style="color: var(--border-color);">|</span>
+                <span style="color: var(--text-muted);"><i class="fas fa-phone"></i> @Model.MobileNumber</span>
+            </div>
+            <p style="color: var(--text-muted); font-size: 12px; margin-top: 12px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase;">
+                <i class="far fa-calendar-alt"></i> Joined @Model.CreatedAt.ToString("MMMM d, yyyy")
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="secondary-stats gsap-stagger" style="grid-template-columns: repeat(3, 1fr);">
+    <div class="sec-stat-card">
+        <label style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Full Name</label>
+        <span style="font-size: 15px; font-weight: 600; color: white;">@(Model.FullName ?? "—")</span>
+    </div>
+    <div class="sec-stat-card">
+        <label style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Nickname</label>
+        <span style="font-size: 15px; font-weight: 600; color: white;">@(Model.Nickname ?? "—")</span>
+    </div>
+    <div class="sec-stat-card">
+        <label style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Gender</label>
+        <span style="font-size: 15px; font-weight: 600; color: white;">@(Model.Gender ?? "—")</span>
+    </div>
+    <div class="sec-stat-card">
+        <label style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">Date of Birth</label>
+        <span style="font-size: 15px; font-weight: 600; color: white;">@(Model.DateOfBirth?.ToString("MMM d, yyyy") ?? "—")</span>
+    </div>
+    <div class="sec-stat-card" style="grid-column: span 2;">
+        <label style="font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px;">About</label>
+        <span style="font-size: 14px; font-weight: 500; color: var(--text-muted); line-height: 1.5;">@(Model.About ?? "—")</span>
+    </div>
+</div>
+
+<div class="elite-section gsap-stagger">
+    <div class="section-header-elite">
+        <div class="section-title">
+            <i class="fas fa-shopping-cart"></i> PURCHASED SERVICES
+        </div>
+    </div>
+    
+    @if (ViewBag.Purchases != null && ((List<Site.Models.UserService>)ViewBag.Purchases).Count > 0)
+    {
+        <div class="table-responsive">
+            <table class="elite-table">
+                <thead>
+                    <tr>
+                        <th>Service</th>
+                        <th>Amount Paid</th>
+                        <th>Purchased On</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in (List<Site.Models.UserService>)ViewBag.Purchases)
+                    {
+                        <tr>
+                            <td>
+                                <div style="display:flex; align-items:center; gap: 12px; font-weight: 600; color: white;">
+                                    <i class="@(p.Service.IconClass ?? "fas fa-star")" style="color: var(--accent-red); font-size: 16px;"></i>
+                                    @p.Service.Title
+                                </div>
+                            </td>
+                            <td style="color: var(--success-green); font-weight: 800; font-size: 15px; font-style: italic;">
+                                $@p.AmountPaid.ToString("0.00")
+                            </td>
+                            <td style="color: var(--text-muted);">@p.PurchasedAt.ToString("MMM d, yyyy")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div style="padding: 40px; text-align: center; color: var(--text-muted);">
+            <i class="fas fa-box-open" style="font-size: 40px; margin-bottom: 16px; display: block; opacity: 0.5;"></i>
+            <h4 style="color: white; margin-bottom: 4px;">No Purchases</h4>
+            <p style="font-size: 13px;">This user hasn't purchased any services yet.</p>
+        </div>
+    }
+</div>

@@ -1,0 +1,80 @@
+@{
+    ViewData["Title"] = "Help and Feedback";
+}
+
+@section MiddlePanel {
+    <div class="lp-header">
+        <div style="display: flex; align-items: center; gap: 25px; width: 100%;">
+            <a href="/Settings" style="color: var(--wa-icon); font-size: 18px; margin-left: 5px;"><i class="fas fa-arrow-left"></i></a>
+            <h1 style="font-size: 19px; font-weight: 500;">Help and feedback</h1>
+        </div>
+    </div>
+
+    <div class="list-content" style="padding-bottom: 30px; display: flex; flex-direction: column; min-height: calc(100vh - 60px);">
+        <!-- Options List -->
+        <div style="flex: 1;">
+            <!-- Help Center -->
+            <div style="padding: 15px 20px; display: flex; align-items: center; gap: 20px; cursor: pointer; border-bottom: 1px solid var(--wa-border);">
+                <i class="far fa-question-circle" style="font-size: 20px; color: var(--wa-icon); width: 25px; text-align: center;"></i>
+                <div>
+                    <div style="font-size: 16px;">Help Center</div>
+                    <div style="font-size: 13px; color: var(--wa-text-secondary); margin-top: 2px;">Frequently asked questions</div>
+                </div>
+            </div>
+
+            <!-- Contact us -->
+            <div style="padding: 15px 20px; display: flex; align-items: center; gap: 20px; cursor: pointer; border-bottom: 1px solid var(--wa-border);">
+                <i class="far fa-comment-dots" style="font-size: 20px; color: var(--wa-icon); width: 25px; text-align: center;"></i>
+                <div>
+                    <div style="font-size: 16px;">Contact us</div>
+                    <div style="font-size: 13px; color: var(--wa-text-secondary); margin-top: 2px;">Chat with support to get answers</div>
+                </div>
+            </div>
+
+            <!-- Send feedback -->
+            <div style="padding: 15px 20px; display: flex; align-items: center; gap: 20px; cursor: pointer; border-bottom: 1px solid var(--wa-border);">
+                <i class="fas fa-bug" style="font-size: 20px; color: var(--wa-icon); width: 25px; text-align: center;"></i>
+                <div>
+                    <div style="font-size: 16px;">Send feedback</div>
+                    <div style="font-size: 13px; color: var(--wa-text-secondary); margin-top: 2px;">Technical issues, suggestions</div>
+                </div>
+            </div>
+
+            <!-- Terms and Privacy Policy -->
+            <div style="padding: 18px 20px; display: flex; align-items: center; gap: 20px; cursor: pointer; border-bottom: 1px solid var(--wa-border);">
+                <i class="far fa-file-alt" style="font-size: 20px; color: var(--wa-icon); width: 25px; text-align: center;"></i>
+                <span style="font-size: 16px;">Terms and Privacy Policy</span>
+            </div>
+
+            <!-- Channels reports -->
+            <div style="padding: 18px 20px; display: flex; align-items: center; gap: 20px; cursor: pointer; border-bottom: 1px solid var(--wa-border);">
+                <i class="far fa-flag" style="font-size: 20px; color: var(--wa-icon); width: 25px; text-align: center;"></i>
+                <span style="font-size: 16px;">Channels reports</span>
+            </div>
+
+            <!-- Join the beta -->
+            <div style="padding: 20px; display: flex; align-items: flex-start; justify-content: space-between; border-bottom: 1px solid var(--wa-border);">
+                <div style="display: flex; gap: 20px; align-items: flex-start; margin-right: 15px;">
+                    <i class="fas fa-flask" style="font-size: 20px; color: var(--wa-icon); width: 25px; text-align: center; margin-top: 3px;"></i>
+                    <div>
+                        <div style="font-size: 16px; margin-bottom: 5px;">Join the beta</div>
+                        <div style="font-size: 13px; color: var(--wa-text-secondary); line-height: 1.4;">
+                            Get new features before they are released. Report bugs using the Contact us form above.
+                        </div>
+                    </div>
+                </div>
+                <label class="wa-switch" style="margin-top: 3px;">
+                    <input type="checkbox" />
+                    <span class="wa-slider"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Version Footer -->
+        <div style="padding: 30px 20px 20px; text-align: center; font-size: 13px; color: var(--wa-text-secondary);">
+            Version 2.3000.1039662930
+        </div>
+    </div>
+}
+
+@await Html.PartialAsync("~/Views/Home/Index.cshtml")

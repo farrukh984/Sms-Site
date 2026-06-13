@@ -1,0 +1,892 @@
+/* ============================================================
+   Awwwards-Tier Premium Settings Stylesheet (OLED Dark Theme)
+   ============================================================ */
+
+/* ── Typography & Global Overrides ── */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+:root {
+    --bg-oled-black: #050507;
+    --bg-card-dark: #0f1015;
+    --bg-card-dark-hover: #16171d;
+    --glow-color: rgba(254, 76, 76, 0.15);
+    --border-hairline: rgba(255, 255, 255, 0.05);
+    --border-hairline-hover: rgba(255, 255, 255, 0.12);
+    --font-premium: 'Outfit', 'Plus Jakarta Sans', sans-serif;
+    --transition-spring: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    --transition-fluid: all 0.5s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* Apply premium layout background */
+.settings-layout {
+    background-color: var(--bg-oled-black) !important;
+}
+
+/* Force dark theme for settings middle panel */
+.settings-layout .chat-list-panel {
+    background-color: var(--bg-oled-black) !important;
+    border-right: 1px solid var(--border-hairline) !important;
+}
+
+/* ── Settings Header ── */
+.settings-layout .lp-header {
+    background: linear-gradient(180deg, var(--bg-oled-black) 0%, rgba(5, 5, 7, 0.8) 100%) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-bottom: 1px solid var(--border-hairline) !important;
+    padding: 24px 20px !important;
+    height: 70px !important;
+    display: flex;
+    align-items: center;
+}
+
+.settings-layout .lp-header h1 {
+    font-family: var(--font-premium) !important;
+    font-size: 21px !important;
+    font-weight: 700 !important;
+    color: var(--text-primary) !important;
+    letter-spacing: -0.02em !important;
+    margin: 0 !important;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.settings-layout .lp-header a {
+    color: var(--text-secondary);
+    transition: var(--transition-fluid);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-hairline);
+}
+
+.settings-layout .lp-header a:hover {
+    color: var(--accent-red) !important;
+    background: rgba(254, 76, 76, 0.08) !important;
+    border-color: rgba(254, 76, 76, 0.2) !important;
+    transform: translateX(-2px);
+}
+
+/* ── Search Box ── */
+.settings-layout .lp-search {
+    background-color: var(--bg-oled-black) !important;
+    border-bottom: 1px solid var(--border-hairline) !important;
+    padding: 12px 20px !important;
+}
+
+.settings-layout .lp-search .search-box {
+    background: var(--bg-card-dark) !important;
+    border: 1px solid var(--border-hairline) !important;
+    border-radius: 12px !important;
+    padding: 10px 14px !important;
+    transition: var(--transition-fluid) !important;
+}
+
+.settings-layout .lp-search .search-box:focus-within {
+    border-color: rgba(254, 76, 76, 0.4) !important;
+    box-shadow: 0 0 15px var(--glow-color) !important;
+    background: var(--bg-card-dark-hover) !important;
+}
+
+.settings-layout .lp-search .search-box input {
+    color: var(--text-primary) !important;
+    font-family: var(--font-premium) !important;
+    font-size: 14px !important;
+}
+
+.settings-layout .lp-search .search-box i {
+    color: var(--text-muted) !important;
+    transition: var(--transition-fluid);
+}
+
+.settings-layout .lp-search .search-box:focus-within i {
+    color: var(--accent-red) !important;
+}
+
+/* ── Settings Content Container ── */
+.settings-layout .list-content {
+    background-color: var(--bg-oled-black) !important;
+    padding: 10px 15px 40px !important;
+}
+
+/* ── Profile Header Card ── */
+.settings-layout .list-content > div[style*="align-items: center"] {
+    background: linear-gradient(135deg, rgba(30, 31, 36, 0.3) 0%, rgba(5, 5, 7, 0.1) 100%) !important;
+    border-bottom: 1px solid var(--border-hairline) !important;
+    padding: 24px 16px !important;
+    margin-bottom: 15px !important;
+    border-radius: 16px;
+    border: 1px solid var(--border-hairline) !important;
+}
+
+.settings-layout .list-content > div[style*="align-items: center"] img {
+    border: 3px solid rgba(254, 76, 76, 0.15) !important;
+    box-shadow: 0 8px 30px rgba(254, 76, 76, 0.15);
+    transition: var(--transition-spring) !important;
+}
+
+.settings-layout .list-content > div[style*="align-items: center"] img:hover {
+    transform: scale(1.05) rotate(2deg);
+    border-color: var(--accent-red) !important;
+    box-shadow: 0 8px 40px rgba(254, 76, 76, 0.3);
+}
+
+.settings-layout .list-content > div[style*="align-items: center"] h2 {
+    font-family: var(--font-premium) !important;
+    font-size: 19px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.05em !important;
+    color: var(--text-primary) !important;
+    margin-top: 5px !important;
+    text-shadow: 0 0 10px rgba(255,255,255,0.05);
+}
+
+/* Edit Avatar hover overlays */
+.settings-layout div[style*="editAvatarImg"] + div {
+    opacity: 0;
+    transition: var(--transition-fluid) !important;
+    border-radius: 50%;
+}
+.settings-layout div[style*="editAvatarImg"]:parent:hover div[style*="editAvatarImg"] + div,
+.settings-layout div:hover > div[style*="rgba(0,0,0,0.35)"] {
+    opacity: 1 !important;
+    background: rgba(5, 5, 7, 0.7) !important;
+}
+
+/* ── Menu List Items (Double Bezel & Staggered Transitions) ── */
+.settings-layout .list-content > div > div[onclick],
+.settings-layout .list-content div[style*="cursor: pointer"],
+.settings-layout .list-content div[style*="cursor:pointer"] {
+    background: var(--bg-card-dark) !important;
+    border: 1px solid var(--border-hairline) !important;
+    border-radius: 14px !important;
+    margin: 8px 0 !important;
+    padding: 16px 20px !important;
+    transition: var(--transition-spring) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+.settings-layout .list-content > div > div[onclick]::before,
+.settings-layout .list-content div[style*="cursor: pointer"]::before,
+.settings-layout .list-content div[style*="cursor:pointer"]::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(254, 76, 76, 0.03) 0%, transparent 60%);
+    opacity: 0;
+    transition: var(--transition-fluid);
+    pointer-events: none;
+}
+
+.settings-layout .list-content > div > div[onclick]:hover,
+.settings-layout .list-content div[style*="cursor: pointer"]:hover,
+.settings-layout .list-content div[style*="cursor:pointer"]:hover {
+    background: var(--bg-card-dark-hover) !important;
+    border-color: var(--border-hairline-hover) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3), inset 0 1px 1px rgba(255,255,255,0.02) !important;
+}
+
+.settings-layout .list-content > div > div[onclick]:hover::before,
+.settings-layout .list-content div[style*="cursor: pointer"]:hover::before,
+.settings-layout .list-content div[style*="cursor:pointer"]:hover::before {
+    opacity: 1;
+}
+
+/* Hover effects for icons in list items */
+.settings-layout .list-content > div > div[onclick] i,
+.settings-layout .list-content div[style*="cursor: pointer"] i,
+.settings-layout .list-content div[style*="cursor:pointer"] i {
+    transition: var(--transition-spring) !important;
+    color: var(--text-secondary) !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.settings-layout .list-content > div > div[onclick]:hover i,
+.settings-layout .list-content div[style*="cursor: pointer"]:hover i,
+.settings-layout .list-content div[style*="cursor:pointer"]:hover i {
+    color: var(--accent-red) !important;
+    transform: scale(1.18);
+    filter: drop-shadow(0 0 8px rgba(254, 76, 76, 0.4));
+}
+
+.settings-layout .list-content > div > div[onclick] div[style*="font-size: 16px"],
+.settings-layout .list-content div[style*="cursor: pointer"] div[style*="font-size: 16px"],
+.settings-layout .list-content div[style*="cursor:pointer"] div[style*="font-size: 16px"] {
+    font-family: var(--font-premium) !important;
+    font-weight: 600 !important;
+    color: var(--text-primary) !important;
+}
+
+.settings-layout .list-content > div > div[onclick] div[style*="font-size: 13px"],
+.settings-layout .list-content div[style*="cursor: pointer"] div[style*="font-size: 13px"],
+.settings-layout .list-content div[style*="cursor:pointer"] div[style*="font-size: 13px"] {
+    color: var(--text-secondary) !important;
+    font-size: 12.5px !important;
+    margin-top: 3px;
+}
+
+/* Logout Button Special Styling */
+.settings-layout .list-content > div > div[onclick*='Logout'] {
+    border-color: rgba(234, 0, 56, 0.15) !important;
+    background: rgba(234, 0, 56, 0.01) !important;
+}
+
+.settings-layout .list-content > div > div[onclick*='Logout'] i {
+    color: #ea0038 !important;
+}
+
+.settings-layout .list-content > div > div[onclick*='Logout']:hover {
+    background: rgba(234, 0, 56, 0.05) !important;
+    border-color: rgba(234, 0, 56, 0.3) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(234, 0, 56, 0.08) !important;
+}
+
+.settings-layout .list-content > div > div[onclick*='Logout']:hover i {
+    color: #ff2c60 !important;
+    filter: drop-shadow(0 0 8px rgba(234, 0, 56, 0.4));
+}
+
+/* ── Inline Cards Styling Override (e.g., Edit Profile white cards) ── */
+.settings-layout .list-content div[style*="background: white"],
+.settings-layout .list-content div[style*="background:white"] {
+    background: var(--bg-oled-black) !important;
+    border: 1px solid var(--border-hairline) !important;
+    border-radius: 16px !important;
+    padding: 10px 0 !important;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4) !important;
+    overflow: hidden;
+}
+
+.settings-layout .list-content div[style*="background: #fafafa"],
+.settings-layout .list-content div[style*="background:#fafafa"] {
+    background: rgba(255, 255, 255, 0.01) !important;
+    border-bottom: 1px solid var(--border-hairline) !important;
+}
+
+/* Style field item labels and text inside edit page */
+.settings-layout .list-content label[style*="color: var(--wa-text-secondary)"],
+.settings-layout .list-content label {
+    font-family: var(--font-premium) !important;
+    font-size: 12px !important;
+    letter-spacing: 0.05em !important;
+    text-transform: uppercase !important;
+    color: var(--text-secondary) !important;
+    opacity: 0.8;
+}
+
+.settings-layout .list-content div[style*="font-weight: 600"],
+.settings-layout .list-content div[style*="font-weight: 500"] {
+    font-family: var(--font-premium) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Section titles (Basic Details, Bio & Interests, etc.) */
+.settings-layout .list-content div[style*="text-transform: uppercase"] {
+    font-family: var(--font-premium) !important;
+    font-weight: 700 !important;
+    font-size: 11px !important;
+    letter-spacing: 0.12em !important;
+    color: var(--accent-red) !important;
+    margin-top: 15px !important;
+    margin-bottom: 12px !important;
+}
+
+/* Pen edit icon button overrides */
+.settings-layout .list-content i.fa-pen {
+    color: var(--text-muted) !important;
+    transition: var(--transition-fluid) !important;
+    padding: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.02);
+}
+
+.settings-layout .list-content i.fa-pen:hover {
+    color: var(--accent-red) !important;
+    background: rgba(254, 76, 76, 0.1) !important;
+    transform: scale(1.15) rotate(15deg);
+}
+
+/* Form inputs & dropdowns */
+.settings-layout .list-content input[style*="border-bottom"],
+.settings-layout .list-content select[style*="border-bottom"] {
+    color: var(--text-primary) !important;
+    border-bottom: 2px solid var(--border-hairline) !important;
+    padding: 8px 0 !important;
+    font-family: var(--font-premium) !important;
+    transition: var(--transition-fluid) !important;
+}
+
+.settings-layout .list-content input[style*="border-bottom"]:focus,
+.settings-layout .list-content select[style*="border-bottom"]:focus {
+    border-color: var(--accent-red) !important;
+    filter: drop-shadow(0 2px 8px var(--glow-color));
+}
+
+.settings-layout .list-content select option {
+    background-color: var(--bg-card-dark) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Checkmark & cancel save icons */
+.settings-layout .list-content i.fa-check {
+    color: var(--accent-red) !important;
+    padding: 8px;
+    background: rgba(254, 76, 76, 0.08);
+    border-radius: 50%;
+    transition: var(--transition-fluid);
+}
+.settings-layout .list-content i.fa-check:hover {
+    transform: scale(1.15);
+    background: rgba(254, 76, 76, 0.15);
+}
+
+.settings-layout .list-content i.fa-times {
+    color: var(--text-muted) !important;
+    padding: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 50%;
+    transition: var(--transition-fluid);
+}
+.settings-layout .list-content i.fa-times:hover {
+    color: var(--text-primary) !important;
+    background: rgba(255, 255, 255, 0.08);
+    transform: scale(1.15);
+}
+
+/* Border bottom lines in edit forms */
+.settings-layout .list-content div[style*="border-bottom: 1px solid"] {
+    border-bottom: 1px solid var(--border-hairline) !important;
+}
+
+/* ── Custom Switch Styles (Privacy & Chats switches) ── */
+.wa-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.wa-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.wa-slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border-hairline);
+    transition: .4s cubic-bezier(0.32, 0.72, 0, 1);
+    border-radius: 24px;
+}
+
+.wa-slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 2px;
+    bottom: 2px;
+    background-color: var(--text-secondary);
+    transition: .4s cubic-bezier(0.32, 0.72, 0, 1);
+    border-radius: 50%;
+}
+
+.wa-switch input:checked + .wa-slider {
+    background-color: rgba(254, 76, 76, 0.2);
+    border-color: rgba(254, 76, 76, 0.4);
+}
+
+.wa-switch input:checked + .wa-slider:before {
+    transform: translateX(20px);
+    background-color: var(--accent-red);
+    box-shadow: 0 0 8px rgba(254, 76, 76, 0.6);
+}
+
+/* ── Premium Keyboard Shortcuts Modal ── */
+.settings-layout #shortcutsModal > div {
+    background: var(--bg-card-dark) !important;
+    border: 1px solid var(--border-hairline) !important;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.6) !important;
+    border-radius: 20px !important;
+    padding: 35px !important;
+}
+
+.settings-layout #shortcutsModal h2 {
+    font-family: var(--font-premium) !important;
+    font-weight: 700 !important;
+    color: var(--text-primary) !important;
+    letter-spacing: -0.02em;
+}
+
+.settings-layout #shortcutsModal span[style*="color: var(--wa-text)"],
+.settings-layout #shortcutsModal span {
+    font-family: var(--font-premium) !important;
+    color: var(--text-secondary) !important;
+}
+
+.settings-layout #shortcutsModal span[style*="background: #e9edef"],
+.settings-layout #shortcutsModal kbd,
+.settings-layout #shortcutsModal span[style*="background:#e9edef"] {
+    background: rgba(255, 255, 255, 0.03) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-hairline) !important;
+    border-radius: 6px !important;
+    padding: 4px 10px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    font-family: var(--font-premium) !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+}
+
+.settings-layout #shortcutsModal button {
+    background: var(--accent-red) !important;
+    color: white !important;
+    font-family: var(--font-premium) !important;
+    font-weight: 600 !important;
+    border-radius: 30px !important;
+    padding: 12px 36px !important;
+    transition: var(--transition-fluid) !important;
+    border: none;
+    box-shadow: 0 4px 15px rgba(254, 76, 76, 0.2);
+}
+
+.settings-layout #shortcutsModal button:hover {
+    background: var(--accent-red-hover) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(254, 76, 76, 0.35);
+}
+
+.settings-layout #shortcutsModal div[style*="border-bottom"] {
+    border-bottom: 1px solid var(--border-hairline) !important;
+}
+
+/* ── Awwwards-Tier Settings Landing Area (Welcome Section) ── */
+.premium-settings-welcome {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 100dvh;
+    padding: 40px;
+    background: radial-gradient(circle at 50% 50%, rgba(22, 23, 28, 0.4) 0%, var(--bg-oled-black) 80%);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Glowing mesh gradient background orbs */
+.premium-settings-welcome::before {
+    content: '';
+    position: absolute;
+    top: 25%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(254, 76, 76, 0.08) 0%, transparent 70%);
+    z-index: 1;
+    pointer-events: none;
+    animation: orbFloat 8s ease-in-out infinite alternate;
+}
+
+@keyframes orbFloat {
+    0% { transform: translate(-50%, -50%) scale(1); }
+    100% { transform: translate(-42%, -55%) scale(1.15); }
+}
+
+.welcome-inner {
+    position: relative;
+    z-index: 2;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: welcomeFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes welcomeFadeIn {
+    from { opacity: 0; transform: translateY(20px); filter: blur(5px); }
+    to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+.welcome-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(254, 76, 76, 0.08);
+    border: 1px solid rgba(254, 76, 76, 0.2);
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--accent-red);
+    margin-bottom: 25px;
+    box-shadow: 0 0 15px rgba(254,76,76,0.05);
+}
+
+.welcome-logo-container {
+    width: 100px;
+    height: 100px;
+    background: linear-gradient(135deg, var(--bg-card-dark) 0%, #08090d 100%);
+    border: 1px solid var(--border-hairline);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255,255,255,0.05);
+    border-radius: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 30px;
+    transition: var(--transition-spring);
+    cursor: pointer;
+    position: relative;
+}
+
+.welcome-logo-container::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 30px;
+    background: linear-gradient(135deg, var(--accent-red), transparent);
+    z-index: -1;
+    opacity: 0.2;
+    transition: var(--transition-fluid);
+}
+
+.welcome-logo-container:hover {
+    transform: scale(1.06) rotate(-2deg);
+}
+
+.welcome-logo-container:hover::after {
+    opacity: 0.5;
+    filter: drop-shadow(0 0 10px rgba(254,76,76,0.3));
+}
+
+.welcome-logo-container i {
+    font-size: 42px;
+    color: var(--accent-red);
+    filter: drop-shadow(0 0 10px rgba(254, 76, 76, 0.4));
+    animation: iconSoftPulse 3s ease-in-out infinite;
+}
+
+@keyframes iconSoftPulse {
+    0%, 100% { filter: drop-shadow(0 0 8px rgba(254, 76, 76, 0.4)); }
+    50% { filter: drop-shadow(0 0 15px rgba(254, 76, 76, 0.7)); }
+}
+
+.premium-settings-welcome h2 {
+    font-family: var(--font-premium) !important;
+    font-size: 28px !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.02em !important;
+    margin: 0 0 12px !important;
+    color: var(--text-primary) !important;
+}
+
+.premium-settings-welcome p {
+    font-family: var(--font-premium) !important;
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+    color: var(--text-secondary) !important;
+    margin: 0 0 35px !important;
+}
+
+.welcome-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    width: 100%;
+    margin-bottom: 40px;
+}
+
+.welcome-card {
+    background: var(--bg-card-dark);
+    border: 1px solid var(--border-hairline);
+    border-radius: 16px;
+    padding: 18px;
+    text-align: left;
+    transition: var(--transition-spring);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+
+.welcome-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(254, 76, 76, 0.03) 0%, transparent 60%);
+    opacity: 0;
+    transition: var(--transition-fluid);
+}
+
+.welcome-card:hover {
+    background: var(--bg-card-dark-hover);
+    border-color: var(--border-hairline-hover);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+.welcome-card:hover::before {
+    opacity: 1;
+}
+
+.welcome-card-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-hairline);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 12px;
+    transition: var(--transition-spring);
+}
+
+.welcome-card:hover .welcome-card-icon {
+    background: rgba(254, 76, 76, 0.08);
+    border-color: rgba(254, 76, 76, 0.2);
+    color: var(--accent-red);
+    transform: scale(1.08) rotate(5deg);
+}
+
+.welcome-card-icon i {
+    font-size: 15px;
+    color: var(--text-secondary);
+    transition: var(--transition-fluid);
+}
+
+.welcome-card:hover .welcome-card-icon i {
+    color: var(--accent-red);
+}
+
+.welcome-card h4 {
+    font-family: var(--font-premium) !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: var(--text-primary) !important;
+    margin: 0 0 4px !important;
+}
+
+.welcome-card p {
+    font-size: 11.5px !important;
+    line-height: 1.4 !important;
+    color: var(--text-muted) !important;
+    margin: 0 !important;
+}
+
+.welcome-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.welcome-footer i {
+    color: var(--accent-green);
+    font-size: 12px;
+}
+
+/* ── RESPONSIVE MEDIA QUERIES (ALL SETTINGS PAGES) ── */
+@media (max-width: 768px) {
+    /*
+     * On mobile, chat.css already converts the sidebar nav into a floating
+     * bottom pill. We just need settings pages to fill the full width.
+     */
+
+    /* Full-width middle panel — sidebar is now at the bottom */
+    .settings-layout .chat-list-panel {
+        width: 100% !important;
+        padding-bottom: 115px !important;
+        overflow-y: auto !important;
+        flex: 1 1 auto !important;
+    }
+
+    /* Hide right workspace panel on mobile — not needed in Settings */
+    .settings-layout .chat-workspace-panel {
+        display: none !important;
+    }
+
+    /* Profile card shrink */
+    .settings-layout .list-content > div[style*="align-items: center"] {
+        padding: 20px 14px !important;
+        margin-bottom: 8px !important;
+    }
+
+    .settings-layout .list-content > div[style*="align-items: center"] h2 {
+        font-size: 17px !important;
+        margin-bottom: 12px !important;
+    }
+
+    /* Settings list items padding */
+    .settings-layout .list-content {
+        padding: 6px 10px 115px !important;
+    }
+
+    /* Page header */
+    .settings-layout .lp-header {
+        padding: 14px 14px !important;
+        height: 56px !important;
+    }
+
+    .settings-layout .lp-header h1 {
+        font-size: 18px !important;
+    }
+
+    /* Search bar */
+    .settings-layout .lp-search {
+        padding: 10px 14px !important;
+    }
+
+    /* Bigger touch targets */
+    .settings-layout .list-content div[style*="cursor: pointer"],
+    .settings-layout .list-content div[onclick] {
+        margin: 5px 0 !important;
+        padding: 14px 14px !important;
+        min-height: 52px !important;
+    }
+
+    /* Welcome grid single column */
+    .premium-settings-welcome .welcome-grid {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+    }
+
+    .premium-settings-welcome {
+        padding: 20px 16px 130px !important;
+        min-height: unset !important;
+    }
+
+    .premium-settings-welcome h2 {
+        font-size: 20px !important;
+    }
+
+    .welcome-logo-container {
+        width: 72px !important;
+        height: 72px !important;
+        border-radius: 20px !important;
+        margin-bottom: 18px !important;
+    }
+
+    .welcome-logo-container i {
+        font-size: 30px !important;
+    }
+
+    /* Shortcuts modal full width */
+    .settings-layout #shortcutsModal > div {
+        width: 95% !important;
+        padding: 20px 16px !important;
+        max-height: 88vh !important;
+        overflow-y: auto !important;
+    }
+
+    .settings-layout #shortcutsModal h2 {
+        font-size: 18px !important;
+        margin-bottom: 20px !important;
+    }
+
+    /* Shortcuts two-column -> single column */
+    .settings-layout #shortcutsModal div[style*="gap: 60px"] {
+        flex-direction: column !important;
+        gap: 20px !important;
+    }
+}
+
+/* ── Global Overrides for Settings List Rows ── */
+.settings-layout .list-content div[style*="cursor: pointer"],
+.settings-layout .list-content div[onclick] {
+    transition: all 0.25s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+    border-radius: 12px !important;
+    margin: 6px 16px !important;
+    padding: 14px 20px !important;
+    background: rgba(255, 255, 255, 0.02) !important;
+    border: 1px solid rgba(255, 255, 255, 0.04) !important;
+    box-shadow: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 15px !important;
+}
+
+.settings-layout .list-content div[style*="cursor: pointer"]:hover,
+.settings-layout .list-content div[onclick]:hover {
+    background: rgba(254, 76, 76, 0.06) !important;
+    border-color: rgba(254, 76, 76, 0.15) !important;
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2) !important;
+}
+
+.settings-layout .list-content div[style*="cursor: pointer"] i,
+.settings-layout .list-content div[onclick] i {
+    color: var(--text-secondary) !important;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1) !important;
+}
+
+.settings-layout .list-content div[style*="cursor: pointer"]:hover i,
+.settings-layout .list-content div[onclick]:hover i {
+    color: var(--accent-red) !important;
+    transform: scale(1.15) !important;
+    filter: drop-shadow(0 0 6px rgba(254, 76, 76, 0.45)) !important;
+}
+
+/* Ensure clean margins and padding on subpage titles */
+.settings-layout .list-content div[style*="color: var(--wa-primary)"],
+.settings-layout .list-content div[style*="color: var(--wa-icon)"] {
+    margin: 15px 16px 5px !important;
+    padding: 0 !important;
+    color: var(--accent-red) !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.8px !important;
+    text-transform: uppercase !important;
+    border: none !important;
+}
+
+/* Redesign Settings Switch toggles */
+.settings-layout .wa-switch {
+    width: 44px !important;
+    height: 24px !important;
+}
+
+.settings-layout .wa-slider {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border-radius: 24px !important;
+}
+
+.settings-layout .wa-slider::before {
+    background-color: var(--text-muted) !important;
+    height: 18px !important;
+    width: 18px !important;
+    left: 3px !important;
+    bottom: 3px !important;
+}
+
+.settings-layout .wa-switch input:checked + .wa-slider {
+    background-color: var(--accent-red) !important;
+}
+
+.settings-layout .wa-switch input:checked + .wa-slider::before {
+    transform: translateX(20px) !important;
+    background-color: white !important;
+}
+

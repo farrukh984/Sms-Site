@@ -1,0 +1,122 @@
+@model List<Site.Models.Service>
+@{
+    ViewData["Title"] = "Services Catalog";
+    ViewData["ActiveNav"] = "Services";
+}
+
+<div class="page-title-area gsap-stagger">
+    <div class="title-left">
+        <div class="title-main">
+            <h1>SERVICES <span class="highlight">CATALOG</span></h1>
+        </div>
+        <div class="title-sub">
+            <p>Manage offerings, prices, and track active services</p>
+        </div>
+    </div>
+    <div class="title-actions">
+        <a href="/Admin/CreateService" class="btn-new">
+            <i class="fas fa-plus"></i> ADD SERVICE
+        </a>
+    </div>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="toast-elite gsap-stagger" id="toastMessage">
+        <i class="fas fa-check-circle"></i> @TempData["Success"]
+    </div>
+    <style>
+        .toast-elite {
+            position: fixed; bottom: 32px; right: 32px;
+            background: rgba(46, 204, 113, 0.15);
+            border: 1px solid rgba(46, 204, 113, 0.3);
+            color: var(--success-green);
+            padding: 16px 24px; border-radius: 12px;
+            font-weight: 700; font-size: 14px;
+            display: flex; align-items: center; gap: 12px;
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+        }
+    </style>
+    <script>
+        setTimeout(() => { const t = document.getElementById('toastMessage'); if(t) t.style.display = 'none'; }, 4000);
+    </script>
+}
+
+@if (Model.Count == 0)
+{
+    <div class="elite-section gsap-stagger" style="text-align:center; padding: 60px;">
+        <i class="fas fa-cubes" style="font-size: 48px; color: var(--text-muted); margin-bottom: 20px;"></i>
+        <h3 style="color: white; margin-bottom: 8px;">No Services Found</h3>
+        <p style="color: var(--text-muted); font-size: 14px;">Click the "Add Service" button above to create your first offering.</p>
+    </div>
+}
+else
+{
+    <div class="elite-section gsap-stagger">
+        <div class="section-header-elite">
+            <div class="section-title">
+                <i class="fas fa-box-open"></i> ALL SERVICES
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="elite-table">
+                <thead>
+                    <tr>
+                        <th>Icon</th>
+                        <th>Service Details</th>
+                        <th>Price</th>
+                        <th>Purchases</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var svc in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(255, 51, 51, 0.1); display: flex; align-items: center; justify-content: center; color: var(--accent-red); font-size: 18px; border: 1px solid rgba(255, 51, 51, 0.2);">
+                                    <i class="@(svc.IconClass ?? "fas fa-star")"></i>
+                                </div>
+                            </td>
+                            <td>
+                                <div style="font-weight: 700; font-size: 14px; color: white;">@svc.Title</div>
+                                <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">@svc.Description</div>
+                            </td>
+                            <td style="color: var(--success-green); font-weight: 800; font-size: 16px; font-style: italic;">
+                                $@svc.Price.ToString("0.00")
+                            </td>
+                            <td>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <i class="fas fa-users" style="color: var(--info-blue); font-size: 12px;"></i>
+                                    <span style="font-weight: 600;">@svc.UserServices.Count</span>
+                                </div>
+                            </td>
+                            <td>
+                                @if(svc.IsActive) {
+                                    <span class="table-badge badge-outline-green">Active</span>
+                                } else {
+                                    <span class="table-badge badge-outline-red" style="color:var(--text-muted); border-color:rgba(255,255,255,0.2);">Inactive</span>
+                                }
+                            </td>
+                            <td>
+                                <div style="display: flex; gap: 8px;">
+                                    <a href="/Admin/EditService/@svc.Id" class="btn-outline" style="padding: 6px 12px; font-size: 11px;">
+                                        <i class="fas fa-edit"></i> EDIT
+                                    </a>
+                                    <form method="post" action="/Admin/DeleteService" onsubmit="return confirm('Delete this service forever?');" style="display:inline;">
+                                        <input type="hidden" name="id" value="@svc.Id" />
+                                        <button type="submit" class="btn-outline" style="padding: 6px 12px; font-size: 11px; color: var(--accent-red); border-color: rgba(255, 51, 51, 0.3); background: rgba(255, 51, 51, 0.05); cursor: pointer;">
+                                            <i class="fas fa-trash"></i> DEL
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

@@ -1,0 +1,522 @@
+@model Site.Models.Users
+@{
+    ViewData["Title"] = "Edit Profile";
+}
+
+@section MiddlePanel {
+    <div class="lp-header" style="border-bottom: 1px solid var(--wa-border);">
+        <div style="display: flex; align-items: center; gap: 25px; width: 100%;">
+            <a href="/Settings" style="color: var(--wa-icon); font-size: 18px; margin-left: 5px;"><i class="fas fa-arrow-left"></i></a>
+            <h1 style="font-size: 19px; font-weight: 500;">Edit profile</h1>
+        </div>
+    </div>
+
+    <div class="list-content" style="padding-bottom: 80px; overflow-y: auto; height: calc(100vh - 60px);">
+        <!-- Profile Picture Area -->
+        <div style="padding: 30px 0; display: flex; justify-content: center; background: #fafafa; border-bottom: 1px solid var(--wa-border);">
+            <input type="file" id="avatarFileInput" accept="image/*" style="display:none;" onchange="uploadAvatar(this)" />
+            <div onclick="triggerAvatarUpload()" style="width: 160px; height: 160px; border-radius: 50%; position: relative; overflow: hidden; cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
+                <img src="@(string.IsNullOrEmpty(Model.ProfilePicture) ? $"https://ui-avatars.com/api/?name={System.Net.WebUtility.UrlEncode(Model.FullName ?? Model.Username)}&background=00a884&color=fff" : Model.ProfilePicture)" style="width: 100%; height: 100%; object-fit: cover;" id="editAvatarImg" />
+                <div style="position: absolute; bottom: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.35); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; transition: opacity 0.2s;">
+                    <i class="fas fa-camera fa-xl" style="margin-bottom: 8px;"></i>
+                    <div style="font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Edit</div>
+                </div>
+            </div>
+        </div>
+
+        <div style="padding: 25px 20px; display: flex; flex-direction: column; gap: 30px;">
+            
+            <!-- CATEGORY 1: BASIC ACCOUNT DETAILS -->
+            <div>
+                <div style="font-size: 12px; color: var(--wa-primary); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px;">Basic Details</div>
+                <div style="background: white; border-radius: 8px; border: 1px solid var(--wa-border); display: flex; flex-direction: column;">
+                    
+                    <!-- Name Field -->
+                    <div style="padding: 18px 20px; border-bottom: 1px solid var(--wa-border);">
+                        <label style="font-size: 13px; color: var(--wa-text-secondary); display: block; margin-bottom: 8px;">Name</label>
+                        <div style="display: flex; justify-content: space-between; align-items: center;" id="nameView">
+                            <div style="font-size: 16px; font-weight: 500;" id="displayName">@(Model.FullName ?? Model.Username)</div>
+                            <i class="fas fa-pen" style="color: var(--wa-icon); cursor: pointer; font-size: 13px;" onclick="enableEdit('name')"></i>
+                        </div>
+                        <div style="display: none; align-items: center; gap: 15px;" id="nameEdit">
+                            <input type="text" id="inputName" value="@(Model.FullName ?? Model.Username)" style="flex: 1; border: none; border-bottom: 2px solid var(--wa-primary); outline: none; font-size: 16px; padding: 5px 0; background: transparent; color: var(--wa-text);" />
+                            <div style="display: flex; gap: 12px; color: var(--wa-icon); cursor: pointer; font-size: 16px;">
+                                <i class="fas fa-check" style="color: var(--wa-primary);" onclick="saveEdit('name')"></i>
+                                <i class="fas fa-times" onclick="cancelEdit('name')"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- About Field -->
+                    <div style="padding: 18px 20px; border-bottom: 1px solid var(--wa-border);">
+                        <label style="font-size: 13px; color: var(--wa-text-secondary); display: block; margin-bottom: 8px;">About</label>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start;" id="aboutView">
+                            <div>
+                                <div style="font-size: 16px; font-weight: 500;" id="displayAbout">@(Model.About ?? "Battery about to die")</div>
+                                <div style="font-size: 12px; color: var(--wa-text-secondary); margin-top: 4px;">Until I change it</div>
+                            </div>
+                            <i class="fas fa-pen" style="color: var(--wa-icon); cursor: pointer; font-size: 13px;" onclick="enableEdit('about')"></i>
+                        </div>
+                        <div style="display: none; align-items: center; gap: 15px;" id="aboutEdit">
+                            <input type="text" id="inputAbout" value="@(Model.About ?? "Battery about to die")" style="flex: 1; border: none; border-bottom: 2px solid var(--wa-primary); outline: none; font-size: 16px; padding: 5px 0; background: transparent; color: var(--wa-text);" />
+                            <div style="display: flex; gap: 12px; color: var(--wa-icon); cursor: pointer; font-size: 16px;">
+                                <i class="fas fa-check" style="color: var(--wa-primary);" onclick="saveEdit('about')"></i>
+                                <i class="fas fa-times" onclick="cancelEdit('about')"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Phone Field -->
+                    <div style="padding: 18px 20px; border-bottom: 1px solid var(--wa-border);">
+                        <label style="font-size: 13px; color: var(--wa-text-secondary); display: block; margin-bottom: 8px;">Phone</label>
+                        <div style="display: flex; justify-content: space-between; align-items: center;" id="phoneView">
+                            <div style="font-size: 16px; font-weight: 500;" id="displayPhone">@Model.MobileNumber</div>
+                            <i class="fas fa-pen" style="color: var(--wa-icon); cursor: pointer; font-size: 13px;" onclick="enableEdit('phone')"></i>
+                        </div>
+                        <div style="display: none; align-items: center; gap: 15px;" id="phoneEdit">
+                            <input type="text" id="inputPhone" value="@Model.MobileNumber" style="flex: 1; border: none; border-bottom: 2px solid var(--wa-primary); outline: none; font-size: 16px; padding: 5px 0; background: transparent; color: var(--wa-text);" />
+                            <div style="display: flex; gap: 12px; color: var(--wa-icon); cursor: pointer; font-size: 16px;">
+                                <i class="fas fa-check" style="color: var(--wa-primary);" onclick="saveEdit('phone')"></i>
+                                <i class="fas fa-times" onclick="cancelEdit('phone')"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Email Field -->
+                    <div style="padding: 18px 20px;">
+                        <label style="font-size: 13px; color: var(--wa-text-secondary); display: block; margin-bottom: 8px;">Email</label>
+                        <div style="display: flex; justify-content: space-between; align-items: center;" id="emailView">
+                            <div style="font-size: 16px; font-weight: 500;" id="displayEmail">@(Model.Email ?? "Add Email Address")</div>
+                            <i class="fas fa-pen" style="color: var(--wa-icon); cursor: pointer; font-size: 13px;" onclick="enableEdit('email')"></i>
+                        </div>
+                        <div style="display: none; align-items: center; gap: 15px;" id="emailEdit">
+                            <input type="email" id="inputEmail" value="@Model.Email" style="flex: 1; border: none; border-bottom: 2px solid var(--wa-primary); outline: none; font-size: 16px; padding: 5px 0; background: transparent; color: var(--wa-text);" />
+                            <div style="display: flex; gap: 12px; color: var(--wa-icon); cursor: pointer; font-size: 16px;">
+                                <i class="fas fa-check" style="color: var(--wa-primary);" onclick="saveEdit('email')"></i>
+                                <i class="fas fa-times" onclick="cancelEdit('email')"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- CATEGORY 2: PERSONAL PROFILE DETAILS -->
+            <div>
+                <div style="font-size: 12px; color: var(--wa-primary); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px;">Personal Profile</div>
+                <div style="background: white; border-radius: 8px; border: 1px solid var(--wa-border); display: flex; flex-direction: column;">
+                    
+                    <!-- Gender Field -->
+                    <div style="padding: 18px 20px; border-bottom: 1px solid var(--wa-border);">
+                        <label style="font-size: 13px; color: var(--wa-text-secondary); display: block; margin-bottom: 8px;">Gender</label>
+                        <div style="display: flex; justify-content: space-between; align-items: center;" id="genderView">
+                            <div style="font-size: 16px; font-weight: 500;" id="displayGender">@(Model.Gender ?? "Select Gender")</div>
+                            <i class="fas fa-pen" style="color: var(--wa-icon); cursor: pointer; font-size: 13px;" onclick="enableEdit('gender')"></i>
+                        </div>
+                        <div style="display: none; align-items: center; gap: 15px;" id="genderEdit">
+                            <select id="inputGender" style="flex: 1; border: none; border-bottom: 2px solid var(--wa-primary); outline: none; font-size: 16px; padding: 5px 0; background: transparent; color: var(--wa-text);">
+                                <option value="Male" selected="@(Model.Gender == "Male")">Male</option>
+                                <option value="Female" selected="@(Model.Gender == "Female")">Female</option>
+                                <option value="Other" selected="@(Model.Gender == "Other")">Other</option>
+                            </select>
+                            <div style="display: flex; gap: 12px; color: var(--wa-icon); cursor: pointer; font-size: 16px;">
+                                <i class="fas fa-check" style="color: var(--wa-primary);" onclick="saveEdit('gender')"></i>
+                                <i class="fas fa-times" onclick="cancelEdit('gender')"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Date of Birth Field -->
+                    <div style="padding: 18px 20px; border-bottom: 1px solid var(--wa-border);">
+                        <label style="font-size: 13px; color: var(--wa-text-secondary); display: block; margin-bottom: 8px;">Date of Birth</label>
+                        <div style="display: flex; justify-content: space-between; align-items: center;" id="dobView">
+                            <div style="font-size: 16px; font-weight: 500;" id="displayDob">@(Model.DateOfBirth?.ToString("MMMM dd, yyyy") ?? "Add Birth Date")</div>
+                            <i class="fas fa-pen" style="color: var(--wa-icon); cursor: pointer; font-size: 13px;" onclick="enableEdit('dob')"></i>
+                        </div>
+                        <div style="display: none; align-items: center; gap: 15px;" id="dobEdit">
+                            <input type="date" id="inputDob" value="@(Model.DateOfBirth?.ToString("yyyy-MM-dd"))" style="flex: 1; border: none; border-bottom: 2px solid var(--wa-primary); outline: none; font-size: 16px; padding: 5px 0; background: transparent; color: var(--wa-text);" />
+                            <div style="display: flex; gap: 12px; color: var(--wa-icon); cursor: pointer; font-size: 16px;">
+                                <i class="fas fa-check" style="color: var(--wa-primary);" onclick="saveEdit('dob')"></i>
+                                <i class="fas fa-times" onclick="cancelEdit('dob')"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Address Field -->
+                    <div style="padding: 18px 20px; border-bottom: 1px solid var(--wa-border);">
+                        <label style="font-size: 13px; color: var(--wa-text-secondary); display: block; margin-bottom: 8px;">Address</label>
+                        <div style="display: flex; justify-content: space-between; align-items: center;" id="addressView">
+                            <div style="font-size: 16px; font-weight: 500;" id="displayAddress">@(Model.Address ?? "Add Home Address")</div>
+                            <i class="fas fa-pen" style="color: var(--wa-icon); cursor: pointer; font-size: 13px;" onclick="enableEdit('address')"></i>
+                        </div>
+                        <div style="display: none; align-items: center; gap: 15px;" id="addressEdit">
+                            <input type="text" id="inputAddress" value="@Model.Address" style="flex: 1; border: none; border-bottom: 2px solid var(--wa-primary); outline: none; font-size: 16px; padding: 5px 0; background: transparent; color: var(--wa-text);" />
+                            <div style="display: flex; gap: 12px; color: var(--wa-icon); cursor: pointer; font-size: 16px;">
+                                <i class="fas fa-check" style="color: var(--wa-primary);" onclick="saveEdit('address')"></i>
+                                <i class="fas fa-times" onclick="cancelEdit('address')"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Marital Status Field -->
+                    <div style="padding: 18px 20px;">
+                        <label style="font-size: 13px; color: var(--wa-text-secondary); display: block; margin-bottom: 8px;">Marital Status</label>
+                        <div style="display: flex; justify-content: space-between; align-items: center;" id="maritalStatusView">
+                            <div style="font-size: 16px; font-weight: 500;" id="displayMaritalStatus">@(Model.MaritalStatus ?? "Select Status")</div>
+                            <i class="fas fa-pen" style="color: var(--wa-icon); cursor: pointer; font-size: 13px;" onclick="enableEdit('maritalStatus')"></i>
+                        </div>
+                        <div style="display: none; align-items: center; gap: 15px;" id="maritalStatusEdit">
+                            <select id="inputMaritalStatus" style="flex: 1; border: none; border-bottom: 2px solid var(--wa-primary); outline: none; font-size: 16px; padding: 5px 0; background: transparent; color: var(--wa-text);">
+                                <option value="Single" selected="@(Model.MaritalStatus == "Single")">Single</option>
+                                <option value="Married" selected="@(Model.MaritalStatus == "Married")">Married</option>
+                                <option value="Divorced" selected="@(Model.MaritalStatus == "Divorced")">Divorced</option>
+                                <option value="Widowed" selected="@(Model.MaritalStatus == "Widowed")">Widowed</option>
+                            </select>
+                            <div style="display: flex; gap: 12px; color: var(--wa-icon); cursor: pointer; font-size: 16px;">
+                                <i class="fas fa-check" style="color: var(--wa-primary);" onclick="saveEdit('maritalStatus')"></i>
+                                <i class="fas fa-times" onclick="cancelEdit('maritalStatus')"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- CATEGORY 3: BIO & INTERESTS -->
+            <div>
+                <div style="font-size: 12px; color: var(--wa-primary); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px;">Interests & Bio</div>
+                <div style="background: white; border-radius: 8px; border: 1px solid var(--wa-border); display: flex; flex-direction: column;">
+                    
+                    <!-- Hobbies Field -->
+                    <div style="padding: 18px 20px; border-bottom: 1px solid var(--wa-border);">
+                        <label style="font-size: 13px; color: var(--wa-text-secondary); display: block; margin-bottom: 8px;">Hobbies</label>
+                        <div style="display: flex; justify-content: space-between; align-items: center;" id="hobbiesView">
+                            <div style="font-size: 16px; font-weight: 500;" id="displayHobbies">@(Model.Hobbies ?? "Add Hobbies")</div>
+                            <i class="fas fa-pen" style="color: var(--wa-icon); cursor: pointer; font-size: 13px;" onclick="enableEdit('hobbies')"></i>
+                        </div>
+                        <div style="display: none; align-items: center; gap: 15px;" id="hobbiesEdit">
+                            <input type="text" id="inputHobbies" value="@Model.Hobbies" style="flex: 1; border: none; border-bottom: 2px solid var(--wa-primary); outline: none; font-size: 16px; padding: 5px 0; background: transparent; color: var(--wa-text);" />
+                            <div style="display: flex; gap: 12px; color: var(--wa-icon); cursor: pointer; font-size: 16px;">
+                                <i class="fas fa-check" style="color: var(--wa-primary);" onclick="saveEdit('hobbies')"></i>
+                                <i class="fas fa-times" onclick="cancelEdit('hobbies')"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Likes Field -->
+                    <div style="padding: 18px 20px; border-bottom: 1px solid var(--wa-border);">
+                        <label style="font-size: 13px; color: var(--wa-text-secondary); display: block; margin-bottom: 8px;">Likes</label>
+                        <div style="display: flex; justify-content: space-between; align-items: center;" id="likesView">
+                            <div style="font-size: 16px; font-weight: 500;" id="displayLikes">@(Model.Likes ?? "Add Likes")</div>
+                            <i class="fas fa-pen" style="color: var(--wa-icon); cursor: pointer; font-size: 13px;" onclick="enableEdit('likes')"></i>
+                        </div>
+                        <div style="display: none; align-items: center; gap: 15px;" id="likesEdit">
+                            <input type="text" id="inputLikes" value="@Model.Likes" style="flex: 1; border: none; border-bottom: 2px solid var(--wa-primary); outline: none; font-size: 16px; padding: 5px 0; background: transparent; color: var(--wa-text);" />
+                            <div style="display: flex; gap: 12px; color: var(--wa-icon); cursor: pointer; font-size: 16px;">
+                                <i class="fas fa-check" style="color: var(--wa-primary);" onclick="saveEdit('likes')"></i>
+                                <i class="fas fa-times" onclick="cancelEdit('likes')"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dislikes Field -->
+                    <div style="padding: 18px 20px; border-bottom: 1px solid var(--wa-border);">
+                        <label style="font-size: 13px; color: var(--wa-text-secondary); display: block; margin-bottom: 8px;">Dislikes</label>
+                        <div style="display: flex; justify-content: space-between; align-items: center;" id="dislikesView">
+                            <div style="font-size: 16px; font-weight: 500;" id="displayDislikes">@(Model.Dislikes ?? "Add Dislikes")</div>
+                            <i class="fas fa-pen" style="color: var(--wa-icon); cursor: pointer; font-size: 13px;" onclick="enableEdit('dislikes')"></i>
+                        </div>
+                        <div style="display: none; align-items: center; gap: 15px;" id="dislikesEdit">
+                            <input type="text" id="inputDislikes" value="@Model.Dislikes" style="flex: 1; border: none; border-bottom: 2px solid var(--wa-primary); outline: none; font-size: 16px; padding: 5px 0; background: transparent; color: var(--wa-text);" />
+                            <div style="display: flex; gap: 12px; color: var(--wa-icon); cursor: pointer; font-size: 16px;">
+                                <i class="fas fa-check" style="color: var(--wa-primary);" onclick="saveEdit('dislikes')"></i>
+                                <i class="fas fa-times" onclick="cancelEdit('dislikes')"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cuisines Field -->
+                    <div style="padding: 18px 20px; border-bottom: 1px solid var(--wa-border);">
+                        <label style="font-size: 13px; color: var(--wa-text-secondary); display: block; margin-bottom: 8px;">Favorite Cuisines</label>
+                        <div style="display: flex; justify-content: space-between; align-items: center;" id="cuisinesView">
+                            <div style="font-size: 16px; font-weight: 500;" id="displayCuisines">@(Model.Cuisines ?? "Add Favorite Cuisines")</div>
+                            <i class="fas fa-pen" style="color: var(--wa-icon); cursor: pointer; font-size: 13px;" onclick="enableEdit('cuisines')"></i>
+                        </div>
+                        <div style="display: none; align-items: center; gap: 15px;" id="cuisinesEdit">
+                            <input type="text" id="inputCuisines" value="@Model.Cuisines" style="flex: 1; border: none; border-bottom: 2px solid var(--wa-primary); outline: none; font-size: 16px; padding: 5px 0; background: transparent; color: var(--wa-text);" />
+                            <div style="display: flex; gap: 12px; color: var(--wa-icon); cursor: pointer; font-size: 16px;">
+                                <i class="fas fa-check" style="color: var(--wa-primary);" onclick="saveEdit('cuisines')"></i>
+                                <i class="fas fa-times" onclick="cancelEdit('cuisines')"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sports Field -->
+                    <div style="padding: 18px 20px;">
+                        <label style="font-size: 13px; color: var(--wa-text-secondary); display: block; margin-bottom: 8px;">Sports</label>
+                        <div style="display: flex; justify-content: space-between; align-items: center;" id="sportsView">
+                            <div style="font-size: 16px; font-weight: 500;" id="displaySports">@(Model.Sports ?? "Add Favorite Sports")</div>
+                            <i class="fas fa-pen" style="color: var(--wa-icon); cursor: pointer; font-size: 13px;" onclick="enableEdit('sports')"></i>
+                        </div>
+                        <div style="display: none; align-items: center; gap: 15px;" id="sportsEdit">
+                            <input type="text" id="inputSports" value="@Model.Sports" style="flex: 1; border: none; border-bottom: 2px solid var(--wa-primary); outline: none; font-size: 16px; padding: 5px 0; background: transparent; color: var(--wa-text);" />
+                            <div style="display: flex; gap: 12px; color: var(--wa-icon); cursor: pointer; font-size: 16px;">
+                                <i class="fas fa-check" style="color: var(--wa-primary);" onclick="saveEdit('sports')"></i>
+                                <i class="fas fa-times" onclick="cancelEdit('sports')"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- CATEGORY 4: EDUCATION & WORK -->
+            <div>
+                <div style="font-size: 12px; color: var(--wa-primary); font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px;">Education & Professional</div>
+                <div style="background: white; border-radius: 8px; border: 1px solid var(--wa-border); display: flex; flex-direction: column;">
+                    
+                    <!-- Qualification Field -->
+                    <div style="padding: 18px 20px; border-bottom: 1px solid var(--wa-border);">
+                        <label style="font-size: 13px; color: var(--wa-text-secondary); display: block; margin-bottom: 8px;">Qualification</label>
+                        <div style="display: flex; justify-content: space-between; align-items: center;" id="qualificationView">
+                            <div style="font-size: 16px; font-weight: 500;" id="displayQualification">@(Model.Qualification ?? "Add Qualification")</div>
+                            <i class="fas fa-pen" style="color: var(--wa-icon); cursor: pointer; font-size: 13px;" onclick="enableEdit('qualification')"></i>
+                        </div>
+                        <div style="display: none; align-items: center; gap: 15px;" id="qualificationEdit">
+                            <input type="text" id="inputQualification" value="@Model.Qualification" style="flex: 1; border: none; border-bottom: 2px solid var(--wa-primary); outline: none; font-size: 16px; padding: 5px 0; background: transparent; color: var(--wa-text);" />
+                            <div style="display: flex; gap: 12px; color: var(--wa-icon); cursor: pointer; font-size: 16px;">
+                                <i class="fas fa-check" style="color: var(--wa-primary);" onclick="saveEdit('qualification')"></i>
+                                <i class="fas fa-times" onclick="cancelEdit('qualification')"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- School Field -->
+                    <div style="padding: 18px 20px; border-bottom: 1px solid var(--wa-border);">
+                        <label style="font-size: 13px; color: var(--wa-text-secondary); display: block; margin-bottom: 8px;">School</label>
+                        <div style="display: flex; justify-content: space-between; align-items: center;" id="schoolView">
+                            <div style="font-size: 16px; font-weight: 500;" id="displaySchool">@(Model.School ?? "Add School Name")</div>
+                            <i class="fas fa-pen" style="color: var(--wa-icon); cursor: pointer; font-size: 13px;" onclick="enableEdit('school')"></i>
+                        </div>
+                        <div style="display: none; align-items: center; gap: 15px;" id="schoolEdit">
+                            <input type="text" id="inputSchool" value="@Model.School" style="flex: 1; border: none; border-bottom: 2px solid var(--wa-primary); outline: none; font-size: 16px; padding: 5px 0; background: transparent; color: var(--wa-text);" />
+                            <div style="display: flex; gap: 12px; color: var(--wa-icon); cursor: pointer; font-size: 16px;">
+                                <i class="fas fa-check" style="color: var(--wa-primary);" onclick="saveEdit('school')"></i>
+                                <i class="fas fa-times" onclick="cancelEdit('school')"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- College Field -->
+                    <div style="padding: 18px 20px; border-bottom: 1px solid var(--wa-border);">
+                        <label style="font-size: 13px; color: var(--wa-text-secondary); display: block; margin-bottom: 8px;">College</label>
+                        <div style="display: flex; justify-content: space-between; align-items: center;" id="collegeView">
+                            <div style="font-size: 16px; font-weight: 500;" id="displayCollege">@(Model.College ?? "Add College Name")</div>
+                            <i class="fas fa-pen" style="color: var(--wa-icon); cursor: pointer; font-size: 13px;" onclick="enableEdit('college')"></i>
+                        </div>
+                        <div style="display: none; align-items: center; gap: 15px;" id="collegeEdit">
+                            <input type="text" id="inputCollege" value="@Model.College" style="flex: 1; border: none; border-bottom: 2px solid var(--wa-primary); outline: none; font-size: 16px; padding: 5px 0; background: transparent; color: var(--wa-text);" />
+                            <div style="display: flex; gap: 12px; color: var(--wa-icon); cursor: pointer; font-size: 16px;">
+                                <i class="fas fa-check" style="color: var(--wa-primary);" onclick="saveEdit('college')"></i>
+                                <i class="fas fa-times" onclick="cancelEdit('college')"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Work Status Field -->
+                    <div style="padding: 18px 20px; border-bottom: 1px solid var(--wa-border);">
+                        <label style="font-size: 13px; color: var(--wa-text-secondary); display: block; margin-bottom: 8px;">Work Status</label>
+                        <div style="display: flex; justify-content: space-between; align-items: center;" id="workStatusView">
+                            <div style="font-size: 16px; font-weight: 500;" id="displayWorkStatus">@(Model.WorkStatus ?? "Add Work Status")</div>
+                            <i class="fas fa-pen" style="color: var(--wa-icon); cursor: pointer; font-size: 13px;" onclick="enableEdit('workStatus')"></i>
+                        </div>
+                        <div style="display: none; align-items: center; gap: 15px;" id="workStatusEdit">
+                            <input type="text" id="inputWorkStatus" value="@Model.WorkStatus" style="flex: 1; border: none; border-bottom: 2px solid var(--wa-primary); outline: none; font-size: 16px; padding: 5px 0; background: transparent; color: var(--wa-text);" />
+                            <div style="display: flex; gap: 12px; color: var(--wa-icon); cursor: pointer; font-size: 16px;">
+                                <i class="fas fa-check" style="color: var(--wa-primary);" onclick="saveEdit('workStatus')"></i>
+                                <i class="fas fa-times" onclick="cancelEdit('workStatus')"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Organization Field -->
+                    <div style="padding: 18px 20px; border-bottom: 1px solid var(--wa-border);">
+                        <label style="font-size: 13px; color: var(--wa-text-secondary); display: block; margin-bottom: 8px;">Organization</label>
+                        <div style="display: flex; justify-content: space-between; align-items: center;" id="organizationView">
+                            <div style="font-size: 16px; font-weight: 500;" id="displayOrganization">@(Model.Organization ?? "Add Company / Org")</div>
+                            <i class="fas fa-pen" style="color: var(--wa-icon); cursor: pointer; font-size: 13px;" onclick="enableEdit('organization')"></i>
+                        </div>
+                        <div style="display: none; align-items: center; gap: 15px;" id="organizationEdit">
+                            <input type="text" id="inputOrganization" value="@Model.Organization" style="flex: 1; border: none; border-bottom: 2px solid var(--wa-primary); outline: none; font-size: 16px; padding: 5px 0; background: transparent; color: var(--wa-text);" />
+                            <div style="display: flex; gap: 12px; color: var(--wa-icon); cursor: pointer; font-size: 16px;">
+                                <i class="fas fa-check" style="color: var(--wa-primary);" onclick="saveEdit('organization')"></i>
+                                <i class="fas fa-times" onclick="cancelEdit('organization')"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Designation Field -->
+                    <div style="padding: 18px 20px;">
+                        <label style="font-size: 13px; color: var(--wa-text-secondary); display: block; margin-bottom: 8px;">Designation</label>
+                        <div style="display: flex; justify-content: space-between; align-items: center;" id="designationView">
+                            <div style="font-size: 16px; font-weight: 500;" id="displayDesignation">@(Model.Designation ?? "Add Job Title")</div>
+                            <i class="fas fa-pen" style="color: var(--wa-icon); cursor: pointer; font-size: 13px;" onclick="enableEdit('designation')"></i>
+                        </div>
+                        <div style="display: none; align-items: center; gap: 15px;" id="designationEdit">
+                            <input type="text" id="inputDesignation" value="@Model.Designation" style="flex: 1; border: none; border-bottom: 2px solid var(--wa-primary); outline: none; font-size: 16px; padding: 5px 0; background: transparent; color: var(--wa-text);" />
+                            <div style="display: flex; gap: 12px; color: var(--wa-icon); cursor: pointer; font-size: 16px;">
+                                <i class="fas fa-check" style="color: var(--wa-primary);" onclick="saveEdit('designation')"></i>
+                                <i class="fas fa-times" onclick="cancelEdit('designation')"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function enableEdit(type) {
+            document.getElementById(type + 'View').style.display = 'none';
+            document.getElementById(type + 'Edit').style.display = 'flex';
+            
+            const inputEl = document.getElementById('input' + type.charAt(0).toUpperCase() + type.slice(1));
+            if (inputEl) {
+                inputEl.focus();
+            }
+        }
+
+        function cancelEdit(type) {
+            document.getElementById(type + 'View').style.display = 'flex';
+            document.getElementById(type + 'Edit').style.display = 'none';
+        }
+
+        async function saveEdit(type) {
+            const nameVal = document.getElementById('inputName').value;
+            const aboutVal = document.getElementById('inputAbout').value;
+            const phoneVal = document.getElementById('inputPhone').value;
+            const emailVal = document.getElementById('inputEmail').value;
+            const genderVal = document.getElementById('inputGender').value;
+            const dobVal = document.getElementById('inputDob').value;
+            const addressVal = document.getElementById('inputAddress').value;
+            const maritalStatusVal = document.getElementById('inputMaritalStatus').value;
+            const hobbiesVal = document.getElementById('inputHobbies').value;
+            const likesVal = document.getElementById('inputLikes').value;
+            const dislikesVal = document.getElementById('inputDislikes').value;
+            const cuisinesVal = document.getElementById('inputCuisines').value;
+            const sportsVal = document.getElementById('inputSports').value;
+            const qualificationVal = document.getElementById('inputQualification').value;
+            const schoolVal = document.getElementById('inputSchool').value;
+            const collegeVal = document.getElementById('inputCollege').value;
+            const workStatusVal = document.getElementById('inputWorkStatus').value;
+            const organizationVal = document.getElementById('inputOrganization').value;
+            const designationVal = document.getElementById('inputDesignation').value;
+
+            const formData = new FormData();
+            formData.append('name', nameVal);
+            formData.append('about', aboutVal);
+            formData.append('phone', phoneVal);
+            formData.append('email', emailVal);
+            formData.append('gender', genderVal);
+            formData.append('dob', dobVal);
+            formData.append('address', addressVal);
+            formData.append('maritalStatus', maritalStatusVal);
+            formData.append('hobbies', hobbiesVal);
+            formData.append('likes', likesVal);
+            formData.append('dislikes', dislikesVal);
+            formData.append('cuisines', cuisinesVal);
+            formData.append('sports', sportsVal);
+            formData.append('qualification', qualificationVal);
+            formData.append('school', schoolVal);
+            formData.append('college', collegeVal);
+            formData.append('workStatus', workStatusVal);
+            formData.append('organization', organizationVal);
+            formData.append('designation', designationVal);
+
+            try {
+                const res = await fetch('/Settings/UpdateProfile', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await res.json();
+                if (data.success) {
+                    // Update DOM display fields
+                    document.getElementById('displayName').innerText = data.name || "Add Name";
+                    document.getElementById('displayAbout').innerText = data.about || "Battery about to die";
+                    document.getElementById('displayPhone').innerText = data.phone || "";
+                    document.getElementById('displayEmail').innerText = data.email || "Add Email Address";
+                    document.getElementById('displayGender').innerText = data.gender || "Select Gender";
+                    
+                    if (data.dob) {
+                        const dateObj = new Date(data.dob);
+                        const options = { month: 'long', day: 'numeric', year: 'numeric' };
+                        document.getElementById('displayDob').innerText = dateObj.toLocaleDateString('en-US', options);
+                    } else {
+                        document.getElementById('displayDob').innerText = "Add Birth Date";
+                    }
+
+                    document.getElementById('displayAddress').innerText = data.address || "Add Home Address";
+                    document.getElementById('displayMaritalStatus').innerText = data.maritalStatus || "Select Status";
+                    document.getElementById('displayHobbies').innerText = data.hobbies || "Add Hobbies";
+                    document.getElementById('displayLikes').innerText = data.likes || "Add Likes";
+                    document.getElementById('displayDislikes').innerText = data.dislikes || "Add Dislikes";
+                    document.getElementById('displayCuisines').innerText = data.cuisines || "Add Favorite Cuisines";
+                    document.getElementById('displaySports').innerText = data.sports || "Add Favorite Sports";
+                    document.getElementById('displayQualification').innerText = data.qualification || "Add Qualification";
+                    document.getElementById('displaySchool').innerText = data.school || "Add School Name";
+                    document.getElementById('displayCollege').innerText = data.college || "Add College Name";
+                    document.getElementById('displayWorkStatus').innerText = data.workStatus || "Add Work Status";
+                    document.getElementById('displayOrganization').innerText = data.organization || "Add Company / Org";
+                    document.getElementById('displayDesignation').innerText = data.designation || "Add Job Title";
+                    
+                    // Update avatar dynamically
+                    if (data.profilePicture) {
+                        document.getElementById('editAvatarImg').src = data.profilePicture;
+                    } else {
+                        document.getElementById('editAvatarImg').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.name || 'User')}&background=00a884&color=fff`;
+                    }
+                    
+                    cancelEdit(type);
+                } else {
+                    alert("Error saving profile: " + data.message);
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Failed to connect to the server.");
+            }
+        }
+
+        function triggerAvatarUpload() {
+            document.getElementById('avatarFileInput').click();
+        }
+
+        async function uploadAvatar(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const formData = new FormData();
+                formData.append('avatarFile', file);
+
+                try {
+                    const res = await fetch('/Settings/UploadAvatar', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        document.getElementById('editAvatarImg').src = data.profilePicture;
+                    } else {
+                        alert("Error uploading avatar: " + data.message);
+                    }
+                } catch (e) {
+                    console.error(e);
+                    alert("Failed to upload avatar to the server.");
+                }
+            }
+        }
+    </script>
+}
+
+@await Html.PartialAsync("~/Views/Home/Index.cshtml")

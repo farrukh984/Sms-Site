@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
+    <title>@ViewData["Title"] - SMS SITE</title>
+    <!-- FontAwesome 6 - Local Copy (100% Offline Reliable) -->
+    <link rel="stylesheet" href="~/lib/fontawesome/css/all.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/chat.css" asp-append-version="true" />
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: ['class', '[data-theme="dark"]'],
+            theme: {
+                extend: {
+                    colors: {
+                        accent: '#ff4d4f',
+                        'accent-hover': '#e04345',
+                        'dark-bg': '#1b1d22',
+                        'dark-panel': '#1e2126',
+                        'dark-card': '#24272c',
+                        'dark-card-hover': '#2a2e34',
+                        'light-bg': '#f0f2f5',
+                        'light-panel': '#ffffff',
+                        'light-card': '#f7f8fa',
+                        'light-card-hover': '#edf0f4',
+                    },
+                    fontFamily: {
+                        sans: ['Outfit', 'Inter', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'neu-dark': '6px 6px 16px #131418, -6px -6px 16px #23262c',
+                        'neu-light': '6px 6px 16px #d1d3d8, -6px -6px 16px #ffffff',
+                        'glow-red': '0 0 20px rgba(255, 77, 79, 0.4)',
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        // Theme management — runs before render to prevent flash
+        (function() {
+            var saved = localStorage.getItem('hichat-theme') || 'dark';
+            document.documentElement.setAttribute('data-theme', saved);
+            if (saved === 'light') {
+                document.documentElement.classList.add('light');
+            }
+        })();
+    </script>
+    <style>
+        /* ─── LIGHT MODE CSS VARIABLE OVERRIDES ─── */
+        [data-theme="light"] {
+            --bg-main: #f0f2f5;
+            --bg-panel: #ffffff;
+            --bg-card: #f7f8fa;
+            --bg-card-hover: #edf0f4;
+            --text-primary: #111827;
+            --text-secondary: #6b7280;
+            --text-muted: #9ca3af;
+            --border-color: rgba(0, 0, 0, 0.06);
+            --shadow-outset: 6px 6px 16px #d1d3d8, -6px -6px 16px #ffffff;
+            --shadow-inset: inset 4px 4px 10px #d1d3d8, inset -4px -4px 10px #ffffff;
+            --shadow-btn: 4px 4px 10px #d1d3d8, -4px -4px 10px #ffffff;
+            --shadow-btn-active: inset 3px 3px 6px #d1d3d8, inset -3px -3px 6px #ffffff;
+            
+            /* Add explicit overrides for settings variables to ensure UI updates */
+            --wa-bg: #f0f2f5;
+            --wa-header: #ffffff;
+            --wa-list: #ffffff;
+            --wa-border: rgba(0, 0, 0, 0.06);
+            --wa-text: #111827;
+            --wa-text-secondary: #6b7280;
+        }
+
+        [data-theme="light"] ::-webkit-scrollbar-track { background: #f0f2f5; }
+        [data-theme="light"] ::-webkit-scrollbar-thumb { background: #c8cacd; }
+
+        /* Smooth theme transition */
+        body, .chat-app-layout, .chat-sidebar-nav, .chat-list-panel,
+        .chat-workspace-panel, .chat-header, .rx-glass-card {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease !important;
+        }
+    </style>
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body style="margin: 0; padding: 0; overflow: auto; min-height: 100vh; width: 100vw; background-color: var(--bg-main);">
+    
+    @RenderBody()
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Global Theme Manager -->
+    <script>
+        window.HiChatTheme = {
+            current: localStorage.getItem('hichat-theme') || 'dark',
+
+            set: function(theme) {
+                this.current = theme;
+                localStorage.setItem('hichat-theme', theme);
+                document.documentElement.setAttribute('data-theme', theme);
+                if (theme === 'light') {
+                    document.documentElement.classList.add('light');
+                } else {
+                    document.documentElement.classList.remove('light');
+                }
+                // Dispatch event for other components
+                window.dispatchEvent(new CustomEvent('themeChanged', { detail: theme }));
+            },
+
+            get: function() { return this.current; }
+        };
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

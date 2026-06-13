@@ -1,0 +1,31 @@
+@{
+    ViewData["Title"] = "Account Settings";
+}
+
+@section MiddlePanel {
+    <div class="lp-header">
+        <div style="display: flex; align-items: center; gap: 25px; width: 100%;">
+            <a href="/Settings" style="color: var(--wa-icon); font-size: 18px; margin-left: 5px;"><i class="fas fa-arrow-left"></i></a>
+            <h1 style="font-size: 19px; font-weight: 500;">Account</h1>
+        </div>
+    </div>
+
+    <div class="list-content" style="padding-top: 10px;">
+        <div onclick="window.location.href='/Settings/Security'" style="padding: 15px 20px; display: flex; align-items: center; gap: 25px; cursor: pointer;">
+            <i class="fas fa-shield-alt" style="font-size: 20px; color: var(--wa-icon); width: 25px; text-align: center;"></i>
+            <div style="font-size: 16px;">Security notifications</div>
+        </div>
+
+        <div onclick="window.location.href='/Settings/AccountInfo'" style="padding: 15px 20px; display: flex; align-items: center; gap: 25px; cursor: pointer;">
+            <i class="far fa-file-alt" style="font-size: 20px; color: var(--wa-icon); width: 25px; text-align: center;"></i>
+            <div style="font-size: 16px;">Request account info</div>
+        </div>
+
+        <div style="padding: 15px 20px; display: flex; align-items: center; gap: 25px; cursor: pointer;">
+            <i class="far fa-user-circle" style="font-size: 20px; color: var(--wa-icon); width: 25px; text-align: center;"></i>
+            <div style="font-size: 16px;">How to delete my account</div>
+        </div>
+    </div>
+}
+
+@await Html.PartialAsync("~/Views/Home/Index.cshtml")

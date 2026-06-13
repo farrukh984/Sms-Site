@@ -1,0 +1,262 @@
+@{
+    ViewData["Title"] = "Service Activation";
+    Layout = "~/Views/Shared/_Layout_Chat.cshtml";
+}
+
+<div class="chat-app-layout" style="display: flex; height: 100vh; background-color: var(--bg-main);">
+    <!-- Far Left Navigation Menu -->
+    @await Html.PartialAsync("_NavSidebar", "Services")
+
+    <!-- Main Content Area -->
+    <div class="chat-workspace-panel" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+        
+        <!-- Header -->
+        <div class="chat-panel-header" style="padding: 20px 30px; border-bottom: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2); display: flex; align-items: center; gap: 15px;">
+            <div style="width: 44px; height: 44px; border-radius: 12px; background: rgba(254, 76, 76, 0.1); display: flex; align-items: center; justify-content: center; color: var(--accent-red); font-size: 20px;">
+                <i class="fas fa-layer-group"></i>
+            </div>
+            <div>
+                <h2 style="font-size: 20px; font-weight: 700; margin: 0; color: white;">Service Activation</h2>
+                <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">Select and activate premium features for your account</div>
+            </div>
+        </div>
+
+        <!-- Scrollable Content -->
+        <div class="chat-list-scrollable" style="padding: 30px; display: flex; justify-content: center; overflow-y: auto;">
+            
+            <div style="max-width: 600px; width: 100%;">
+
+                <!-- STEP 1: SERVICE SELECTION -->
+                <div id="step1-selection" style="animation: fadeIn 0.4s ease;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px;">
+                        <h3 style="font-size: 16px; font-weight: 600; color: white; margin: 0;">Available Services</h3>
+                        <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Step 1 of 2</span>
+                    </div>
+
+                    <div style="display: flex; flex-direction: column; gap: 12px;" id="servicesList">
+                        <!-- Service Item 1 -->
+                        <label class="service-card" style="display: flex; align-items: center; padding: 20px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; cursor: pointer; transition: all 0.3s ease;">
+                            <div style="margin-right: 20px;">
+                                <input type="checkbox" class="service-checkbox custom-checkbox" data-price="5.00" style="width: 20px; height: 20px; accent-color: var(--accent-red); cursor: pointer;">
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 16px; font-weight: 600; color: white; margin-bottom: 4px;">Unlimited Video & Audio Calls</div>
+                                <div style="font-size: 13px; color: var(--text-secondary);">High-definition, unlimited duration group video meetings.</div>
+                            </div>
+                            <div style="font-size: 16px; font-weight: 700; color: var(--accent-red);">$5.00 <span style="font-size: 12px; color: var(--text-muted); font-weight: 500;">/mo</span></div>
+                        </label>
+
+                        <!-- Service Item 2 -->
+                        <label class="service-card" style="display: flex; align-items: center; padding: 20px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; cursor: pointer; transition: all 0.3s ease;">
+                            <div style="margin-right: 20px;">
+                                <input type="checkbox" class="service-checkbox custom-checkbox" data-price="15.00" style="width: 20px; height: 20px; accent-color: var(--accent-red); cursor: pointer;">
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 16px; font-weight: 600; color: white; margin-bottom: 4px;">Bulk Message Broadcast API</div>
+                                <div style="font-size: 13px; color: var(--text-secondary);">Send mass notifications via CSV upload or developer API.</div>
+                            </div>
+                            <div style="font-size: 16px; font-weight: 700; color: var(--accent-red);">$15.00 <span style="font-size: 12px; color: var(--text-muted); font-weight: 500;">/mo</span></div>
+                        </label>
+
+                        <!-- Service Item 3 -->
+                        <label class="service-card" style="display: flex; align-items: center; padding: 20px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; cursor: pointer; transition: all 0.3s ease;">
+                            <div style="margin-right: 20px;">
+                                <input type="checkbox" class="service-checkbox custom-checkbox" data-price="10.00" style="width: 20px; height: 20px; accent-color: var(--accent-red); cursor: pointer;">
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 16px; font-weight: 600; color: white; margin-bottom: 4px;">Custom Auto-Responder Bot</div>
+                                <div style="font-size: 13px; color: var(--text-secondary);">Configure keyword-based automatic replies 24/7.</div>
+                            </div>
+                            <div style="font-size: 16px; font-weight: 700; color: var(--accent-red);">$10.00 <span style="font-size: 12px; color: var(--text-muted); font-weight: 500;">/mo</span></div>
+                        </label>
+
+                        <!-- Service Item 4 -->
+                        <label class="service-card" style="display: flex; align-items: center; padding: 20px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; cursor: pointer; transition: all 0.3s ease;">
+                            <div style="margin-right: 20px;">
+                                <input type="checkbox" class="service-checkbox custom-checkbox" data-price="3.00" style="width: 20px; height: 20px; accent-color: var(--accent-red); cursor: pointer;">
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 16px; font-weight: 600; color: white; margin-bottom: 4px;">Cloud Chat History Backup</div>
+                                <div style="font-size: 13px; color: var(--text-secondary);">Secure, encrypted daily backups with easy export features.</div>
+                            </div>
+                            <div style="font-size: 16px; font-weight: 700; color: var(--accent-red);">$3.00 <span style="font-size: 12px; color: var(--text-muted); font-weight: 500;">/mo</span></div>
+                        </label>
+                    </div>
+
+                    <!-- Summary Box -->
+                    <div style="margin-top: 30px; padding: 25px; background: rgba(0,0,0,0.3); border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 4px;">Total Monthly Cost</div>
+                            <div style="font-size: 28px; font-weight: 800; color: white;">$<span id="totalPriceDisplay">0.00</span></div>
+                        </div>
+                        <button id="btnNextStep" class="neu-btn neu-btn-red" style="padding: 14px 30px; font-size: 15px; border-radius: 30px; opacity: 0.5; pointer-events: none; transition: all 0.3s ease; display: flex; align-items: center;">
+                            Proceed to Payment <i class="fas fa-arrow-right" style="margin-left: 8px;"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 2: PAYMENT FORM -->
+                <div id="step2-payment" style="display: none; animation: fadeIn 0.4s ease;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px;">
+                        <button class="neu-btn" id="btnBackToServices" style="background: rgba(255,255,255,0.05); border: none; padding: 8px 16px; border-radius: 20px; color: var(--text-secondary); font-size: 13px; display: flex; align-items: center; gap: 6px;"><i class="fas fa-arrow-left"></i> Back</button>
+                        <span style="font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px;">Step 2 of 2</span>
+                    </div>
+
+                    <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; padding: 30px;">
+                        <h3 style="font-size: 18px; font-weight: 700; color: white; margin-top: 0; margin-bottom: 25px; display: flex; align-items: center; gap: 10px;">
+                            <i class="far fa-credit-card" style="color: var(--accent-red);"></i> Payment Details
+                        </h3>
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); margin-bottom: 25px;">
+                            <div style="color: var(--text-secondary); font-size: 14px;">Amount due</div>
+                            <div style="font-size: 24px; font-weight: 800; color: white;">$<span id="paymentAmountDisplay">0.00</span></div>
+                        </div>
+
+                        <form id="paymentForm" onsubmit="return false;">
+                            <div class="neu-input-group" style="margin-bottom: 20px;">
+                                <label class="neu-input-label">Cardholder Name</label>
+                                <input type="text" id="cardName" class="neu-input" placeholder="e.g. John Doe" required style="width: 100%; border-radius: 12px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 14px; color: white;" />
+                            </div>
+
+                            <div class="neu-input-group" style="margin-bottom: 20px;">
+                                <label class="neu-input-label">Card Number</label>
+                                <div style="position: relative;">
+                                    <input type="text" id="cardNumber" class="neu-input" placeholder="0000 0000 0000 0000" maxlength="19" required style="width: 100%; border-radius: 12px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 14px; padding-left: 45px; letter-spacing: 1px; color: white;" />
+                                    <i class="fab fa-cc-visa" style="position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-size: 20px; color: var(--text-muted);"></i>
+                                </div>
+                            </div>
+
+                            <div style="display: flex; gap: 20px; margin-bottom: 30px;">
+                                <div class="neu-input-group" style="flex: 1;">
+                                    <label class="neu-input-label">Expiry Date</label>
+                                    <input type="text" id="cardExpiry" class="neu-input" placeholder="MM/YY" maxlength="5" required style="width: 100%; border-radius: 12px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 14px; color: white;" />
+                                </div>
+                                <div class="neu-input-group" style="flex: 1;">
+                                    <label class="neu-input-label">CVV</label>
+                                    <input type="password" id="cardCvv" class="neu-input" placeholder="123" maxlength="3" required style="width: 100%; border-radius: 12px; background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); padding: 14px; color: white;" />
+                                </div>
+                            </div>
+
+                            <button type="submit" id="btnSubmitPayment" class="neu-btn neu-btn-red" style="width: 100%; padding: 16px; font-size: 16px; border-radius: 12px; display: flex; justify-content: center; align-items: center; gap: 10px;">
+                                <i class="fas fa-lock"></i> Pay Securely
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- STEP 3: SUCCESS STATE -->
+                <div id="step3-success" style="display: none; text-align: center; padding: 60px 20px; animation: slideUpFade 0.5s ease;">
+                    <div style="width: 80px; height: 80px; border-radius: 50%; background: rgba(37, 211, 102, 0.1); color: #25D366; display: flex; align-items: center; justify-content: center; font-size: 40px; margin: 0 auto 25px;">
+                        <i class="fas fa-check"></i>
+                    </div>
+                    <h2 style="font-size: 24px; font-weight: 800; color: white; margin-bottom: 15px;">Payment Successful!</h2>
+                    <p style="color: var(--text-secondary); font-size: 15px; margin-bottom: 30px; line-height: 1.6;">
+                        Your selected services have been activated successfully.<br>You will receive an email confirmation shortly.
+                    </p>
+                    <a href="/Chat" class="neu-btn neu-btn-red" style="padding: 14px 30px; border-radius: 30px; text-decoration: none; display: inline-block;">
+                        Return to Chat
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            let totalCost = 0.00;
+
+            // Highlight selected service cards and calculate total
+            $('.service-checkbox').on('change', function () {
+                var card = $(this).closest('.service-card');
+                if ($(this).is(':checked')) {
+                    card.css({
+                        'background': 'rgba(254, 76, 76, 0.05)',
+                        'border-color': 'rgba(254, 76, 76, 0.3)'
+                    });
+                } else {
+                    card.css({
+                        'background': 'rgba(255,255,255,0.02)',
+                        'border-color': 'rgba(255,255,255,0.05)'
+                    });
+                }
+                
+                calculateTotal();
+            });
+
+            function calculateTotal() {
+                totalCost = 0;
+                $('.service-checkbox:checked').each(function () {
+                    totalCost += parseFloat($(this).attr('data-price'));
+                });
+                
+                $('#totalPriceDisplay').text(totalCost.toFixed(2));
+                $('#paymentAmountDisplay').text(totalCost.toFixed(2));
+
+                // Enable/Disable next button
+                if (totalCost > 0) {
+                    $('#btnNextStep').css({
+                        'opacity': '1',
+                        'pointer-events': 'auto'
+                    });
+                } else {
+                    $('#btnNextStep').css({
+                        'opacity': '0.5',
+                        'pointer-events': 'none'
+                    });
+                }
+            }
+
+            // Navigation
+            $('#btnNextStep').click(function () {
+                $('#step1-selection').hide();
+                $('#step2-payment').show();
+            });
+
+            $('#btnBackToServices').click(function () {
+                $('#step2-payment').hide();
+                $('#step1-selection').show();
+            });
+
+            // Card Input Formatting
+            $('#cardNumber').on('input', function (e) {
+                var value = $(this).val().replace(/\D/g, '');
+                var formattedValue = '';
+                for (var i = 0; i < value.length; i++) {
+                    if (i > 0 && i % 4 === 0) formattedValue += ' ';
+                    formattedValue += value[i];
+                }
+                $(this).val(formattedValue);
+            });
+
+            $('#cardExpiry').on('input', function (e) {
+                var value = $(this).val().replace(/\D/g, '');
+                if (value.length > 2) {
+                    value = value.substring(0, 2) + '/' + value.substring(2, 4);
+                }
+                $(this).val(value);
+            });
+
+            // Payment Submission
+            $('#paymentForm').submit(function (e) {
+                e.preventDefault();
+                
+                var btn = $('#btnSubmitPayment');
+                var originalText = btn.html();
+                
+                // Show loading state
+                btn.html('<i class="fas fa-circle-notch fa-spin" style="margin-right:8px;"></i> Processing...');
+                btn.css('opacity', '0.7');
+                btn.prop('disabled', true);
+
+                // Simulate API call delay
+                setTimeout(function () {
+                    $('#step2-payment').hide();
+                    $('#step3-success').show();
+                }, 2000);
+            });
+        });
+    </script>
+}

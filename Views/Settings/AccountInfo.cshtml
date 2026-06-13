@@ -1,0 +1,42 @@
+@{
+    ViewData["Title"] = "Request Account Info";
+}
+
+@section MiddlePanel {
+    <div class="lp-header">
+        <div style="display: flex; align-items: center; gap: 25px; width: 100%;">
+            <a href="/Settings/Account" style="color: var(--wa-icon); font-size: 18px; margin-left: 5px;"><i class="fas fa-arrow-left"></i></a>
+            <h1 style="font-size: 19px; font-weight: 500;">Request account info</h1>
+        </div>
+    </div>
+
+    <div class="list-content">
+        <div style="padding: 20px 20px 10px; color: var(--wa-text-secondary); font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Account information</div>
+
+        <div style="padding: 20px; display: flex; gap: 20px; border-bottom: 1px solid var(--wa-border); cursor: pointer;">
+            <i class="far fa-file-alt" style="font-size: 20px; color: var(--wa-icon); margin-top: 5px;"></i>
+            <div style="flex: 1;">
+                <div style="font-size: 16px; font-weight: 500; margin-bottom: 20px;">Request report</div>
+                <div style="font-size: 14px; color: var(--wa-text-secondary); line-height: 1.5;">
+                    Create a report of your WhatsApp account information and settings, which you can access or port to another app. This report does not include your messages. <br/>
+                    <span style="color: var(--wa-primary); cursor: pointer;">Learn more</span>
+                </div>
+            </div>
+        </div>
+
+        <div style="padding: 20px 20px 10px; color: var(--wa-text-secondary); font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px;">Channels activity</div>
+
+        <div style="padding: 20px; display: flex; gap: 20px; cursor: pointer;">
+            <i class="far fa-file-alt" style="font-size: 20px; color: var(--wa-icon); margin-top: 5px;"></i>
+            <div style="flex: 1;">
+                <div style="font-size: 16px; font-weight: 500; margin-bottom: 20px;">Request Channels report</div>
+                <div style="font-size: 14px; color: var(--wa-text-secondary); line-height: 1.5;">
+                    Create a report of updates and information from channels you interact with or manage, which you can access or port to another app. <br/>
+                    <span style="color: var(--wa-primary); cursor: pointer;">Learn more</span>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@await Html.PartialAsync("~/Views/Home/Index.cshtml")

@@ -1,0 +1,250 @@
+@{
+    ViewData["Title"] = "Set PIN | HiChat SMS Platform";
+    Layout = "~/Views/Shared/_Layout_RentalX.cshtml";
+}
+
+<!-- Video Background -->
+<div class="rx-video-wrapper">
+    <video autoplay muted loop playsinline preload="auto">
+        <source src="~/vedios/sms-login.webm" type="video/webm">
+        <source src="~/vedios/sms-login.mp4" type="video/mp4">
+    </video>
+    <div class="rx-video-overlay"></div>
+</div>
+
+<div class="rx-hero-section">
+    <div class="container">
+        <div class="row align-items-center justify-content-center">
+
+            <!-- Left Content - Branding -->
+            <div class="col-lg-7 animate__animated animate__fadeInLeft">
+                <div class="rx-brand-logo-container d-flex align-items-center gap-3 mb-3">
+                    <div class="rx-logo-box">
+                        <i class="fas fa-comment-dots fs-4 text-white"></i>
+                    </div>
+                    <h1 class="rx-brand-text m-0">SMS<span class="rx-brand-x">SITE</span></h1>
+                </div>
+                <p class="lead text-white-50 mb-4" style="font-size: 1.25rem; max-width: 90%;">
+                    Set a secure 4-digit PIN for quick and easy access to your account. Your PIN adds an extra layer of protection.
+                </p>
+                <div class="rx-stats-container d-none d-lg-flex gap-4">
+                    <div class="rx-stat-item"><h4>50K+</h4><small>Active Users</small></div>
+                    <div class="rx-stat-item"><h4>99.9%</h4><small>Uptime SLA</small></div>
+                    <div class="rx-stat-item"><h4>24/7</h4><small>Support</small></div>
+                </div>
+            </div>
+
+            <!-- Right Content - Set PIN Form -->
+            <div class="col-lg-5 animate__animated animate__fadeInRight">
+                <div class="rx-glass-card text-center">
+                    <div class="mb-4">
+                        <div class="rx-logo-box mb-3 mx-auto" style="width: 60px; height: 60px;">
+                            <i class="fas fa-lock fs-3 text-white"></i>
+                        </div>
+                        <h3 class="fw-bold">Set Your PIN</h3>
+                        <p class="text-white-50">Create a 4-digit security PIN</p>
+                    </div>
+
+                    @if (ViewBag.Error != null)
+                    {
+                        <div class="rx-alert-err">
+                            <i class="fas fa-exclamation-circle me-2"></i> @ViewBag.Error
+                        </div>
+                    }
+
+                    <form asp-action="SetPin" method="post" id="pinForm" onsubmit="submitPin()">
+                        @Html.AntiForgeryToken()
+
+                        <!-- PIN Dots Display -->
+                        <div class="d-flex justify-content-center gap-3 mb-4" id="pinDots">
+                            <div class="pin-dot" id="dot1"></div>
+                            <div class="pin-dot" id="dot2"></div>
+                            <div class="pin-dot" id="dot3"></div>
+                            <div class="pin-dot" id="dot4"></div>
+                        </div>
+
+                        <input type="hidden" name="pin" id="pinValue" />
+                        <input type="hidden" name="skip" id="skipPinValue" value="false" />
+
+                        <!-- Number Pad -->
+                        <div class="pin-pad mb-4">
+                            <div class="pin-pad-row">
+                                <button type="button" class="pin-key" onclick="addDigit('1')">1</button>
+                                <button type="button" class="pin-key" onclick="addDigit('2')">2</button>
+                                <button type="button" class="pin-key" onclick="addDigit('3')">3</button>
+                            </div>
+                            <div class="pin-pad-row">
+                                <button type="button" class="pin-key" onclick="addDigit('4')">4</button>
+                                <button type="button" class="pin-key" onclick="addDigit('5')">5</button>
+                                <button type="button" class="pin-key" onclick="addDigit('6')">6</button>
+                            </div>
+                            <div class="pin-pad-row">
+                                <button type="button" class="pin-key" onclick="addDigit('7')">7</button>
+                                <button type="button" class="pin-key" onclick="addDigit('8')">8</button>
+                                <button type="button" class="pin-key" onclick="addDigit('9')">9</button>
+                            </div>
+                            <div class="pin-pad-row">
+                                <button type="button" class="pin-key pin-key-skip" onclick="skipPin()">Skip</button>
+                                <button type="button" class="pin-key" onclick="addDigit('0')">0</button>
+                                <button type="button" class="pin-key pin-key-del" onclick="deleteDigit()">
+                                    <i class="fas fa-backspace"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="rx-btn-signin w-100" id="btnSetPin" disabled>
+                            <i class="fas fa-check me-2"></i> Confirm PIN
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    .pin-dot {
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        background: transparent;
+        transition: all 0.2s ease;
+    }
+
+    .pin-dot.filled {
+        background: var(--rx-red);
+        border-color: var(--rx-red);
+        box-shadow: 0 0 10px rgba(230, 57, 70, 0.5);
+        transform: scale(1.15);
+    }
+
+    .pin-pad {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        max-width: 240px;
+        margin: 0 auto;
+    }
+
+    .pin-pad-row {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+    }
+
+    .pin-key {
+        width: 65px;
+        height: 65px;
+        border-radius: 50%;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: rgba(255, 255, 255, 0.06);
+        color: #fff;
+        font-size: 1.3rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.18s ease;
+        font-family: 'Inter', sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .pin-key:hover {
+        background: rgba(255, 255, 255, 0.14);
+        border-color: rgba(255, 255, 255, 0.25);
+        transform: scale(1.05);
+    }
+
+    .pin-key:active {
+        transform: scale(0.94);
+        background: rgba(230, 57, 70, 0.2);
+    }
+
+    .pin-key-del {
+        background: rgba(230, 57, 70, 0.08);
+        border-color: rgba(230, 57, 70, 0.2);
+        font-size: 1rem;
+    }
+
+    .pin-key-del:hover {
+        background: rgba(230, 57, 70, 0.18);
+    }
+
+    .pin-key-skip {
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        background: transparent;
+        color: rgba(255,255,255,0.45);
+        border-color: rgba(255,255,255,0.08);
+    }
+
+    .pin-key-skip:hover {
+        color: rgba(255,255,255,0.75);
+        background: rgba(255,255,255,0.06);
+    }
+
+    @@media (max-width: 380px) {
+        .pin-key {
+            width: 56px;
+            height: 56px;
+            font-size: 1.15rem;
+        }
+        .pin-pad {
+            gap: 10px;
+        }
+        .pin-pad-row {
+            gap: 10px;
+        }
+    }
+</style>
+
+<script>
+    var pinDigits = [];
+
+    function addDigit(d) {
+        if (pinDigits.length >= 4) return;
+        pinDigits.push(d);
+        updateDots();
+        if (pinDigits.length === 4) {
+            document.getElementById('pinValue').value = pinDigits.join('');
+            document.getElementById('btnSetPin').removeAttribute('disabled');
+            // Auto-submit after short delay
+            setTimeout(function () {
+                document.getElementById('pinForm').submit();
+            }, 400);
+        }
+    }
+
+    function deleteDigit() {
+        if (pinDigits.length === 0) return;
+        pinDigits.pop();
+        document.getElementById('btnSetPin').setAttribute('disabled', true);
+        document.getElementById('pinValue').value = '';
+        updateDots();
+    }
+
+    function updateDots() {
+        for (var i = 1; i <= 4; i++) {
+            var dot = document.getElementById('dot' + i);
+            if (i <= pinDigits.length) {
+                dot.classList.add('filled');
+            } else {
+                dot.classList.remove('filled');
+            }
+        }
+    }
+
+    function skipPin() {
+        document.getElementById('skipPinValue').value = 'true';
+        document.getElementById('pinForm').submit();
+    }
+
+    function submitPin() {
+        if (pinDigits.length < 4 && document.getElementById('skipPinValue').value !== 'true') {
+            event.preventDefault();
+        }
+    }
+</script>

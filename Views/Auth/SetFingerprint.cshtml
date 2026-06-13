@@ -1,0 +1,126 @@
+@{
+    ViewData["Title"] = "Set Fingerprint | HiChat SMS Platform";
+    Layout = "~/Views/Shared/_Layout_RentalX.cshtml";
+}
+
+<!-- Video Background -->
+<div class="rx-video-wrapper">
+    <video autoplay muted loop playsinline preload="auto">
+        <source src="~/vedios/sms-login.webm" type="video/webm">
+        <source src="~/vedios/sms-login.mp4" type="video/mp4">
+    </video>
+    <div class="rx-video-overlay"></div>
+</div>
+
+<div class="rx-hero-section">
+    <div class="container">
+        <div class="row align-items-center justify-content-center min-vh-100">
+
+            <!-- Left Content - Branding -->
+            <div class="col-lg-7 animate__animated animate__fadeInLeft">
+                <div class="rx-brand-logo-container d-flex align-items-center gap-3 mb-3">
+                    <div class="rx-logo-box">
+                        <i class="fas fa-comment-dots fs-4 text-white"></i>
+                    </div>
+                    <h1 class="rx-brand-text m-0">SMS<span class="rx-brand-x">SITE</span></h1>
+                </div>
+                <p class="lead text-white-50 mb-4" style="font-size: 1.25rem; max-width: 90%;">
+                    Secure your account with biometric authentication. Fingerprint login provides an extra layer of security and quick access to your workspace.
+                </p>
+                <div class="rx-stats-container d-none d-lg-flex gap-4">
+                    <div class="rx-stat-item"><h4>50K+</h4><small>Active Users</small></div>
+                    <div class="rx-stat-item"><h4>99.9%</h4><small>Uptime SLA</small></div>
+                    <div class="rx-stat-item"><h4>24/7</h4><small>Support</small></div>
+                </div>
+            </div>
+
+            <!-- Right Content - Fingerprint Form -->
+            <div class="col-lg-5 animate__animated animate__fadeInRight">
+                <div class="rx-glass-card text-center">
+                    <div class="mb-4">
+                        <div class="rx-logo-box mb-3 mx-auto" style="width: 60px; height: 60px;">
+                            <i class="fas fa-fingerprint fs-3 text-white"></i>
+                        </div>
+                        <h3 class="fw-bold">Set Your Fingerprint</h3>
+                        <p class="text-white-50">Add fingerprint for secure quick login</p>
+                    </div>
+
+                    <form asp-action="SetFingerprint" method="post" id="fingerprintForm">
+                        @Html.AntiForgeryToken()
+
+                        <!-- Fingerprint Scanner -->
+                        <div class="position-relative mx-auto mb-3"
+                             style="width: 140px; height: 140px; border-radius: 50%; background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s ease;"
+                             id="scanner"
+                             onclick="startScan()"
+                             onmouseover="this.style.borderColor='var(--rx-red)'; this.style.boxShadow='0 0 20px rgba(255,255,255,0.1)'"
+                             onmouseout="if(!this.classList.contains('scanning')) { this.style.borderColor='rgba(255,255,255,0.1)'; this.style.boxShadow='none' }">
+
+                            <i class="fas fa-fingerprint fs-1" style="color: rgba(255,255,255,0.5); transition: all 0.3s ease;" id="fingerIcon"></i>
+
+                            <!-- Scanning Ring Animation -->
+                            <div id="scanRing" style="position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 2px solid transparent; display: none;"></div>
+                        </div>
+
+                        <p class="text-white-50 small mb-4" style="min-height: 20px;" id="scanStatus">
+                            Tap the scanner to register fingerprint
+                        </p>
+
+                        <input type="hidden" name="skip" id="skipValue" value="false" />
+
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <button type="button" class="rx-btn-signin w-100" style="background: transparent; border: 1px solid rgba(255,255,255,0.2);" onclick="skipFingerprint()">
+                                    <i class="fas fa-forward me-2"></i> Skip
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button type="submit" class="rx-btn-signin w-100" id="btnContinue" disabled>
+                                    <i class="fas fa-check me-2"></i> Continue
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    function startScan() {
+        var scanner = document.getElementById('scanner');
+        var status = document.getElementById('scanStatus');
+        var icon = document.getElementById('fingerIcon');
+        var btn = document.getElementById('btnContinue');
+
+        if (scanner.classList.contains('scanning') || scanner.classList.contains('scan-success')) return;
+
+        scanner.classList.add('scanning');
+        status.textContent = 'Scanning fingerprint...';
+        status.style.color = 'var(--rx-red)';
+
+        setTimeout(function() {
+            scanner.classList.remove('scanning');
+            scanner.classList.add('scan-success');
+            icon.className = 'fas fa-check-circle fs-1';
+            status.textContent = 'Fingerprint scan successful!';
+            status.style.color = '#28a745';
+            btn.removeAttribute('disabled');
+            document.getElementById('skipValue').value = 'false';
+
+            setTimeout(function() {
+                document.getElementById('fingerprintForm').submit();
+            }, 800);
+
+        }, 2000);
+    }
+
+    function skipFingerprint() {
+        document.getElementById('skipValue').value = 'true';
+        document.getElementById('fingerprintForm').submit();
+    }
+</script>

@@ -1,0 +1,100 @@
+@model List<Site.Models.Users>
+@{
+    ViewData["Title"] = "Users Management";
+    ViewData["ActiveNav"] = "Users";
+}
+
+<div class="page-title-area gsap-stagger">
+    <div class="title-left">
+        <div class="title-main">
+            <h1>USER <span class="highlight">DATABASE</span></h1>
+        </div>
+        <div class="title-sub">
+            <p>Manage and monitor all @Model.Count registered users</p>
+        </div>
+    </div>
+    <div class="title-actions">
+        <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Search users by name, email..." oninput="filterUsers()" />
+        </div>
+    </div>
+</div>
+
+<div class="elite-section gsap-stagger">
+    <div class="section-header-elite">
+        <div class="section-title">
+            <i class="fas fa-users"></i> ALL USERS
+        </div>
+    </div>
+    <div class="table-responsive">
+        <table class="elite-table" id="usersTable">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>User</th>
+                    <th>Contact</th>
+                    <th>Joined</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{ int i = 1; }
+                @foreach (var u in Model)
+                {
+                    <tr>
+                        <td style="color:var(--text-muted);">@i</td>
+                        <td>
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                @if (!string.IsNullOrEmpty(u.ProfilePicture))
+                                {
+                                    <img src="@u.ProfilePicture" style="width:40px;height:40px;border-radius:10px;object-fit:cover;" />
+                                }
+                                else
+                                {
+                                    <div style="width:40px;height:40px;border-radius:10px;background:var(--accent-red);display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:16px;">
+                                        @((u.FullName ?? u.Username).Substring(0,1).ToUpper())
+                                    </div>
+                                }
+                                <div>
+                                    <div style="font-weight:700; font-size:14px;">@(u.FullName ?? u.Username)</div>
+                                    <div style="font-size:11px;color:var(--accent-red);font-weight:600;">@@@u.Username</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <div style="font-size:13px;">@u.Email</div>
+                            <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">@u.MobileNumber</div>
+                        </td>
+                        <td style="color:var(--text-muted);font-size:13px;">@u.CreatedAt.ToString("MMM d, yyyy")</td>
+                        <td>
+                            @if(u.IsVerified) {
+                                <span class="table-badge badge-outline-green">Verified</span>
+                            } else {
+                                <span class="table-badge badge-outline-red">Unverified</span>
+                            }
+                        </td>
+                        <td>
+                            <a href="/Admin/UserDetail/@u.Id" class="btn-outline" style="padding:6px 12px;font-size:11px;display:inline-flex;">
+                                <i class="fas fa-eye"></i> VIEW
+                            </a>
+                        </td>
+                    </tr>
+                    i++;
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function filterUsers() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            document.querySelectorAll('#usersTable tbody tr').forEach(row => {
+                row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+            });
+        }
+    </script>
+}

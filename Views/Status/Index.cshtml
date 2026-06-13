@@ -1,0 +1,824 @@
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Status Updates";
+    Layout = "~/Views/Shared/_Layout_Chat.cshtml";
+    var currentUser = ViewBag.CurrentUser as Site.Models.Users;
+}
+
+<div class="chat-app-layout">
+    <!-- Column 1 (Far Left Navigation Menu) -->
+    @await Html.PartialAsync("_NavSidebar", "Status")
+
+
+    <!-- Column 2 (Middle Status list) -->
+    <div class="chat-list-panel">
+        <div class="chat-panel-header">
+            <div class="chat-panel-title-bar">
+                <h2>Status</h2>
+                <div style="display: flex; gap: 8px;">
+                    <button class="neu-btn neu-btn-circle" onclick="openTextStatusEditor()" style="width: 36px; height: 36px; font-size: 14px;" title="Write text status"><i class="fas fa-pen"></i></button>
+                    <button class="neu-btn neu-btn-circle" onclick="triggerStatusUpload()" style="width: 36px; height: 36px; font-size: 14px;" title="Upload photo/video"><i class="fas fa-camera"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <input type="file" id="statusFileInput" style="display: none;" accept="image/*,video/*" onchange="previewMediaStatus(event)" />
+
+        <div class="chat-list-scrollable">
+            <!-- My Status Section -->
+            <div class="status-section-title">My Status</div>
+            <div class="chat-item" id="myStatusItem" onclick="viewMyStatus()">
+                <div class="status-avatar-wrapper" id="myStatusRing">
+                    <img src="@(currentUser?.ProfilePicture ?? "/images/default-avatar.svg")" class="status-avatar" alt="My avatar" />
+                </div>
+                <div class="chat-item-details">
+                    <div class="chat-item-name">My Status</div>
+                    <div class="chat-item-message" id="myStatusTime">Tap to add or view updates</div>
+                </div>
+                <div class="my-status-actions" onclick="event.stopPropagation()">
+                    <button class="neu-btn neu-btn-circle" onclick="triggerStatusUpload()" style="width: 30px; height: 30px; font-size: 10px;"><i class="fas fa-plus"></i></button>
+                </div>
+            </div>
+
+            <!-- Recent/Viewed Updates -->
+            <div id="contactStatusesContainer">
+                <div style="text-align: center; color: var(--text-muted); margin-top: 40px; font-size: 14px;">Loading status updates...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Column 3 (Main story viewing / welcome state) -->
+    <div class="chat-workspace-panel" id="statusWorkspacePanel">
+        <!-- Default Welcome State -->
+        <div class="chat-welcome-state" id="emptyStatusState">
+            <div class="chat-welcome-icon" style="width: 80px; height: 80px; border-radius: 24px; margin-bottom: 24px;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="var(--accent-red)" stroke-width="1.8" style="width: 40px; height: 40px;"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            </div>
+            <h3 style="font-size: 26px; font-weight: 700; margin-bottom: 12px; font-family: 'Outfit', sans-serif;">Status Updates</h3>
+            <p style="font-size: 15px; color: var(--text-secondary); max-width: 440px; line-height: 1.6; margin-bottom: 24px;">Click on a contact's status to view their updates. Statuses disappear after 24 hours.</p>
+            <div style="display: flex; gap: 15px; margin-top: 15px; flex-wrap:wrap; justify-content:center;">
+                <button class="neu-btn hover-lift" onclick="openTextStatusEditor()" style="padding: 12px 24px; border-radius: 12px; font-weight: 600;">Write Status</button>
+                <button class="neu-btn neu-btn-red hover-lift" onclick="triggerStatusUpload()" style="padding: 12px 24px; border-radius: 12px; font-weight: 600;">Upload Status</button>
+            </div>
+        </div>
+
+        <!-- Fullscreen Story Viewer -->
+        <div class="story-viewer-container" id="storyViewer" style="display: none;">
+            <!-- Top Progress Bars -->
+            <div class="story-progress-bar-container" id="storyProgressBarContainer">
+                <!-- Injected via JS -->
+            </div>
+
+            <!-- Header Info -->
+            <div class="story-viewer-header">
+                <div class="story-user-info">
+                    <img src="/images/default-avatar.svg" id="storyUserAvatar" class="story-avatar" />
+                    <div>
+                        <div class="story-username" id="storyUsername">User Name</div>
+                        <div class="story-timestamp" id="storyTimestamp">Just now</div>
+                    </div>
+                </div>
+                <div class="story-header-actions">
+                    <button class="story-header-btn" id="storyDeleteBtn" style="display: none; align-items: center; justify-content: center;" onclick="deleteActiveStatus()" title="Delete Status"><i class="fas fa-trash-alt" style="font-size: 14px;"></i></button>
+                    <button class="story-header-btn" onclick="closeStoryViewer()"><i class="fas fa-times" style="font-size:14px;"></i></button>
+                </div>
+            </div>
+
+            <!-- Story Body Media -->
+            <div class="story-viewer-content" id="storyContent" onmousedown="pauseStory()" onmouseup="resumeStory()" ontouchstart="pauseStory()" ontouchend="resumeStory()">
+                <!-- Dynamic text status or image or video tag -->
+            </div>
+
+            <!-- Story Footer (Views info for owner) -->
+            <div class="story-viewer-footer" id="storyFooter" style="display: none;">
+                <div class="story-view-pill" onclick="openStatusViewersModal()">
+                    <i class="fas fa-eye" style="font-size: 13px; margin-right: 4px; color: var(--text-secondary);"></i> <span id="storyViewCount">0</span> views
+                </div>
+            </div>
+
+            <!-- Navigation Controls -->
+            <button class="story-nav-btn prev" onclick="prevStatus()">‹</button>
+            <button class="story-nav-btn next" onclick="nextStatus()">›</button>
+        </div>
+    </div>
+</div>
+
+<!-- TEXT STATUS CREATOR OVERLAY (Matches exact screenshot layout) -->
+<div class="text-status-creator-overlay" id="textStatusCreator" style="display: none;">
+    <!-- Top Bar Controls -->
+    <div class="text-status-top-bar">
+        <button class="text-status-close-btn" onclick="closeTextStatusEditor()" style="display:flex; align-items:center; justify-content:center;"><i class="fas fa-times" style="font-size:14px;"></i></button>
+        <div class="text-status-actions-right">
+            <span class="text-status-icon-btn" onclick="toggleTextStatusEmoji()" title="Add emoji"><i class="far fa-smile"></i></span>
+            <span class="text-status-icon-btn font-aa" onclick="cycleFontStyle()" title="Change Font" id="fontCycleBtn">Aa</span>
+            <span class="text-status-icon-btn palette-btn" onclick="cycleBackgroundColor()" title="Change Background color"><i class="fas fa-palette"></i></span>
+        </div>
+    </div>
+
+    <!-- Main Text Input Center -->
+    <div class="text-status-center-container">
+        <textarea id="textStatusInput" class="text-status-textarea" placeholder="Type a status" oninput="resizeTextStatusInput()" style="font-family: Arial;"></textarea>
+    </div>
+
+    <!-- Bottom Actions -->
+    <div class="text-status-bottom-bar">
+        <div class="status-contacts-pill">
+            <span><i class="fas fa-sync-alt" style="margin-right: 6px;"></i> Status (Contacts)</span>
+        </div>
+        <button class="text-status-send-btn" onclick="submitTextStatus()"><i class="fas fa-paper-plane" style="font-size: 14px;"></i></button>
+    </div>
+</div>
+
+<!-- PHOTO/VIDEO CAPTION MODAL -->
+<div class="contacts-modal-backdrop" id="mediaStatusModal" style="display: none;">
+    <div class="contacts-modal" style="max-width: 480px; background: var(--bg-card);">
+        <div class="contacts-modal-header">
+            <h3>Send Status Update</h3>
+            <button class="neu-btn neu-btn-circle" onclick="closeMediaStatusModal()" style="width: 32px; height: 32px; display:flex; align-items:center; justify-content:center;"><i class="fas fa-times" style="font-size:11px;"></i></button>
+        </div>
+        <div class="media-status-preview-container" style="background: black; height: 320px; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 12px; margin: 15px;">
+            <!-- Canvas or Img or Video tag injected here -->
+            <div id="mediaStatusPreviewContent" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;"></div>
+        </div>
+        <div style="padding: 15px 20px;">
+            <input type="text" id="mediaStatusCaption" class="neu-input" placeholder="Add a caption..." style="margin-bottom: 15px;" />
+            <div style="display: flex; gap: 15px;">
+                <button class="neu-btn" style="flex: 1;" onclick="closeMediaStatusModal()">Cancel</button>
+                <button class="neu-btn neu-btn-red" style="flex: 1;" id="mediaStatusSendBtn" onclick="submitMediaStatus()">Send Status</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- VIEWERS LIST MODAL -->
+<div class="contacts-modal-backdrop" id="statusViewersModal" style="display: none;">
+    <div class="contacts-modal" style="max-width: 380px;">
+        <div class="contacts-modal-header">
+            <h3>Viewed by</h3>
+            <button class="neu-btn neu-btn-circle" onclick="closeStatusViewersModal()" style="width: 32px; height: 32px; display:flex; align-items:center; justify-content:center;"><i class="fas fa-times" style="font-size:11px;"></i></button>
+        </div>
+        <div class="contacts-modal-list" id="statusViewersList" style="max-height: 300px; overflow-y: auto;">
+            <!-- Loaded dynamically via JS -->
+        </div>
+    </div>
+</div>
+
+<!-- USER PROFILE DRAWER (Dynamic view profile simulation) -->
+<div class="detail-drawer" id="profileDrawer" style="display: none; position: fixed; right: 0; top: 0; height: 100vh; z-index: 100; width: 350px; background: var(--bg-panel); border-left: 1px solid var(--border-color);">
+    <div class="drawer-header">
+        <h4>My Profile</h4>
+        <button class="neu-btn neu-btn-circle" onclick="toggleProfileDrawer()" style="width: 32px; height: 32px; display:flex; align-items:center; justify-content:center;"><i class="fas fa-times" style="font-size:11px;"></i></button>
+    </div>
+    <div class="drawer-content" style="padding: 20px;">
+        <div class="drawer-profile-info" style="text-align: center; margin-bottom: 30px;">
+            <div class="drawer-avatar" style="width: 100px; height: 100px; border-radius: 50%; margin: 0 auto 15px; overflow: hidden; border: 2px solid var(--border-color);">
+                <img src="@(currentUser?.ProfilePicture ?? "/images/default-avatar.svg")" style="width: 100%; height: 100%; object-fit: cover;" />
+            </div>
+            <div class="drawer-title" style="font-size: 18px; font-weight: 700; color: white;">@(currentUser?.FullName ?? currentUser?.Username)</div>
+            <div class="drawer-subtitle" style="font-size: 14px; color: var(--text-secondary);">@currentUser?.MobileNumber</div>
+        </div>
+        <div class="drawer-option-row">
+            <span class="row-label">Username</span>
+            <span style="font-weight: 500; font-size: 14px;">@currentUser?.Username</span>
+        </div>
+        <div class="drawer-option-row">
+            <span class="row-label">Email</span>
+            <span style="font-weight: 500; font-size: 14px;">@currentUser?.Email</span>
+        </div>
+        <div class="drawer-option-row">
+            <span class="row-label">Joined</span>
+            <span style="font-weight: 500; font-size: 14px;">@currentUser?.CreatedAt.ToString("MMMM dd, yyyy")</span>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // BG Colors to cycle through in text status creator
+    const textStatusBgs = [
+        '#25D366', // Green
+        '#9C27B0', // Purple
+        '#2196F3', // Blue
+        '#E91E63', // Red/Pink
+        '#FF9800', // Orange
+        '#009688', // Teal
+        '#607D8B', // Blue-Gray
+        '#1E1F24'  // Dark panel color
+    ];
+
+    // Font styles to cycle through
+    const textStatusFonts = [
+        'Arial',
+        'Georgia',
+        'Courier New',
+        'Times New Roman',
+        'Impact',
+        'Comic Sans MS'
+    ];
+
+    let currentBgIndex = 0;
+    let currentFontIndex = 0;
+
+    let myActiveStatuses = [];
+    let contactsStatuses = [];
+    let currentViewerStory = []; // array of statuses being viewed
+    let currentViewerIndex = 0;  // index in currentViewerStory
+    let storyTimer = null;
+    let storyDuration = 5000;    // 5 seconds per status
+    let storyPaused = false;
+    let storyStartTime = 0;
+    let storyTimeElapsed = 0;
+
+    $(document).ready(function () {
+        loadMyStatuses();
+        loadContactStatuses();
+    });
+
+    function viewOwnProfile() {
+        toggleProfileDrawer();
+    }
+
+    function toggleProfileDrawer() {
+        $('#profileDrawer').toggle();
+    }
+
+    // Text Status editor methods
+    function openTextStatusEditor() {
+        $('#textStatusInput').val('');
+        currentBgIndex = 0;
+        currentFontIndex = 0;
+        applyTextStatusEditorStyles();
+        $('#textStatusCreator').show();
+        $('#textStatusInput').focus();
+    }
+
+    function closeTextStatusEditor() {
+        $('#textStatusCreator').hide();
+    }
+
+    function cycleBackgroundColor() {
+        currentBgIndex = (currentBgIndex + 1) % textStatusBgs.length;
+        applyTextStatusEditorStyles();
+    }
+
+    function cycleFontStyle() {
+        currentFontIndex = (currentFontIndex + 1) % textStatusFonts.length;
+        applyTextStatusEditorStyles();
+    }
+
+    function applyTextStatusEditorStyles() {
+        const bg = textStatusBgs[currentBgIndex];
+        const font = textStatusFonts[currentFontIndex];
+        $('#textStatusCreator').css('background-color', bg);
+        $('#textStatusInput').css('font-family', font);
+    }
+
+    function resizeTextStatusInput() {
+        const input = $('#textStatusInput');
+        input.height(0);
+        input.height(input.prop('scrollHeight'));
+    }
+
+    function toggleTextStatusEmoji() {
+        // Quick emoji insertion helper
+        const emojis = ['😊', '😂', '🔥', '❤️', '👍', '🎉', '📍', '💡', '🌟'];
+        const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+        const input = $('#textStatusInput');
+        input.val(input.val() + randomEmoji);
+        input.focus();
+    }
+
+    function submitTextStatus() {
+        const content = $('#textStatusInput').val().trim();
+        if (!content) return;
+
+        const bg = textStatusBgs[currentBgIndex];
+        const font = textStatusFonts[currentFontIndex];
+
+        $.post('/Status/PostStatus', {
+            type: 'Text',
+            textContent: content,
+            backgroundColor: bg,
+            fontStyle: font
+        }, function (response) {
+            if (response.success) {
+                closeTextStatusEditor();
+                loadMyStatuses();
+            } else {
+                alert('Failed to post status');
+            }
+        });
+    }
+
+    // Media status (Photo/Video) handling
+    function triggerStatusUpload() {
+        $('#statusFileInput').click();
+    }
+
+    let selectedStatusFile = null;
+
+    function previewMediaStatus(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+        selectedStatusFile = file;
+
+        const previewContainer = $('#mediaStatusPreviewContent');
+        previewContainer.empty();
+        $('#mediaStatusCaption').val('');
+
+        const fileType = file.type;
+        const reader = new FileReader();
+
+        if (fileType.startsWith('image/')) {
+            const img = $('<img>').css({
+                'max-width': '100%',
+                'max-height': '100%',
+                'object-fit': 'contain'
+            });
+            reader.onload = function (e) {
+                img.attr('src', e.target.result);
+            };
+            reader.readAsDataURL(file);
+            previewContainer.append(img);
+        } else if (fileType.startsWith('video/')) {
+            const video = $('<video autoplay muted loop controls>').css({
+                'max-width': '100%',
+                'max-height': '100%',
+                'object-fit': 'contain'
+            });
+            reader.onload = function (e) {
+                video.attr('src', e.target.result);
+            };
+            reader.readAsDataURL(file);
+            previewContainer.append(video);
+        } else {
+            alert('Unsupported file type');
+            return;
+        }
+
+        $('#mediaStatusModal').show();
+    }
+
+    function closeMediaStatusModal() {
+        $('#mediaStatusModal').hide();
+        selectedStatusFile = null;
+        $('#statusFileInput').val('');
+    }
+
+    function submitMediaStatus() {
+        if (!selectedStatusFile) return;
+
+        const formData = new FormData();
+        formData.append('file', selectedStatusFile);
+        formData.append('type', selectedStatusFile.type.startsWith('video/') ? 'Video' : 'Image');
+        formData.append('textContent', $('#mediaStatusCaption').val().trim());
+
+        $('#mediaStatusSendBtn').prop('disabled', true).text('Uploading...');
+
+        $.ajax({
+            url: '/Status/PostStatus',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                $('#mediaStatusSendBtn').prop('disabled', false).text('Send Status');
+                if (response.success) {
+                    closeMediaStatusModal();
+                    loadMyStatuses();
+                } else {
+                    alert('Failed to post media status');
+                }
+            },
+            error: function () {
+                $('#mediaStatusSendBtn').prop('disabled', false).text('Send Status');
+                alert('Error uploading status media');
+            }
+        });
+    }
+
+    // Load status methods
+    function loadMyStatuses() {
+        $.get('/Status/GetMyStatuses', function (data) {
+            myActiveStatuses = data;
+            const ring = $('#myStatusRing');
+            ring.removeClass('unviewed-ring viewed-ring');
+
+            if (myActiveStatuses.length > 0) {
+                ring.addClass('unviewed-ring'); // always show active ring for own stories
+                const lastStatus = myActiveStatuses[myActiveStatuses.length - 1];
+                const date = new Date(lastStatus.createdAt);
+                $('#myStatusTime').text(`Last update at ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`);
+            } else {
+                $('#myStatusTime').text('Tap to add status updates');
+            }
+            updateStatusRing('myStatusRing', myActiveStatuses);
+        });
+    }
+
+    function loadContactStatuses() {
+        $.get('/Status/GetContactStatuses', function (data) {
+            contactsStatuses = data;
+            const container = $('#contactStatusesContainer');
+            container.empty();
+
+            if (contactsStatuses.length === 0) {
+                container.append('<div style="text-align: center; color: var(--text-muted); margin-top: 40px; font-size: 14px;">No status updates yet.</div>');
+                return;
+            }
+
+            // Create Recent and Viewed sections
+            const recentGroup = $('<div class="status-group"></div>');
+            const viewedGroup = $('<div class="status-group"></div>');
+
+            let hasRecent = false;
+            let hasViewed = false;
+
+            contactsStatuses.forEach(userGroup => {
+                const hasUnviewed = userGroup.statuses.some(s => !s.isViewed);
+                
+                const ringId = `ring_${userGroup.userId}`;
+                const item = $(`
+                    <div class="chat-item" onclick="viewContactStory(${userGroup.userId})">
+                        <div class="status-avatar-wrapper" id="${ringId}">
+                            <img src="${userGroup.avatar}" class="status-avatar" alt="${userGroup.fullName}" />
+                        </div>
+                        <div class="chat-item-details">
+                            <div class="chat-item-name">${userGroup.fullName}</div>
+                            <div class="chat-item-message">${formatTime(userGroup.statuses[userGroup.statuses.length - 1].createdAt)}</div>
+                        </div>
+                    </div>
+                `);
+
+                if (hasUnviewed) {
+                    recentGroup.append(item);
+                    hasRecent = true;
+                } else {
+                    viewedGroup.append(item);
+                    hasViewed = true;
+                }
+
+                // Render ring segments once item is in DOM
+                setTimeout(() => updateStatusRing(ringId, userGroup.statuses), 0);
+            });
+
+            if (hasRecent) {
+                container.append('<div class="status-section-title">Recent updates</div>');
+                container.append(recentGroup);
+            }
+            if (hasViewed) {
+                container.append('<div class="status-section-title">Viewed updates</div>');
+                container.append(viewedGroup);
+            }
+        });
+    }
+
+    function updateStatusRing(ringId, statuses) {
+        const ring = $(`#${ringId}`);
+        if (!ring.length) return;
+
+        // Clear existing custom SVGs
+        ring.find('svg').remove();
+
+        if (statuses.length === 0) return;
+
+        // If only 1 status, simple CSS border is enough or standard circle SVG
+        const size = 52;
+        const radius = 24;
+        const circ = 2 * Math.PI * radius;
+        const strokeWidth = 2.5;
+
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute("width", size);
+        svg.setAttribute("height", size);
+        svg.setAttribute("viewBox", `0 0 ${size} ${size}`);
+        svg.style.position = "absolute";
+        svg.style.top = "-2px";
+        svg.style.left = "-2px";
+
+        const count = statuses.length;
+        const gap = count > 1 ? 5 : 0; // degrees gap between segments
+        const segmentLength = (360 - (gap * count)) / count;
+
+        let accumulatedAngle = -90; // start at top
+
+        statuses.forEach((status, idx) => {
+            const isViewed = status.isViewed || (ringId === 'myStatusRing'); // my status active indicator
+            const strokeColor = isViewed ? 'var(--text-muted)' : 'var(--accent-red)';
+            
+            const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            circle.setAttribute("cx", size / 2);
+            circle.setAttribute("cy", size / 2);
+            circle.setAttribute("r", radius);
+            circle.setAttribute("fill", "none");
+            circle.setAttribute("stroke", strokeColor);
+            circle.setAttribute("stroke-width", strokeWidth);
+            
+            if (count > 1) {
+                circle.setAttribute("stroke-dasharray", circ);
+                // Dash Offset corresponding to segment length
+                const dashLen = (segmentLength / 360) * circ;
+                const dashGap = circ - dashLen;
+                circle.setAttribute("stroke-dasharray", `${dashLen} ${dashGap}`);
+                
+                // Rotated start
+                circle.setAttribute("transform", `rotate(${accumulatedAngle} ${size / 2} ${size / 2})`);
+                accumulatedAngle += segmentLength + gap;
+            }
+
+            svg.appendChild(circle);
+        });
+
+        ring.append(svg);
+    }
+
+    // Story Viewing Logic
+    function viewMyStatus() {
+        if (myActiveStatuses.length === 0) {
+            triggerStatusUpload();
+            return;
+        }
+        
+        currentViewerStory = myActiveStatuses.map(s => ({
+            ...s,
+            avatar: '@(currentUser?.ProfilePicture ?? "/images/default-avatar.svg")',
+            fullName: 'My Status',
+            isMine: true
+        }));
+        
+        startStoryPlayback();
+    }
+
+    function viewContactStory(userId) {
+        const userGroup = contactsStatuses.find(u => u.userId === userId);
+        if (!userGroup) return;
+
+        currentViewerStory = userGroup.statuses.map(s => ({
+            ...s,
+            avatar: userGroup.avatar,
+            fullName: userGroup.fullName,
+            userId: userGroup.userId,
+            isMine: false
+        }));
+
+        startStoryPlayback();
+    }
+
+    function startStoryPlayback() {
+        $('#emptyStatusState').hide();
+        $('#storyViewer').show();
+
+        if (window.innerWidth <= 768) {
+            $('.chat-list-panel').hide();
+            $('#statusWorkspacePanel').css('display', 'flex');
+        }
+
+        // Start from first unviewed status if possible, otherwise first status
+        let startIndex = currentViewerStory.findIndex(s => !s.isViewed);
+        if (startIndex === -1) startIndex = 0;
+
+        currentViewerIndex = startIndex;
+        showStorySegment();
+    }
+
+    function showStorySegment() {
+        if (currentViewerIndex < 0 || currentViewerIndex >= currentViewerStory.length) {
+            closeStoryViewer();
+            return;
+        }
+
+        const status = currentViewerStory[currentViewerIndex];
+        
+        // Setup header
+        $('#storyUserAvatar').attr('src', status.avatar);
+        $('#storyUsername').text(status.fullName);
+        $('#storyTimestamp').text(formatTime(status.createdAt));
+
+        // Manage Owner options vs normal options
+        if (status.isMine) {
+            $('#storyDeleteBtn').show();
+            $('#storyFooter').show();
+            $('#storyViewCount').text(status.viewsCount || 0);
+        } else {
+            $('#storyDeleteBtn').hide();
+            $('#storyFooter').hide();
+            // Call backend to mark status as viewed
+            $.post('/Status/ViewStatus', { statusId: status.id }, function() {
+                status.isViewed = true;
+                loadContactStatuses(); // Refresh view count rings
+            });
+        }
+
+        // Render Media
+        const contentBox = $('#storyContent');
+        contentBox.empty();
+
+        if (status.type === 'Text') {
+            const textBox = $(`<div class="story-text-container"></div>`).text(status.textContent);
+            textBox.css({
+                'background-color': status.backgroundColor || '#25D366',
+                'font-family': status.fontStyle || 'Arial'
+            });
+            contentBox.append(textBox);
+            startProgressTimer(5000);
+        } else if (status.type === 'Image') {
+            const img = $('<img>').attr('src', status.mediaUrl).css({
+                'max-width': '100%',
+                'max-height': '100%',
+                'object-fit': 'contain'
+            });
+            contentBox.append(img);
+            startProgressTimer(5000);
+        } else if (status.type === 'Video') {
+            const video = $('<video autoplay playsinline>').attr('src', status.mediaUrl).css({
+                'max-width': '100%',
+                'max-height': '100%',
+                'object-fit': 'contain'
+            });
+            contentBox.append(video);
+            
+            // Video should play fully
+            video.on('loadedmetadata', function() {
+                const duration = Math.max(video[0].duration * 1000, 3000); // minimum 3s
+                startProgressTimer(duration);
+            });
+            
+            video.on('ended', function() {
+                nextStatus();
+            });
+        }
+
+        buildStoryProgressIndicators();
+    }
+
+    function buildStoryProgressIndicators() {
+        const container = $('#storyProgressBarContainer');
+        container.empty();
+
+        currentViewerStory.forEach((s, idx) => {
+            const bar = $('<div class="story-progress-bar"></div>');
+            const progress = $('<div class="story-progress-fill"></div>');
+            
+            if (idx < currentViewerIndex) {
+                progress.css('width', '100%');
+            } else if (idx > currentViewerIndex) {
+                progress.css('width', '0%');
+            } else {
+                progress.addClass('active-fill');
+            }
+
+            bar.append(progress);
+            container.append(bar);
+        });
+    }
+
+    function startProgressTimer(duration) {
+        clearStoryTimer();
+        storyDuration = duration;
+        storyStartTime = Date.now();
+        storyTimeElapsed = 0;
+        storyPaused = false;
+
+        storyTimer = setInterval(() => {
+            if (!storyPaused) {
+                storyTimeElapsed = Date.now() - storyStartTime;
+                const percentage = Math.min((storyTimeElapsed / storyDuration) * 100, 100);
+                $('.story-progress-fill.active-fill').css('width', `${percentage}%`);
+
+                if (storyTimeElapsed >= storyDuration) {
+                    clearStoryTimer();
+                    nextStatus();
+                }
+            }
+        }, 30);
+    }
+
+    function pauseStory() {
+        storyPaused = true;
+        const video = $('#storyContent video')[0];
+        if (video) video.pause();
+    }
+
+    function resumeStory() {
+        storyPaused = false;
+        storyStartTime = Date.now() - storyTimeElapsed;
+        const video = $('#storyContent video')[0];
+        if (video) video.play().catch(()=>{});
+    }
+
+    function clearStoryTimer() {
+        if (storyTimer) {
+            clearInterval(storyTimer);
+            storyTimer = null;
+        }
+    }
+
+    function prevStatus() {
+        clearStoryTimer();
+        currentViewerIndex--;
+        if (currentViewerIndex >= 0) {
+            showStorySegment();
+        } else {
+            closeStoryViewer();
+        }
+    }
+
+    function nextStatus() {
+        clearStoryTimer();
+        currentViewerIndex++;
+        if (currentViewerIndex < currentViewerStory.length) {
+            showStorySegment();
+        } else {
+            closeStoryViewer();
+        }
+    }
+
+    function closeStoryViewer() {
+        clearStoryTimer();
+        $('#storyViewer').hide();
+        $('#emptyStatusState').show();
+        loadContactStatuses(); // reload in case status viewing changed
+        loadMyStatuses();
+
+        if (window.innerWidth <= 768) {
+            $('.chat-list-panel').show();
+            $('#statusWorkspacePanel').hide();
+        }
+    }
+
+    function deleteActiveStatus() {
+        const status = currentViewerStory[currentViewerIndex];
+        if (!confirm('Are you sure you want to delete this status update?')) return;
+
+        $.post('/Status/DeleteStatus', { statusId: status.id }, function (response) {
+            if (response.success) {
+                currentViewerStory.splice(currentViewerIndex, 1);
+                loadMyStatuses();
+                
+                // Show remaining statuses, or exit
+                if (currentViewerStory.length > 0) {
+                    if (currentViewerIndex >= currentViewerStory.length) {
+                        currentViewerIndex = currentViewerStory.length - 1;
+                    }
+                    showStorySegment();
+                } else {
+                    closeStoryViewer();
+                }
+            }
+        });
+    }
+
+    function openStatusViewersModal() {
+        const status = currentViewerStory[currentViewerIndex];
+        if (!status || !status.isMine) return;
+
+        pauseStory();
+        const list = $('#statusViewersList');
+        list.empty();
+        $('#statusViewersModal').show();
+
+        $.get(`/Status/GetStatusViewers?statusId=${status.id}`, function (data) {
+            if (data.length === 0) {
+                list.append('<div style="text-align: center; color: var(--text-muted); padding: 20px; font-size: 14px;">No views yet</div>');
+                return;
+            }
+
+            data.forEach(viewer => {
+                list.append(`
+                    <div class="chat-item" style="cursor: default;">
+                        <div class="chat-item-avatar">
+                            <img src="${viewer.avatar}" />
+                        </div>
+                        <div class="chat-item-details">
+                            <div class="chat-item-name">${viewer.fullName}</div>
+                            <div class="chat-item-message">Viewed at ${viewer.viewedAt}</div>
+                        </div>
+                    </div>
+                `);
+            });
+        });
+    }
+
+    function closeStatusViewersModal() {
+        $('#statusViewersModal').hide();
+        resumeStory();
+    }
+
+    // Date formatting helper
+    function formatTime(utcString) {
+        const date = new Date(utcString);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffHrs = diffMs / (1000 * 60 * 60);
+
+        if (diffHrs < 1) {
+            const mins = Math.floor(diffMs / (1000 * 60));
+            return mins <= 1 ? 'Just now' : `${mins} minutes ago`;
+        } else if (date.toDateString() === now.toDateString()) {
+            return `Today at ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+        } else {
+            return `Yesterday at ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+        }
+    }
+</script>
+}

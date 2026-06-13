@@ -1,0 +1,61 @@
+@{
+    ViewData["Title"] = "Settings Hub";
+}
+
+<div class="premium-settings-welcome">
+    <div class="welcome-inner">
+        <!-- System Badge -->
+        <div class="welcome-badge">
+            <i class="fas fa-sliders-h"></i> Control Center
+        </div>
+
+        <!-- Glowing App Logo -->
+        <div class="welcome-logo-container" onclick="window.location.href='/Settings'">
+            <i class="fas fa-cog"></i>
+        </div>
+
+        <!-- Welcome Text -->
+        <h2>Configure your SMS SITE Experience</h2>
+        <p>Adjust account preferences, customize chat themes, manage your privacy details, and configure notifications below.</p>
+
+        <!-- Bento Layout Shortcut Cards -->
+        <div class="welcome-grid">
+            <div class="welcome-card" onclick="window.location.href='/Settings/Edit'">
+                <div class="welcome-card-icon">
+                    <i class="far fa-user-circle"></i>
+                </div>
+                <h4>Edit Profile</h4>
+                <p>Modify name, profile avatar, status and contact info.</p>
+            </div>
+
+            <div class="welcome-card" onclick="window.location.href='/Settings/Privacy'">
+                <div class="welcome-card-icon">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <h4>Privacy Options</h4>
+                <p>Manage blocked list and disappearing messages.</p>
+            </div>
+
+            <div class="welcome-card" onclick="window.location.href='/Settings/Account'">
+                <div class="welcome-card-icon">
+                    <i class="fas fa-key"></i>
+                </div>
+                <h4>Security Details</h4>
+                <p>Manage security codes and request account info.</p>
+            </div>
+
+            <div class="welcome-card" onclick="document.getElementById('shortcutsModal').style.display='flex'">
+                <div class="welcome-card-icon">
+                    <i class="fas fa-keyboard"></i>
+                </div>
+                <h4>Shortcuts</h4>
+                <p>Open quick keyboard control helper panel.</p>
+            </div>
+        </div>
+
+        <!-- Encryption Footer -->
+        <div class="welcome-footer">
+            <i class="fas fa-shield-alt"></i> End-to-end encrypted settings panel
+        </div>
+    </div>
+</div>

@@ -1,0 +1,60 @@
+@{
+    ViewData["Title"] = "Welcome | HiChat SMS Platform";
+    Layout = "~/Views/Shared/_Layout_RentalX.cshtml";
+}
+
+<!-- Video Background -->
+<div class="rx-video-wrapper">
+    <video autoplay muted loop playsinline preload="auto">
+        <source src="~/vedios/sms-login.webm" type="video/webm">
+        <source src="~/vedios/sms-login.mp4" type="video/mp4">
+    </video>
+    <div class="rx-video-overlay"></div>
+</div>
+
+<div class="rx-hero-section">
+    <div class="container">
+        <div class="row align-items-center justify-content-center min-vh-100">
+
+            <!-- Center Content - Success Card -->
+            <div class="col-lg-5 animate__animated animate__zoomIn">
+                <div class="rx-glass-card text-center py-5">
+
+                    <!-- Success Icon -->
+                    <div class="mb-4 mx-auto d-flex align-items-center justify-content-center rounded-circle"
+                         style="width: 100px; height: 100px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); backdrop-filter: blur(10px);">
+                        <i class="fas fa-check-circle fs-1" style="color: var(--rx-red);"></i>
+                    </div>
+
+                    <h2 class="fw-bold mb-3" style="font-size: 28px;">Congratulations!</h2>
+                    <p class="text-white-50 mb-4" style="font-size: 15px; max-width: 320px; margin: 0 auto; line-height: 1.6;">
+                        Your account is ready to use. You will be redirected to the SMS SITE workspace in a few seconds.
+                    </p>
+
+                    <!-- Spinner -->
+                    <div class="mb-4">
+                        <div class="spinner-border" style="width: 3rem; height: 3rem; color: var(--rx-red);" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+
+                    <p class="text-white-50 small mb-0">
+                        <i class="fas fa-spinner fa-spin me-2"></i>Redirecting...
+                    </p>
+
+                    <!-- Manual Redirect Button (optional) -->
+                    <a href="/Chat/Index" class="rx-link fw-bold mt-3 d-inline-block">
+                        Go to Workspace <i class="fas fa-arrow-right ms-2"></i>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    setTimeout(function() {
+        window.location.href = '/Chat/Index';
+    }, 3000);
+</script>

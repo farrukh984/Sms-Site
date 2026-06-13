@@ -1,0 +1,85 @@
+@model Site.Models.Service
+@{
+    ViewData["Title"] = "Create Service";
+    ViewData["ActiveNav"] = "Services";
+}
+
+<div class="page-title-area gsap-stagger">
+    <div class="title-left">
+        <a href="/Admin/Services" class="section-link" style="margin-bottom: 12px; display: inline-block;">
+            <i class="fas fa-arrow-left"></i> BACK TO CATALOG
+        </a>
+        <div class="title-main">
+            <h1>CREATE <span class="highlight">SERVICE</span></h1>
+        </div>
+        <div class="title-sub">
+            <p>Add a new service offering for users to unlock</p>
+        </div>
+    </div>
+</div>
+
+<div class="elite-section gsap-stagger" style="max-width: 800px;">
+    <form method="post" action="/Admin/CreateService">
+        <div style="display: flex; flex-direction: column; gap: 24px;">
+            
+            <div style="display: flex; gap: 24px; align-items: flex-start;">
+                <div style="width: 80px; height: 80px; border-radius: 20px; background: rgba(255, 51, 51, 0.1); border: 1px solid rgba(255, 51, 51, 0.2); display: flex; align-items: center; justify-content: center; font-size: 32px; color: var(--accent-red); box-shadow: 0 0 20px rgba(255, 51, 51, 0.2);">
+                    <i class="fas fa-star" id="previewIcon"></i>
+                </div>
+                <div style="flex: 1;">
+                    <label style="display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">FontAwesome Icon Class</label>
+                    <div class="search-box" style="width: 100%;">
+                        <i class="fas fa-icons"></i>
+                        <input type="text" name="IconClass" id="iconInput" value="fas fa-star" placeholder="e.g. fas fa-palette" oninput="updateIcon(this.value)" style="width: 100%; height: 48px;" />
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <label style="display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">Service Title</label>
+                <div class="search-box" style="width: 100%;">
+                    <i class="fas fa-tag"></i>
+                    <input type="text" name="Title" placeholder="e.g. Premium Chat Themes" required style="width: 100%; height: 48px;" />
+                </div>
+            </div>
+
+            <div>
+                <label style="display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">Description</label>
+                <textarea name="Description" placeholder="What does this service provide?" style="width: 100%; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 16px; color: white; font-family: inherit; font-size: 14px; outline: none; resize: vertical; min-height: 100px; transition: 0.2s;" onfocus="this.style.borderColor='var(--accent-red)'" onblur="this.style.borderColor='var(--border-color)'"></textarea>
+            </div>
+
+            <div>
+                <label style="display: block; font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">Price (USD)</label>
+                <div class="search-box" style="width: 100%; max-width: 250px;">
+                    <i class="fas fa-dollar-sign"></i>
+                    <input type="number" name="Price" value="4.99" step="0.01" min="0" required style="width: 100%; height: 48px; font-weight: 800; font-size: 16px; font-style: italic; color: var(--success-green);" />
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 20px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border-color);">
+                <div>
+                    <div style="font-weight: 700; font-size: 14px;">Active Status</div>
+                    <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Visible to users for purchase</div>
+                </div>
+                <label style="position: relative; display: inline-block; width: 46px; height: 26px;">
+                    <input type="checkbox" name="IsActive" value="true" checked style="opacity: 0; width: 0; height: 0;" onchange="document.getElementById('slider').style.background = this.checked ? 'var(--success-green)' : 'rgba(255,255,255,0.1)'; document.getElementById('slider-circle').style.transform = this.checked ? 'translateX(20px)' : 'translateX(0)';" />
+                    <span id="slider" style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: var(--success-green); border-radius: 26px; transition: 0.3s;">
+                        <span id="slider-circle" style="position: absolute; height: 18px; width: 18px; left: 4px; bottom: 4px; background: white; border-radius: 50%; transition: 0.3s; transform: translateX(20px);"></span>
+                    </span>
+                </label>
+            </div>
+
+            <button type="submit" class="btn-new" style="width: 100%; height: 56px; justify-content: center; font-size: 16px; letter-spacing: 1px; margin-top: 16px;">
+                <i class="fas fa-plus-circle"></i> CREATE SERVICE
+            </button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        function updateIcon(cls) {
+            document.getElementById('previewIcon').className = cls;
+        }
+    </script>
+}

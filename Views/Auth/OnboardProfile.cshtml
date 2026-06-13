@@ -1,0 +1,135 @@
+@{
+    ViewData["Title"] = "Fill Profile | HiChat SMS Platform";
+    Layout = "~/Views/Shared/_Layout_RentalX.cshtml";
+}
+
+<!-- Video Background -->
+<div class="rx-video-wrapper">
+    <video autoplay muted loop playsinline preload="auto">
+        <source src="~/vedios/sms-login.webm" type="video/webm">
+        <source src="~/vedios/sms-login.mp4" type="video/mp4">
+    </video>
+    <div class="rx-video-overlay"></div>
+</div>
+
+<div class="rx-hero-section">
+    <div class="container">
+        <div class="row align-items-center justify-content-center">
+
+            <!-- Left Content - Branding -->
+            <div class="col-lg-7 animate__animated animate__fadeInLeft">
+                <div class="rx-brand-logo-container d-flex align-items-center gap-3 mb-3">
+                    <div class="rx-logo-box">
+                        <i class="fas fa-comment-dots fs-4 text-white"></i>
+                    </div>
+                    <h1 class="rx-brand-text m-0">SMS<span class="rx-brand-x">SITE</span></h1>
+                </div>
+                <p class="lead text-white-50 mb-4" style="font-size: 1.25rem; max-width: 90%;">
+                    Complete your profile to unlock the full potential of our SMS platform. Personalize your experience and start managing messages like a pro.
+                </p>
+                <div class="rx-stats-container d-none d-lg-flex gap-4">
+                    <div class="rx-stat-item"><h4>50K+</h4><small>Active Users</small></div>
+                    <div class="rx-stat-item"><h4>99.9%</h4><small>Uptime SLA</small></div>
+                    <div class="rx-stat-item"><h4>24/7</h4><small>Support</small></div>
+                </div>
+            </div>
+
+            <!-- Right Content - Fill Profile Form -->
+            <div class="col-lg-5 animate__animated animate__fadeInRight">
+                <div class="rx-glass-card">
+                    <div class="text-center mb-4">
+                        <div class="rx-logo-box mb-3 mx-auto" style="width: 60px; height: 60px;">
+                            <i class="fas fa-user-circle fs-3 text-white"></i>
+                        </div>
+                        <h3 class="fw-bold">Fill Your Profile</h3>
+                        <p class="text-white-50">Add your personal details</p>
+                    </div>
+
+                    @if (ViewBag.Error != null)
+                    {
+                        <div class="rx-alert-err">
+                            <i class="fas fa-exclamation-circle me-2"></i> @ViewBag.Error
+                        </div>
+                    }
+
+                    <form asp-action="OnboardProfile" method="post" enctype="multipart/form-data" autocomplete="off">
+                        @Html.AntiForgeryToken()
+
+                        <!-- Avatar Upload -->
+                        <div class="text-center mb-4 position-relative" style="width: 120px; margin: 0 auto;">
+                            <div class="rounded-circle overflow-hidden border border-2 border-white" style="width: 100px; height: 100px; margin: 0 auto; cursor: pointer;" onclick="triggerFileSelect()">
+                                <img src="/images/default-avatar.svg" id="avatarImg" alt="Profile Avatar" class="w-100 h-100 object-fit-cover" onerror="this.src='https://api.dicebear.com/7.x/bottts/svg?seed=hichat'" />
+                            </div>
+                            <div class="position-absolute d-flex align-items-center justify-content-center rounded-circle"
+                                 style="width: 32px; height: 32px; background: var(--rx-red); bottom: 5px; right: 5px; cursor: pointer; border: 2px solid rgba(255,255,255,0.2);"
+                                 onclick="triggerFileSelect()">
+                                <i class="fas fa-camera text-white" style="font-size: 14px;"></i>
+                            </div>
+                            <input type="file" name="profilePic" id="fileInput" style="display: none;" accept="image/*" onchange="previewFile()" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="rx-form-label">
+                                <i class="far fa-user me-2" style="color: var(--rx-red);"></i>Full Name
+                            </label>
+                            <input type="text" name="fullName" class="rx-input" placeholder="e.g. Jane Smith" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="rx-form-label">
+                                <i class="far fa-smile me-2" style="color: var(--rx-red);"></i>Nickname
+                            </label>
+                            <input type="text" name="nickname" class="rx-input" placeholder="e.g. Jane" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="rx-form-label">
+                                <i class="far fa-calendar-alt me-2" style="color: var(--rx-red);"></i>Date of Birth
+                            </label>
+                            <input type="date" name="dob" class="rx-input" required />
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="rx-form-label">
+                                <i class="fas fa-venus-mars me-2" style="color: var(--rx-red);"></i>Gender
+                            </label>
+                            <select name="gender" class="rx-input" style="appearance: none; -webkit-appearance: none; background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 12 12%22><path fill=%22white%22 d=%22M6 8L1 3h10z%22/></svg>'); background-repeat: no-repeat; background-position: right 15px center; padding-right: 40px;" required>
+                                <option value="" disabled selected>Select Gender</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="rx-btn-signin w-100">
+                            <i class="fas fa-arrow-right me-2"></i> Continue
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    function triggerFileSelect() {
+        document.getElementById('fileInput').click();
+    }
+
+    function previewFile() {
+        var preview = document.getElementById('avatarImg');
+        var file = document.getElementById('fileInput').files[0];
+        var reader = new FileReader();
+
+        reader.onloadend = function() {
+            preview.src = reader.result;
+        }
+
+        if (file) {
+            reader.readAsDataURL(file);
+        } else {
+            preview.src = "/images/default-avatar.svg";
+        }
+    }
+</script>

@@ -1,0 +1,227 @@
+@{
+    ViewData["Title"] = "Notifications Settings";
+}
+
+@section MiddlePanel {
+<style>
+    /* ── Sliding Panel Architecture & Deep Dark Theme ── */
+    .priv-container {
+        --priv-primary: #ff4d4f; 
+        --priv-bg: #09090b; 
+        --priv-panel-bg: #09090b; 
+        --priv-border: rgba(255, 255, 255, 0.05);
+        --priv-card-bg: #0e0e11;
+        --priv-text: #ffffff;
+        --priv-text-muted: #8c8c8c;
+        
+        position: relative;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background-color: var(--priv-bg);
+        display: flex;
+        flex-direction: column;
+        font-family: 'Montserrat', sans-serif;
+    }
+    .priv-panel {
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background-color: var(--priv-panel-bg);
+        transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        z-index: 10;
+    }
+    .priv-panel.active { transform: translateX(0); opacity: 1; pointer-events: auto; z-index: 20; }
+
+    /* Header */
+    .priv-header {
+        display: flex; align-items: center; gap: 16px;
+        padding: 16px 24px; height: 76px;
+        background: var(--priv-bg);
+        color: var(--priv-text);
+        border-bottom: 1px solid var(--priv-border);
+        flex-shrink: 0;
+        position: sticky;
+        top: 0;
+        z-index: 30;
+    }
+    .back-btn-circle {
+        width: 38px; height: 38px; border-radius: 50%;
+        background: rgba(255, 255, 255, 0.04);
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; transition: 0.2s;
+    }
+    .back-btn-circle:hover { background: rgba(255, 255, 255, 0.08); }
+    .back-btn-circle i { color: var(--priv-primary); font-size: 16px; }
+    .priv-header span { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
+
+    /* Main content list */
+    .priv-list { padding: 0 24px 40px; flex: 1; }
+
+    .priv-section-label {
+        padding: 32px 0 12px;
+        font-size: 12px;
+        font-weight: 800;
+        color: var(--priv-primary);
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    .priv-row {
+        padding: 18px 20px;
+        margin-bottom: 8px;
+        background: var(--priv-card-bg);
+        border: 1px solid var(--priv-border);
+        border-radius: 12px;
+        display: flex; align-items: center; justify-content: space-between;
+        cursor: pointer;
+        transition: border-color 0.2s ease, background 0.2s ease;
+        gap: 16px;
+    }
+    .priv-row:hover { border-color: rgba(255, 255, 255, 0.15); background: #121216; }
+
+    .priv-row-info { flex: 1; min-width: 0; }
+    .priv-row-title { font-size: 15.5px; font-weight: 700; margin-bottom: 4px; color: var(--priv-text); }
+    .priv-row-sub { font-size: 12.5px; color: var(--priv-text-muted); line-height: 1.4; }
+
+    /* Panel Footer Text */
+    .panel-footer-text {
+        padding: 12px 4px 20px;
+        font-size: 12.5px;
+        color: var(--priv-text-muted);
+        line-height: 1.6;
+    }
+
+    /* Switch */
+    .wa-switch { position: relative; display: inline-block; width: 48px; height: 26px; flex-shrink: 0; margin-left: 12px; }
+    .wa-switch input { opacity: 0; width: 0; height: 0; }
+    .wa-slider { position: absolute; cursor: pointer; inset: 0; background: rgba(255,255,255,0.15); border-radius: 26px; transition: 0.3s; }
+    .wa-slider:before { content: ''; position: absolute; height: 20px; width: 20px; left: 3px; bottom: 3px; background: #999; border-radius: 50%; transition: 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+    .wa-switch input:checked + .wa-slider { background: rgba(255,77,79,0.2); }
+    .wa-switch input:checked + .wa-slider:before { transform: translateX(22px); background: var(--priv-primary); box-shadow: 0 0 8px rgba(255,77,79,0.5); }
+
+    /* Toast */
+    .priv-toast {
+        position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px);
+        background: var(--priv-card-bg); color: var(--priv-text);
+        border: 1px solid var(--priv-primary);
+        padding: 12px 24px; border-radius: 24px; font-size: 14px; font-weight: 600;
+        z-index: 9999; transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); 
+        box-shadow: 0 4px 20px rgba(255,77,79,0.2);
+    }
+    .priv-toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+
+<div class="priv-container" id="privContainer">
+    <div id="panel-main" class="priv-panel active">
+        <div class="priv-header">
+            <div class="back-btn-circle" onclick="window.location.href='/Settings'">
+                <i class="fas fa-arrow-left"></i>
+            </div>
+            <span>Notifications</span>
+        </div>
+        <div class="priv-list">
+            
+            <div class="priv-section-label">Messages</div>
+            
+            <div class="priv-row" style="cursor:default;">
+                <div class="priv-row-info">
+                    <div class="priv-row-title">Message notifications</div>
+                    <div class="priv-row-sub">Show notifications for new messages</div>
+                </div>
+                <label class="wa-switch" onclick="event.stopPropagation()">
+                    <input type="checkbox" checked onchange="showToast('✓ Saved')" />
+                    <span class="wa-slider"></span>
+                </label>
+            </div>
+
+            <div class="priv-row" style="cursor:default;">
+                <div class="priv-row-info">
+                    <div class="priv-row-title">Show previews</div>
+                    <div class="priv-row-sub">Preview message text inside new message notifications</div>
+                </div>
+                <label class="wa-switch" onclick="event.stopPropagation()">
+                    <input type="checkbox" checked onchange="showToast('✓ Saved')" />
+                    <span class="wa-slider"></span>
+                </label>
+            </div>
+
+            <div class="priv-section-label">Groups</div>
+
+            <div class="priv-row" style="cursor:default;">
+                <div class="priv-row-info">
+                    <div class="priv-row-title">Group notifications</div>
+                    <div class="priv-row-sub">Show notifications for new group messages</div>
+                </div>
+                <label class="wa-switch" onclick="event.stopPropagation()">
+                    <input type="checkbox" checked onchange="showToast('✓ Saved')" />
+                    <span class="wa-slider"></span>
+                </label>
+            </div>
+
+            <div class="priv-section-label">Sounds</div>
+
+            <div class="priv-row" style="cursor:default;">
+                <div class="priv-row-info">
+                    <div class="priv-row-title">Play sounds for incoming messages</div>
+                </div>
+                <label class="wa-switch" onclick="event.stopPropagation()">
+                    <input type="checkbox" checked onchange="showToast('✓ Saved')" />
+                    <span class="wa-slider"></span>
+                </label>
+            </div>
+
+            <div class="priv-row" style="cursor:default;">
+                <div class="priv-row-info">
+                    <div class="priv-row-title">Play sounds for outgoing messages</div>
+                </div>
+                <label class="wa-switch" onclick="event.stopPropagation()">
+                    <input type="checkbox" onchange="showToast('✓ Saved')" />
+                    <span class="wa-slider"></span>
+                </label>
+            </div>
+
+            <div class="priv-section-label">Performance</div>
+
+            <div class="priv-row" style="cursor:default;">
+                <div class="priv-row-info">
+                    <div class="priv-row-title">Background sync</div>
+                    <div class="priv-row-sub">Get faster performance by syncing messages in the background</div>
+                </div>
+                <label class="wa-switch" onclick="event.stopPropagation()">
+                    <input type="checkbox" checked onchange="showToast('✓ Saved')" />
+                    <span class="wa-slider"></span>
+                </label>
+            </div>
+            
+            <div class="panel-footer-text">
+                To get notifications, make sure they're turned on in your browser and device settings.
+            </div>
+
+        </div>
+    </div>
+</div>
+}
+
+@section Scripts {
+<script>
+    function showToast(msg) {
+        let toast = document.getElementById('privToast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'privToast';
+            toast.className = 'priv-toast';
+            document.body.appendChild(toast);
+        }
+        toast.textContent = msg;
+        toast.classList.add('show');
+        clearTimeout(toast._t);
+        toast._t = setTimeout(() => toast.classList.remove('show'), 2000);
+    }
+</script>
+}
+
+@await Html.PartialAsync("~/Views/Home/Index.cshtml")
