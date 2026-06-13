@@ -1341,6 +1341,7 @@
         var isSpeakerMuted = false;
         var currentFacingMode = 'user'; // 'user' = front, 'environment' = back
         var pendingIceCandidates = [];
+        var callChatId = null;
 
         const rtcConfig = {
             iceServers: [
@@ -1363,16 +1364,19 @@
         };
 
         // ─── startCall: caller triggers call ─────────────────────────────
-        function startCall(type) {
+        async function startCall(type) {
             if (!activeChatId) return;
+            callChatId = activeChatId;
             currentCallType = type;
             isCaller = true;
             isMicMuted = false; isVideoOff = false; isSpeakerMuted = false;
             var targetName = document.getElementById("activeChatName").textContent;
-            openCallOverlay(targetName, type, true, activeChatId);
-            connection.invoke("TriggerCall", activeChatId.toString(), currentUserId.toString(), currentUserFullName, type);
-            // We initialize local media only, but do not create an offer until the receiver answers.
-            initWebRTC();
+            openCallOverlay(targetName, type, true, callChatId);
+            
+            // Wait for local media to be initialized first to avoid race conditions
+            await initWebRTC();
+            
+            connection.invoke("TriggerCall", callChatId.toString(), currentUserId.toString(), currentUserFullName, type);
         }
 
         // ─── acceptCall: receiver accepts ─────────────────────────────
@@ -1382,16 +1386,16 @@
             document.getElementById("callLabel").textContent = "Connecting...";
             isMicMuted = false; isVideoOff = false; isSpeakerMuted = false;
             await initWebRTC(); // receiver sets up their camera/mic
-            connection.invoke("AnswerCall", activeChatId.toString(), true); // Send AnswerCall so caller can send offer
+            connection.invoke("AnswerCall", callChatId.toString(), true); // Send AnswerCall so caller can send offer
         }
 
         function declineCall() {
-            connection.invoke("EndCall", activeChatId.toString());
+            connection.invoke("EndCall", callChatId.toString());
             closeCallOverlay();
         }
 
         function endActiveCall() {
-            connection.invoke("EndCall", activeChatId.toString());
+            connection.invoke("EndCall", callChatId.toString());
             closeCallOverlay();
         }
 
@@ -1444,7 +1448,7 @@
 
                 peerConnection.onicecandidate = (event) => {
                     if (event.candidate) {
-                        connection.invoke("SendWebRTCSignal", activeChatId.toString(), currentUserId.toString(), "ice", JSON.stringify(event.candidate));
+                        connection.invoke("SendWebRTCSignal", callChatId.toString(), currentUserId.toString(), "ice", JSON.stringify(event.candidate));
                     }
                 };
 
@@ -1504,10 +1508,12 @@
             peerConnection = null; localStream = null; remoteStream = null;
             isCaller = false; isScreenSharing = false;
             isMicMuted = false; isVideoOff = false; isSpeakerMuted = false;
+            callChatId = null;
         }
 
         // â”€â”€â”€ openCallOverlay â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         function openCallOverlay(name, type, caller, chatId) {
+            callChatId = chatId;
             currentCallType = type;
             document.getElementById("callUserName").textContent = name;
             var chatAvatar = document.getElementById("activeChatAvatar");
@@ -1929,7 +1935,7 @@
                                 offerToReceiveAudio: true, offerToReceiveVideo: currentCallType === 'video'
                             });
                             await peerConnection.setLocalDescription(offer);
-                            connection.invoke("SendWebRTCSignal", activeChatId.toString(), currentUserId.toString(), "offer", JSON.stringify(offer));
+                            connection.invoke("SendWebRTCSignal", callChatId.toString(), currentUserId.toString(), "offer", JSON.stringify(offer));
                         } catch (err) { console.error("Error creating offer:", err); }
                     }
                 } else {
@@ -1941,7 +1947,8 @@
             connection.on("ReceiveWebRTCSignal", async function(chatId, senderId, type, payload) {
                 if (senderId === currentUserId) return;
 
-                // Fix: set activeChatId for the receiver side
+                // Fix: set callChatId and activeChatId for the receiver side
+                if (!callChatId) callChatId = chatId;
                 if (!activeChatId) activeChatId = chatId;
 
                 if (!peerConnection && type === "offer") {
@@ -1956,7 +1963,7 @@
                         await peerConnection.setRemoteDescription(new RTCSessionDescription(data));
                         const answer = await peerConnection.createAnswer();
                         await peerConnection.setLocalDescription(answer);
-                        connection.invoke("SendWebRTCSignal", activeChatId.toString(), currentUserId.toString(), "answer", JSON.stringify(answer));
+                        connection.invoke("SendWebRTCSignal", callChatId.toString(), currentUserId.toString(), "answer", JSON.stringify(answer));
                     } else if (type === "answer") {
                         await peerConnection.setRemoteDescription(new RTCSessionDescription(data));
                     } else if (type === "ice") {

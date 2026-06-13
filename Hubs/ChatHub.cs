@@ -165,22 +165,82 @@ namespace Site.Hubs
 
         public async Task TriggerCall(string chatId, string callerId, string callerName, string callType)
         {
-            await Clients.Group(chatId).SendAsync("IncomingCall", chatId, callerId, callerName, callType);
+            if (int.TryParse(chatId, out int cId))
+            {
+                var participantIds = _db.ChatParticipants
+                    .Where(cp => cp.ChatId == cId)
+                    .Select(cp => cp.UserId.ToString())
+                    .ToList();
+
+                foreach (var pId in participantIds)
+                {
+                    await Clients.Group($"User_{pId}").SendAsync("IncomingCall", chatId, callerId, callerName, callType);
+                }
+            }
+            else
+            {
+                await Clients.Group(chatId).SendAsync("IncomingCall", chatId, callerId, callerName, callType);
+            }
         }
 
         public async Task AnswerCall(string chatId, bool accepted)
         {
-            await Clients.Group(chatId).SendAsync("CallAnswered", chatId, accepted);
+            if (int.TryParse(chatId, out int cId))
+            {
+                var participantIds = _db.ChatParticipants
+                    .Where(cp => cp.ChatId == cId)
+                    .Select(cp => cp.UserId.ToString())
+                    .ToList();
+
+                foreach (var pId in participantIds)
+                {
+                    await Clients.Group($"User_{pId}").SendAsync("CallAnswered", chatId, accepted);
+                }
+            }
+            else
+            {
+                await Clients.Group(chatId).SendAsync("CallAnswered", chatId, accepted);
+            }
         }
 
         public async Task EndCall(string chatId)
         {
-            await Clients.Group(chatId).SendAsync("CallEnded", chatId);
+            if (int.TryParse(chatId, out int cId))
+            {
+                var participantIds = _db.ChatParticipants
+                    .Where(cp => cp.ChatId == cId)
+                    .Select(cp => cp.UserId.ToString())
+                    .ToList();
+
+                foreach (var pId in participantIds)
+                {
+                    await Clients.Group($"User_{pId}").SendAsync("CallEnded", chatId);
+                }
+            }
+            else
+            {
+                await Clients.Group(chatId).SendAsync("CallEnded", chatId);
+            }
         }
 
         public async Task SendWebRTCSignal(string chatId, string senderId, string type, string payload)
         {
-            await Clients.Group(chatId).SendAsync("ReceiveWebRTCSignal", chatId, senderId, type, payload);
+            if (int.TryParse(chatId, out int cId))
+            {
+                var participantIds = _db.ChatParticipants
+                    .Where(cp => cp.ChatId == cId)
+                    .Select(cp => cp.UserId.ToString())
+                    .ToList();
+
+                foreach (var pId in participantIds)
+                {
+                    await Clients.Group($"User_{pId}").SendAsync("ReceiveWebRTCSignal", chatId, senderId, type, payload);
+                }
+            }
+            else
+            {
+                await Clients.Group(chatId).SendAsync("ReceiveWebRTCSignal", chatId, senderId, type, payload);
+            }
         }
     }
 }
