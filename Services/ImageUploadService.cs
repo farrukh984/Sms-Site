@@ -46,22 +46,66 @@ namespace Site.Services
                 {
                     using (var stream = file.OpenReadStream())
                     {
-                        var uploadParams = new ImageUploadParams()
-                        {
-                            File = new FileDescription(file.FileName, stream),
-                            Folder = string.IsNullOrEmpty(subFolder) ? "site_uploads" : $"site_uploads/{subFolder}",
-                            // Keep original format or optimize
-                            Transformation = new Transformation().Quality("auto").FetchFormat("auto")
-                        };
+                        var contentType = file.ContentType?.ToLower() ?? "";
+                        var folder = string.IsNullOrEmpty(subFolder) ? "site_uploads" : $"site_uploads/{subFolder}";
 
-                        var uploadResult = await _cloudinary.UploadAsync(uploadParams);
-                        if (uploadResult.Error != null)
+                        if (contentType.StartsWith("video/"))
                         {
-                            Console.WriteLine($"[CLOUDINARY ERROR] {uploadResult.Error.Message}. Falling back to local upload.");
+                            // Use VideoUploadParams for video files
+                            var uploadParams = new VideoUploadParams()
+                            {
+                                File = new FileDescription(file.FileName, stream),
+                                Folder = folder
+                            };
+
+                            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+                            if (uploadResult.Error != null)
+                            {
+                                Console.WriteLine($"[CLOUDINARY ERROR] {uploadResult.Error.Message}. Falling back to local upload.");
+                            }
+                            else
+                            {
+                                return uploadResult.SecureUrl.ToString();
+                            }
+                        }
+                        else if (contentType.StartsWith("image/"))
+                        {
+                            // Use ImageUploadParams for image files
+                            var uploadParams = new ImageUploadParams()
+                            {
+                                File = new FileDescription(file.FileName, stream),
+                                Folder = folder,
+                                Transformation = new Transformation().Quality("auto").FetchFormat("auto")
+                            };
+
+                            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+                            if (uploadResult.Error != null)
+                            {
+                                Console.WriteLine($"[CLOUDINARY ERROR] {uploadResult.Error.Message}. Falling back to local upload.");
+                            }
+                            else
+                            {
+                                return uploadResult.SecureUrl.ToString();
+                            }
                         }
                         else
                         {
-                            return uploadResult.SecureUrl.ToString();
+                            // Use RawUploadParams for any other file types
+                            var uploadParams = new RawUploadParams()
+                            {
+                                File = new FileDescription(file.FileName, stream),
+                                Folder = folder
+                            };
+
+                            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+                            if (uploadResult.Error != null)
+                            {
+                                Console.WriteLine($"[CLOUDINARY ERROR] {uploadResult.Error.Message}. Falling back to local upload.");
+                            }
+                            else
+                            {
+                                return uploadResult.SecureUrl.ToString();
+                            }
                         }
                     }
                 }
@@ -96,3 +140,4 @@ namespace Site.Services
         }
     }
 }
+
