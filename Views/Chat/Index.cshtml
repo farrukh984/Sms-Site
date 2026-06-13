@@ -203,6 +203,18 @@
                     <div id="replyPreviewContent" style="display:flex; align-items:center; gap:6px; font-size:13px; color:rgba(255,255,255,0.6); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:90%;"></div>
                     <i class="fas fa-times" onclick="cancelReply()" style="position:absolute; top:10px; right:12px; color:rgba(255,255,255,0.4); cursor:pointer; font-size:13px;"></i>
                 </div>
+                <!-- Attachment Preview Box (WhatsApp Style) -->
+                <div id="attachmentPreviewBox" style="display:none; background:rgba(20,21,26,0.85); border-left:4px solid var(--accent-red); padding:8px 14px 8px 12px; margin:0 10px 8px 10px; border-radius:10px; position:relative; flex-shrink:0; backdrop-filter:blur(10px); align-items:center; gap:12px;">
+                    <div style="width:40px; height:40px; border-radius:6px; overflow:hidden; background:rgba(0,0,0,0.3); display:flex; align-items:center; justify-content:center; flex-shrink:0; border:1px solid rgba(255,255,255,0.1);">
+                        <img id="attachmentPreviewImg" src="" style="max-width:100%; max-height:100%; object-fit:cover; display:none;" />
+                        <i id="attachmentPreviewIcon" class="fas fa-file" style="display:none; font-size:18px; color:var(--accent-red);"></i>
+                    </div>
+                    <div style="flex:1; min-width:0;">
+                        <div id="attachmentPreviewName" style="font-size:12.5px; font-weight:600; color:white; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">filename.jpg</div>
+                        <div id="attachmentPreviewSize" style="font-size:11px; color:rgba(255,255,255,0.4);">0 KB</div>
+                    </div>
+                    <i class="fas fa-times" onclick="cancelAttachmentPreview()" style="position:absolute; top:10px; right:12px; color:rgba(255,255,255,0.4); cursor:pointer; font-size:13px;"></i>
+                </div>
                 <!-- Attachments overlay -->
                 <div class="attachment-sheet" id="attachmentSheet" style="display: none;">
                     <div class="attachment-sheet-item" onclick="triggerFileUpload('Document')">
@@ -219,7 +231,7 @@
                     </div>
                 </div>
 
-                <input type="file" id="messageFileInput" style="display: none;" onchange="uploadSelectedFile()" />
+                <input type="file" id="messageFileInput" style="display: none;" onchange="handleSelectedFile()" />
 
                 <!-- Text / Voice Input elements & Send button wrapper -->
                 <div style="display: flex; align-items: center; gap: 15px; width: 100%;">
@@ -1342,6 +1354,8 @@
         var currentFacingMode = 'user'; // 'user' = front, 'environment' = back
         var pendingIceCandidates = [];
         var callChatId = null;
+        var pendingAttachmentFile = null;
+        var pendingAttachmentType = null;
 
         const rtcConfig = {
             iceServers: [
@@ -1416,7 +1430,7 @@
                     autoGainControl: true, sampleRate: 48000, channelCount: 1
                 };
                 const videoConstraints = currentCallType === 'video' ? {
-                    facingMode: currentFacingMode === 'environment' ? { exact: 'environment' } : 'user',
+                    facingMode: currentFacingMode === 'environment' ? 'environment' : 'user',
                     width: { ideal: 1280 }, height: { ideal: 720 }, frameRate: { ideal: 30 }
                 } : false;
 
@@ -1602,10 +1616,19 @@
         // â”€â”€â”€ switchCamera (front â†” back) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         async function switchCamera() {
             if (!localStream || currentCallType !== 'video') return;
+            
+            // Stop the current video track first to release camera resources on mobile/iOS
+            const oldTrack = localStream.getVideoTracks()[0];
+            if (oldTrack) { 
+                oldTrack.stop(); 
+                localStream.removeTrack(oldTrack); 
+            }
+            
             currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
+            
             try {
                 const newStream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: currentFacingMode === 'environment' ? { exact: 'environment' } : 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
+                    video: { facingMode: currentFacingMode === 'environment' ? 'environment' : 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
                     audio: false
                 });
                 const newVideoTrack = newStream.getVideoTracks()[0];
@@ -1613,15 +1636,37 @@
                     const sender = peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
                     if (sender) await sender.replaceTrack(newVideoTrack);
                 }
-                const oldTrack = localStream.getVideoTracks()[0];
-                if (oldTrack) { oldTrack.stop(); localStream.removeTrack(oldTrack); }
                 localStream.addTrack(newVideoTrack);
                 var localVideo = document.getElementById("callLocalVideo");
-                localVideo.srcObject = localStream;
-                localVideo.style.transform = currentFacingMode === 'user' ? 'scaleX(-1)' : 'scaleX(1)';
+                if (localVideo) {
+                    localVideo.srcObject = localStream;
+                    localVideo.style.transform = currentFacingMode === 'user' ? 'scaleX(-1)' : 'scaleX(1)';
+                }
             } catch (err) {
                 console.error("Camera switch error:", err);
-                currentFacingMode = (currentFacingMode === 'user') ? 'environment' : 'user';
+                // Fallback to front camera if environment camera fails
+                if (currentFacingMode === 'environment') {
+                    currentFacingMode = 'user';
+                    try {
+                        const fallbackStream = await navigator.mediaDevices.getUserMedia({
+                            video: { facingMode: 'user', width: { ideal: 1280 }, height: { ideal: 720 } },
+                            audio: false
+                        });
+                        const fallbackVideoTrack = fallbackStream.getVideoTracks()[0];
+                        if (peerConnection) {
+                            const sender = peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
+                            if (sender) await sender.replaceTrack(fallbackVideoTrack);
+                        }
+                        localStream.addTrack(fallbackVideoTrack);
+                        var localVideo = document.getElementById("callLocalVideo");
+                        if (localVideo) {
+                            localVideo.srcObject = localStream;
+                            localVideo.style.transform = 'scaleX(-1)';
+                        }
+                    } catch (fallbackErr) {
+                        console.error("Camera switch fallback error:", fallbackErr);
+                    }
+                }
             }
         }
 
@@ -2471,12 +2516,15 @@
                 }
 
                 if (type === "Image") {
+                    var hasCaption = content && content !== "Photo" && !/\.(jpg|jpeg|png|gif|webp)$/i.test(content);
+                    var captionHtml = hasCaption ? `<div class="message-image-caption" style="margin-top: 8px; font-size: 13px; color: rgba(255,255,255,0.9); word-break: break-word; line-height: 1.4; padding: 2px 4px 0 4px;">${content}</div>` : '';
                     contentHtml = `
                         ${senderLabel}
                         ${replyHtml}
                         <div class="message-attachment-image">
                             <a href="${fileUrl}" target="_blank"><img src="${fileUrl}" alt="Photo Attachment" /></a>
                         </div>
+                        ${captionHtml}
                     `;
                 } else if (type === "Audio") {
                     var audioId = 'audio-' + messageId;
@@ -3193,9 +3241,9 @@
             var input = document.getElementById("chatMessageInput");
             var btnIcon = document.getElementById("sendOrMicIcon");
 
-            if (input.value.trim() !== "") {
+            if (input.value.trim() !== "" || pendingAttachmentFile) {
                 btnIcon.className = "fas fa-paper-plane"; // Change microphone to Send icon
-                sendTypingIndicator(true);
+                if (input.value.trim() !== "") sendTypingIndicator(true);
             } else {
                 btnIcon.className = "fas fa-microphone";
                 sendTypingIndicator(false);
@@ -3204,14 +3252,22 @@
 
         function handleInputKeydown(event) {
             if (event.key === "Enter") {
-                sendTextMessage();
+                if (pendingAttachmentFile) {
+                    sendAttachmentMessage();
+                } else {
+                    sendTextMessage();
+                }
             }
         }
 
         function sendOrRecord() {
             var icon = document.getElementById("sendOrMicIcon");
             if (icon.classList.contains("fa-paper-plane")) {
-                sendTextMessage();
+                if (pendingAttachmentFile) {
+                    sendAttachmentMessage();
+                } else {
+                    sendTextMessage();
+                }
             } else {
                 startVoiceRecording();
             }
@@ -3249,30 +3305,90 @@
             document.getElementById("messageFileInput").click();
         }
 
-        function uploadSelectedFile() {
+        function handleSelectedFile() {
             var fileInput = document.getElementById("messageFileInput");
             if (fileInput.files.length === 0 || !activeChatId) return;
 
             var file = fileInput.files[0];
-            var formData = new FormData();
-            formData.append("chatId", activeChatId);
-            formData.append("type", fileAttachmentType);
-            formData.append("file", file);
+            pendingAttachmentFile = file;
+            pendingAttachmentType = fileAttachmentType;
 
-            // Upload
+            // Show the attachment preview box
+            var previewBox = document.getElementById("attachmentPreviewBox");
+            var previewImg = document.getElementById("attachmentPreviewImg");
+            var previewIcon = document.getElementById("attachmentPreviewIcon");
+            var previewName = document.getElementById("attachmentPreviewName");
+            var previewSize = document.getElementById("attachmentPreviewSize");
+
+            previewName.textContent = file.name;
+            var sizeKB = (file.size / 1024).toFixed(1);
+            previewSize.textContent = sizeKB > 1024 ? (sizeKB / 1024).toFixed(1) + ' MB' : sizeKB + ' KB';
+
+            // If it's an image, show thumbnail preview
+            if (file.type && file.type.startsWith('image/')) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    previewImg.style.display = 'block';
+                    previewIcon.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                previewImg.style.display = 'none';
+                previewIcon.style.display = 'block';
+            }
+
+            previewBox.style.display = 'flex';
+
+            // Change input placeholder and show send icon
+            var input = document.getElementById('chatMessageInput');
+            input.placeholder = 'Add a caption...';
+            input.focus();
+            document.getElementById('sendOrMicIcon').className = 'fas fa-paper-plane';
+
+            fileInput.value = "";
+        }
+
+        function cancelAttachmentPreview() {
+            pendingAttachmentFile = null;
+            pendingAttachmentType = null;
+            document.getElementById('attachmentPreviewBox').style.display = 'none';
+            document.getElementById('attachmentPreviewImg').src = '';
+            var input = document.getElementById('chatMessageInput');
+            input.placeholder = 'Type a message';
+            handleTyping();
+        }
+
+        function sendAttachmentMessage() {
+            if (!pendingAttachmentFile || !activeChatId) return;
+
+            var caption = document.getElementById('chatMessageInput').value.trim();
+            var replyMsgId = activeReplyToMessageId; // capture local replyMsgId
+            var formData = new FormData();
+            formData.append('chatId', activeChatId);
+            formData.append('type', pendingAttachmentType);
+            formData.append('file', pendingAttachmentFile);
+            if (replyMsgId) formData.append('replyToMessageId', replyMsgId);
+            if (caption) formData.append('caption', caption);
+
+            var sendType = pendingAttachmentType;
+
             $.ajax({
-                url: "/Chat/UploadAttachment",
-                type: "POST",
+                url: '/Chat/UploadAttachment',
+                type: 'POST',
                 data: formData,
                 processData: false,
                 contentType: false,
                 success: function(res) {
-                    // broadcast SignalR message
-                    connection.invoke("SendMessage", activeChatId.toString(), currentUserId.toString(), currentUserFullName, res.fileName, fileAttachmentType, res.fileUrl, res.messageId, activeReplyToMessageId, res.replyToMessageContent || null);
-                    fileInput.value = "";
+                    var displayContent = caption || res.fileName;
+                    connection.invoke('SendMessage', activeChatId.toString(), currentUserId.toString(), currentUserFullName, displayContent, sendType, res.fileUrl, res.messageId, replyMsgId, res.replyToMessageContent || null);
+                    cancelAttachmentPreview();
+                    document.getElementById('chatMessageInput').value = '';
+                    cancelReply();
+                    handleTyping();
                 },
                 error: function() {
-                    alert("Failed to upload file attachment.");
+                    alert('Failed to upload file attachment.');
                 }
             });
         }
@@ -3345,6 +3461,9 @@
         function stopAndSendVoiceRecording() {
             if (!mediaRecorder) return;
 
+            // Capture reply context before async stop callback
+            var replyMsgId = activeReplyToMessageId;
+
             mediaRecorder.onstop = function() {
                 var audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
                 var file = new File([audioBlob], "voice_message.webm", { type: 'audio/webm' });
@@ -3353,6 +3472,7 @@
                 formData.append("chatId", activeChatId);
                 formData.append("type", "Audio");
                 formData.append("file", file);
+                if (replyMsgId) formData.append("replyToMessageId", replyMsgId);
 
                 $.ajax({
                     url: "/Chat/UploadAttachment",
@@ -3361,7 +3481,7 @@
                     processData: false,
                     contentType: false,
                     success: function(res) {
-                        connection.invoke("SendMessage", activeChatId.toString(), currentUserId.toString(), currentUserFullName, "Voice Message", "Audio", res.fileUrl, res.messageId, activeReplyToMessageId, res.replyToMessageContent || null);
+                        connection.invoke("SendMessage", activeChatId.toString(), currentUserId.toString(), currentUserFullName, "Voice Message", "Audio", res.fileUrl, res.messageId, replyMsgId, res.replyToMessageContent || null);
                     }
                 });
             };
@@ -3372,6 +3492,7 @@
             // Broadcast recording stopped
             if (activeChatId) connection.invoke("SendRecording", activeChatId.toString(), currentUserId.toString(), false);
             document.getElementById("voiceRecordModal").style.display = "none";
+            cancelReply();
         }
 
         // Camera capture attachment API
@@ -3403,22 +3524,36 @@
             canvas.toBlob(function(blob) {
                 var file = new File([blob], "camera_snap.jpg", { type: 'image/jpeg' });
                 
-                var formData = new FormData();
-                formData.append("chatId", activeChatId);
-                formData.append("type", "Image");
-                formData.append("file", file);
+                // Use the preview flow instead of uploading instantly
+                pendingAttachmentFile = file;
+                pendingAttachmentType = 'Image';
 
-                $.ajax({
-                    url: "/Chat/UploadAttachment",
-                    type: "POST",
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function(res) {
-                        connection.invoke("SendMessage", activeChatId.toString(), currentUserId.toString(), currentUserFullName, "Photo", "Image", res.fileUrl, res.messageId, activeReplyToMessageId, res.replyToMessageContent || null);
-                        closeCameraModal();
-                    }
-                });
+                var previewBox = document.getElementById('attachmentPreviewBox');
+                var previewImg = document.getElementById('attachmentPreviewImg');
+                var previewIcon = document.getElementById('attachmentPreviewIcon');
+                var previewName = document.getElementById('attachmentPreviewName');
+                var previewSize = document.getElementById('attachmentPreviewSize');
+
+                previewName.textContent = file.name;
+                var sizeKB = (file.size / 1024).toFixed(1);
+                previewSize.textContent = sizeKB + ' KB';
+
+                // Show camera snap thumbnail
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    previewImg.src = e.target.result;
+                    previewImg.style.display = 'block';
+                    previewIcon.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+
+                previewBox.style.display = 'flex';
+                var input = document.getElementById('chatMessageInput');
+                input.placeholder = 'Add a caption...';
+                input.focus();
+                document.getElementById('sendOrMicIcon').className = 'fas fa-paper-plane';
+
+                closeCameraModal();
             }, 'image/jpeg');
         }
 

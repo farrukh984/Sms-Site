@@ -290,7 +290,7 @@ namespace Site.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> UploadAttachment(int chatId, string type, IFormFile file, int? replyToMessageId)
+        public async Task<IActionResult> UploadAttachment(int chatId, string type, IFormFile file, int? replyToMessageId, string? caption)
         {
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (!int.TryParse(userIdString, out int currentUserId)) return BadRequest();
@@ -325,7 +325,7 @@ namespace Site.Controllers
             {
                 ChatId = chatId,
                 SenderId = currentUserId,
-                Content = file.FileName, // Store original file name
+                Content = !string.IsNullOrWhiteSpace(caption) ? caption : file.FileName, // Store caption or file name
                 Type = msgType,
                 FileUrl = fileUrl,
                 SentAt = DateTime.UtcNow,
