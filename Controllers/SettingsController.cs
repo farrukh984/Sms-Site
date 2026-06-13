@@ -75,7 +75,7 @@ namespace Site.Controllers
             
             if (System.DateTime.TryParse(dob, out var parsedDob))
             {
-                user.DateOfBirth = parsedDob;
+                user.DateOfBirth = System.DateTime.SpecifyKind(parsedDob, System.DateTimeKind.Utc);
             }
             else
             {

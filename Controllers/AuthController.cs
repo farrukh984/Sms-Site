@@ -310,7 +310,7 @@ namespace Site.Controllers
             user.Nickname = nickname;
             if (DateTime.TryParse(dob, out DateTime dobVal))
             {
-                user.DateOfBirth = dobVal;
+                user.DateOfBirth = DateTime.SpecifyKind(dobVal, DateTimeKind.Utc);
             }
             user.Gender = gender;
 
