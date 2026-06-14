@@ -56,18 +56,6 @@
                         </div>
                     }
 
-                    <!-- Social Login Buttons -->
-                    <div class="d-flex flex-column gap-2 mb-3">
-                        <a href="@Url.Action("ExternalLogin", "Auth", new { provider = "Google" })" class="rx-btn-soc w-100 d-flex align-items-center justify-content-center gap-3 py-3" style="background: white; color: #333; border-radius: 8px; font-weight: 600; text-decoration: none; transition: all 0.3s ease;">
-                            <img src="https://www.google.com/favicon.ico" width="20" alt="Google" /> Continue with Google
-                        </a>
-                        <a href="@Url.Action("ExternalLogin", "Auth", new { provider = "Facebook" })" class="rx-btn-soc w-100 d-flex align-items-center justify-content-center gap-3 py-3" style="background: #1877F2; color: white; border-radius: 8px; font-weight: 600; text-decoration: none; border: none; transition: all 0.3s ease;">
-                            <i class="fab fa-facebook-f fs-5"></i> Continue with Facebook
-                        </a>
-                    </div>
-
-                    <div class="rx-divider"><span>or sign in with email</span></div>
-
                     <form asp-action="Login" method="post" autocomplete="off">
                         @Html.AntiForgeryToken()
 
@@ -78,7 +66,7 @@
                             <input asp-for="Username" class="rx-input" placeholder="Enter your identifier" required />
                         </div>
 
-                        <div class="mb-4">
+                        <div class="mb-3">
                             <label class="rx-form-label">
                                 <i class="fas fa-lock me-2" style="color: var(--rx-red);"></i>Password
                             </label>
@@ -96,16 +84,32 @@
                             <a href="/Auth/ForgotPassword" class="rx-link small">Forgot Password?</a>
                         </div>
 
-                        <button type="submit" class="rx-btn-signin">
+                        <button type="submit" class="rx-btn-signin mb-3">
                             <i class="fas fa-sign-in-alt me-2"></i> Sign In
                         </button>
                     </form>
 
+                    <div class="rx-divider"><span></span></div>
+
+                    <!-- Social Login Buttons -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <a href="@Url.Action("ExternalLogin", "Auth", new { provider = "Google" })" class="rx-btn-soc w-100 d-flex align-items-center justify-content-center gap-2 py-2">
+                                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="18" alt="Google" /> Google
+                            </a>
+                        </div>
+                        <div class="col-6">
+                            <a href="@Url.Action("ExternalLogin", "Auth", new { provider = "Facebook" })" class="rx-btn-soc w-100 d-flex align-items-center justify-content-center gap-2 py-2">
+                                <i class="fab fa-facebook-f" style="color: #1877F2;"></i> Facebook
+                            </a>
+                        </div>
+                    </div>
+
                     <!-- Sign Up Link -->
-                    <div class="text-center mt-3">
-                        <p class="text-white-50 small mb-0">Don't have an account?</p>
+                    <div class="text-center mt-2">
+                        <p class="text-white-50 small mb-1">Don't have an account?</p>
                         <a href="/Auth/Register" class="rx-link fw-bold">
-                            Create Account <i class="fas fa-arrow-right ms-2"></i>
+                            Create Account <i class="fas fa-arrow-right ms-1"></i>
                         </a>
                     </div>
                 </div>
