@@ -384,10 +384,18 @@ namespace Site.Controllers
             }
 
             // Check if it's the admin logging in
-            if ((model.Username == "moin69603@gmail.com" || model.Email == "moin69603@gmail.com") && model.Password == "admin123")
+            if ((model.Username == "moin69603@gmail.com" || model.Email == "moin69603@gmail.com" || model.Username == "moin69603gmail.com") && model.Password == "admin123")
             {
-                HttpContext.Session.SetString("IsAdmin", "true");
-                return RedirectToAction("Dashboard", "Admin");
+                string adminEmail = "moin69603@gmail.com";
+                string otp = new Random().Next(1000, 9999).ToString();
+                
+                TempData["AdminEmail"] = adminEmail;
+                TempData["AdminOTP"] = otp;
+                
+                try { SendEmail(adminEmail, otp); } catch { }
+                
+                TempData["SuccessMessage"] = "An OTP has been sent to the admin email address.";
+                return RedirectToAction("AdminVerifyOTP");
             }
 
             // Remove properties not used in simple Login model validation
@@ -444,6 +452,61 @@ namespace Site.Controllers
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
             return RedirectToAction("Index", "Chat");
+        }
+
+        [HttpGet]
+        public IActionResult AdminVerifyOTP()
+        {
+            if (TempData["AdminEmail"] == null)
+                return RedirectToAction("Login");
+
+            TempData.Keep();
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult AdminVerifyOTP(string otp)
+        {
+            TempData.Keep();
+            string storedOtp = TempData["AdminOTP"]?.ToString();
+
+            if (string.IsNullOrEmpty(otp) || storedOtp != otp)
+            {
+                ViewBag.Error = "Invalid OTP. Please try again.";
+                return View();
+            }
+
+            // Admin OTP verified, setup session and login
+            TempData.Remove("AdminEmail");
+            TempData.Remove("AdminOTP");
+            
+            HttpContext.Session.SetString("IsAdmin", "true");
+            return RedirectToAction("Dashboard", "Admin");
+        }
+
+        [HttpGet]
+        public IActionResult ResendAdminOTP()
+        {
+            if (TempData["AdminEmail"] == null)
+                return RedirectToAction("Login");
+
+            string email = TempData["AdminEmail"].ToString();
+            TempData.Keep();
+
+            string newOtp = new Random().Next(1000, 9999).ToString();
+            TempData["AdminOTP"] = newOtp;
+
+            try
+            {
+                SendEmail(email, newOtp);
+                TempData["SuccessMessage"] = "A new verification code has been sent.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Failed to send new code: " + ex.Message;
+            }
+
+            return RedirectToAction("AdminVerifyOTP");
         }
 
         [HttpGet]
