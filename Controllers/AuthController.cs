@@ -611,6 +611,7 @@ namespace Site.Controllers
 
             // Find user in database
             var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == email);
+            bool isNewUser = false;
 
             if (user == null)
             {
@@ -628,6 +629,7 @@ namespace Site.Controllers
                 
                 _db.Users.Add(user);
                 await _db.SaveChangesAsync();
+                isNewUser = true;
             }
 
             // Sign in the user
@@ -648,6 +650,13 @@ namespace Site.Controllers
             {
                 HttpContext.Session.SetString("IsAdmin", "true");
                 return RedirectToAction("Dashboard", "Admin");
+            }
+
+            if (isNewUser)
+            {
+                TempData["RegEmail"] = user.Email;
+                TempData["RegUserId"] = user.Id;
+                return RedirectToAction("SetPin");
             }
 
             return RedirectToAction("Index", "Chat");
