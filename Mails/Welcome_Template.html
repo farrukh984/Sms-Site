@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SMS SITE - Secure Transmission</title>
+    <title>SMS SITE - Welcome</title>
     <style>
         body {
             margin: 0;
@@ -134,19 +134,19 @@
         }
         .payload-box {
             margin: 0 30px 30px 30px;
-            border: 1px solid #ff3b30;
-            background-color: rgba(255, 59, 48, 0.03);
+            border: 1px solid #00e676;
+            background-color: rgba(0, 230, 118, 0.03);
             border-radius: 8px;
             padding: 30px;
             position: relative;
         }
         .otp-value {
-            font-size: 32px;
+            font-size: 18px;
             font-weight: bold;
-            font-family: 'Courier New', Courier, monospace;
+            font-family: Arial, sans-serif;
             color: #ffffff;
-            letter-spacing: 4px;
             margin: 0 0 20px 0;
+            line-height: 1.5;
         }
         .payload-footer {
             border-top: 1px solid rgba(255,255,255,0.1);
@@ -160,8 +160,8 @@
             width: 40px;
         }
         .pf-icon {
-            background-color: #ff3b30;
-            color: white;
+            background-color: #00e676;
+            color: #0b0f19;
             width: 30px;
             height: 30px;
             line-height: 30px;
@@ -183,9 +183,18 @@
         }
         .pf-sub {
             font-size: 10px;
-            color: #ff3b30;
+            color: #00e676;
             letter-spacing: 1px;
             margin: 2px 0 0 0;
+        }
+
+        /* Log */
+        .log-box {
+            margin: 0 30px 30px 30px;
+            border: 1px solid #1c2333;
+            background-color: rgba(255,255,255,0.02);
+            padding: 20px;
+            border-radius: 8px;
         }
 
         /* Stats Row */
@@ -326,35 +335,35 @@
 
             <!-- Hero -->
             <div class="hero">
-                <div class="hero-subtitle">/// INCOMING TRANSMISSION FOR</div>
+                <div class="hero-subtitle">/// NEW RECRUIT TRANSMISSION FOR</div>
                 <h1 class="hero-title">Hello, {{USER_NAME}}.</h1>
                 <div class="tags">
                     <div class="tag tag-green"><span class="status-dot dot-green"></span> SECURE CONNECTION</div>
-                    <div class="tag tag-red"><span class="status-dot dot-red" style="background-color: #ff3b30; box-shadow: 0 0 5px #ff3b30;"></span> PRIORITY CHANNEL</div>
+                    <div class="tag tag-blue"><span class="status-dot dot-blue"></span> ONBOARDING COMPLETE</div>
                 </div>
             </div>
 
             <!-- Payload -->
             <div class="section-title">| SYSTEM DISPATCH PAYLOAD</div>
             <div class="payload-box">
-                <p class="otp-value">{{OTP_CODE}}</p>
+                <p class="otp-value">Welcome to SMS SITE. Your account has been fully verified and deployed into our network. You now have elite access to our secure SMS command center.</p>
                 
                 <div class="payload-footer">
                     <div class="pf-left">
-                        <div class="pf-icon">S</div>
+                        <div class="pf-icon">&#10003;</div>
                     </div>
                     <div class="pf-right">
-                        <h4 class="pf-title">SMS SITE Admin</h4>
-                        <p class="pf-sub">AUTHENTICATION SYSTEM</p>
+                        <h4 class="pf-title">Account Verified</h4>
+                        <p class="pf-sub">ALL SYSTEMS NOMINAL</p>
                     </div>
                 </div>
             </div>
 
             <!-- Log -->
             <div class="section-title">| COMMUNICATION LOG</div>
-            <div class="payload-box" style="border-color: #1c2333; background-color: rgba(255,255,255,0.02); padding: 20px;">
+            <div class="log-box">
                 <p style="font-size: 13px; color: #8b95a5; line-height: 1.6; margin: 0; font-family: Arial, sans-serif;">
-                    "We received a request to verify your account or reset your password. Please use the secure payload code above to authenticate."
+                    "Registration successful. All security clearances granted. Proceed to the main dashboard to configure your first campaign."
                 </p>
             </div>
 
@@ -376,7 +385,7 @@
 
             <!-- Action -->
             <div class="action-container">
-                <a href="https://sms-site.onrender.com/Auth/Login" class="btn-action">&#10140; ACCESS COMMAND CENTER</a>
+                <a href="https://sms-site.onrender.com/Chat/Index" class="btn-action">&#10140; ACCESS COMMAND CENTER</a>
                 <div class="sys-id">REF : SEC_AUTH ... 2026.06.14 12:00 GMT ... PROTOCOL_1X9A</div>
             </div>
 
@@ -384,7 +393,7 @@
             <div class="footer">
                 <div class="footer-logo">SMS<span style="color: #ff3b30;">SITE</span></div>
                 <p class="footer-text">
-                    This transmission was dispatched directly from the SMS SITE Core Engine in response to your inquiry. If you did not initiate this request, please contact our security team immediately.
+                    This transmission was dispatched directly from the SMS SITE Core Engine. You are receiving this because you successfully registered an account with us.
                 </p>
                 <div class="footer-links">
                     <a href="#">HOME</a>

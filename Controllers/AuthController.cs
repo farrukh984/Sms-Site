@@ -339,6 +339,9 @@ namespace Site.Controllers
             // Store final UserId for congratulations login
             TempData["VerifiedUserId"] = user.Id;
 
+            // Send Welcome Email
+            SendWelcomeEmail(user.Email, string.IsNullOrEmpty(user.FullName) ? user.Username : user.FullName);
+
             return RedirectToAction("Congratulations");
         }
 
@@ -733,15 +736,17 @@ namespace Site.Controllers
             string smtpUser = _config["SmtpSettings:Username"];
             string smtpPass = _config["SmtpSettings:Password"];
             string senderEmail = _config["SmtpSettings:SenderEmail"] ?? smtpUser;
-            string senderName = _config["SmtpSettings:SenderName"] ?? "HiChat Secure";
+            string senderName = _config["SmtpSettings:SenderName"] ?? "SMS SITE Secure";
 
             string templatePath = Path.Combine(Directory.GetCurrentDirectory(), "Mails", "OTP_Template.html");
             string emailBody;
+            string userName = toEmail.Contains("@") ? toEmail.Split('@')[0] : "User";
 
             if (System.IO.File.Exists(templatePath))
             {
                 emailBody = System.IO.File.ReadAllText(templatePath);
                 emailBody = emailBody.Replace("{{OTP_CODE}}", otp);
+                emailBody = emailBody.Replace("{{USER_NAME}}", userName);
             }
             else
             {
@@ -762,11 +767,56 @@ namespace Site.Controllers
                 // Set sender as verified sender email from settings
                 mailMessage.From = new System.Net.Mail.MailAddress(senderEmail, senderName);
                 mailMessage.To.Add(toEmail);
-                mailMessage.Subject = "HiChat Verification Code";
+                mailMessage.Subject = "SMS SITE - System Authentication";
                 mailMessage.IsBodyHtml = true;
                 mailMessage.Body = emailBody;
 
                 client.Send(mailMessage);
+            }
+        }
+
+        private void SendWelcomeEmail(string toEmail, string userName)
+        {
+            string smtpHost = _config["SmtpSettings:Host"];
+            int smtpPort = int.Parse(_config["SmtpSettings:Port"]);
+            string smtpUser = _config["SmtpSettings:Username"];
+            string smtpPass = _config["SmtpSettings:Password"];
+            string senderEmail = _config["SmtpSettings:SenderEmail"] ?? smtpUser;
+            string senderName = _config["SmtpSettings:SenderName"] ?? "SMS SITE Secure";
+
+            string templatePath = Path.Combine(Directory.GetCurrentDirectory(), "Mails", "Welcome_Template.html");
+            string emailBody;
+
+            if (System.IO.File.Exists(templatePath))
+            {
+                emailBody = System.IO.File.ReadAllText(templatePath);
+                emailBody = emailBody.Replace("{{USER_NAME}}", userName);
+            }
+            else
+            {
+                emailBody = $"<h1>Welcome to SMS SITE</h1><p>Hello {userName}, your registration is complete.</p>";
+            }
+
+            try
+            {
+                using (System.Net.Mail.SmtpClient client = new System.Net.Mail.SmtpClient(smtpHost, smtpPort))
+                {
+                    client.Credentials = new System.Net.NetworkCredential(smtpUser, smtpPass);
+                    client.EnableSsl = true;
+
+                    System.Net.Mail.MailMessage mailMessage = new System.Net.Mail.MailMessage();
+                    mailMessage.From = new System.Net.Mail.MailAddress(senderEmail, senderName);
+                    mailMessage.To.Add(toEmail);
+                    mailMessage.Subject = "SMS SITE - Registration Complete";
+                    mailMessage.IsBodyHtml = true;
+                    mailMessage.Body = emailBody;
+
+                    client.Send(mailMessage);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[EMAIL ERROR] Failed to send welcome email to {toEmail}: {ex.Message}");
             }
         }
     }
