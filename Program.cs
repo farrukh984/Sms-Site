@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Site.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.HttpOverrides;
 using Site.Hubs;
 using System;
 using Site.Services;
@@ -57,7 +58,13 @@ namespace Site
             // Configure the HTTP request pipeline.
             app.UseDeveloperExceptionPage();
 
-            // app.UseHttpsRedirection(); // Disabled for Somee free hosting
+            // Fix HTTPS detection behind Render's reverse proxy (fixes redirect_uri_mismatch)
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            });
+
+            // app.UseHttpsRedirection();
             app.UseRouting();
 
             app.UseSession();
