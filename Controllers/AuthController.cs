@@ -469,10 +469,11 @@ namespace Site.Controllers
         {
             TempData.Keep();
             string storedOtp = TempData["AdminOTP"]?.ToString();
+            string receivedOtp = otp?.Trim();
 
-            if (string.IsNullOrEmpty(otp) || storedOtp != otp)
+            if (string.IsNullOrEmpty(receivedOtp) || storedOtp != receivedOtp)
             {
-                ViewBag.Error = "Invalid OTP. Please try again.";
+                ViewBag.Error = $"Invalid OTP. Received: '{receivedOtp}', Expected: '{storedOtp}'. Please try again.";
                 return View();
             }
 
