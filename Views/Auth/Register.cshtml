@@ -46,18 +46,71 @@
                     }
 
                     <!-- Social Login Buttons -->
-                    <div class="d-flex flex-column gap-3 mb-4 mt-2">
+                    <div class="d-flex flex-column gap-2 mb-3">
                         <a href="@Url.Action("ExternalLogin", "Auth", new { provider = "Google" })" class="rx-btn-soc w-100 d-flex align-items-center justify-content-center gap-3 py-3" style="background: white; color: #333; border-radius: 8px; font-weight: 600; text-decoration: none; transition: all 0.3s ease;">
-                            <img src="https://www.google.com/favicon.ico" width="24" alt="Google" /> Sign Up with Google
+                            <img src="https://www.google.com/favicon.ico" width="20" alt="Google" /> Sign Up with Google
                         </a>
                         <a href="@Url.Action("ExternalLogin", "Auth", new { provider = "Facebook" })" class="rx-btn-soc w-100 d-flex align-items-center justify-content-center gap-3 py-3" style="background: #1877F2; color: white; border-radius: 8px; font-weight: 600; text-decoration: none; border: none; transition: all 0.3s ease;">
                             <i class="fab fa-facebook-f fs-5"></i> Sign Up with Facebook
                         </a>
                     </div>
 
-                    <div class="text-center mt-4">
-                        <p class="text-white-50 small mb-0">By signing up, you agree to our Terms & Privacy Policy.</p>
-                        <br/>
+                    <div class="rx-divider"><span>or register with email</span></div>
+
+                    <form asp-action="Register" method="post" autocomplete="off">
+                        @Html.AntiForgeryToken()
+
+                        <div class="mb-3">
+                            <label class="rx-form-label">
+                                <i class="far fa-user me-2" style="color: var(--rx-red);"></i>Username
+                            </label>
+                            <input asp-for="Username" class="rx-input" placeholder="e.g. janesmith" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="rx-form-label">
+                                <i class="far fa-envelope me-2" style="color: var(--rx-red);"></i>Email Address
+                            </label>
+                            <input asp-for="Email" type="email" class="rx-input" placeholder="e.g. jane@domain.com" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="rx-form-label">
+                                <i class="fas fa-mobile-alt me-2" style="color: var(--rx-red);"></i>Mobile Number
+                            </label>
+                            <input asp-for="MobileNumber" type="tel" class="rx-input" placeholder="e.g. 03001234567" required />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="rx-form-label">
+                                <i class="fas fa-lock me-2" style="color: var(--rx-red);"></i>Password
+                            </label>
+                            <input asp-for="Password" type="password" class="rx-input" placeholder="Min. 6 characters" required />
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="rx-form-label">
+                                <i class="fas fa-lock me-2" style="color: var(--rx-red);"></i>Confirm Password
+                            </label>
+                            <input asp-for="ConfirmPassword" type="password" class="rx-input" placeholder="Re-type password" required />
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input rx-check" type="checkbox" required />
+                                <label class="form-check-label text-white-50 small">
+                                    I agree to the Terms &amp; Privacy Policy
+                                </label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="rx-btn-signin">
+                            <i class="fas fa-user-plus me-2"></i> Sign Up
+                        </button>
+                    </form>
+
+                    <!-- Sign In Link -->
+                    <div class="text-center mt-3">
                         <p class="text-white-50 small mb-0">Already have an account?</p>
                         <a href="/Auth/Login" class="rx-link fw-bold">
                             <i class="fas fa-sign-in-alt me-2"></i> Sign In
