@@ -24,13 +24,25 @@ namespace Site
             // Add SignalR
             builder.Services.AddSignalR();
 
-            // Add Authentication (Cookie-based)
-            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie(options =>
-                {
-                    options.LoginPath = "/Auth/Login";
-                    options.ExpireTimeSpan = TimeSpan.FromDays(7);
-                });
+            // Add Authentication (Cookie-based + Google + Facebook)
+            builder.Services.AddAuthentication(options => {
+                options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            })
+            .AddCookie(options =>
+            {
+                options.LoginPath = "/Auth/Login";
+                options.ExpireTimeSpan = TimeSpan.FromDays(7);
+            })
+            .AddGoogle(options =>
+            {
+                options.ClientId = builder.Configuration["Authentication:Google:ClientId"] ?? "dummy_client_id";
+                options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"] ?? "dummy_client_secret";
+            })
+            .AddFacebook(options =>
+            {
+                options.AppId = builder.Configuration["Authentication:Facebook:AppId"] ?? "dummy_app_id";
+                options.AppSecret = builder.Configuration["Authentication:Facebook:AppSecret"] ?? "dummy_app_secret";
+            });
 
             // Add Session for TempData and storage
             builder.Services.AddSession(options =>

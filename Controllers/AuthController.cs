@@ -581,6 +581,78 @@ namespace Site.Controllers
             return RedirectToAction("Login");
         }
 
+        [HttpGet]
+        public IActionResult ExternalLogin(string provider)
+        {
+            var redirectUrl = Url.Action("ExternalLoginCallback", "Auth");
+            var properties = new AuthenticationProperties { RedirectUri = redirectUrl };
+            return Challenge(properties, provider);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ExternalLoginCallback()
+        {
+            var authenticateResult = await HttpContext.AuthenticateAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            if (!authenticateResult.Succeeded)
+            {
+                ViewBag.Error = "External authentication failed.";
+                return RedirectToAction("Login");
+            }
+
+            var email = authenticateResult.Principal.FindFirstValue(ClaimTypes.Email);
+            var name = authenticateResult.Principal.FindFirstValue(ClaimTypes.Name) ?? authenticateResult.Principal.FindFirstValue(ClaimTypes.GivenName);
+
+            if (string.IsNullOrEmpty(email))
+            {
+                ViewBag.Error = "Email claim is missing from external provider.";
+                return RedirectToAction("Login");
+            }
+
+            // Find user in database
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+            if (user == null)
+            {
+                // Create a new user for the external login
+                user = new Users
+                {
+                    Email = email,
+                    Username = email, // Use email as default username
+                    FullName = name,
+                    MobileNumber = "0000000000", // Dummy required field
+                    Password = Guid.NewGuid().ToString(), // Random password so they can't login via normal form
+                    IsVerified = true,
+                    CreatedAt = DateTime.UtcNow
+                };
+                
+                _db.Users.Add(user);
+                await _db.SaveChangesAsync();
+            }
+
+            // Sign in the user
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.Email, user.Email)
+            };
+
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+
+            // Check if it's the admin logging in
+            if (email == "moin69603@gmail.com")
+            {
+                HttpContext.Session.SetString("IsAdmin", "true");
+                return RedirectToAction("Dashboard", "Admin");
+            }
+
+            return RedirectToAction("Index", "Chat");
+        }
+
         private void SendEmail(string toEmail, string otp)
         {
             string smtpHost = _config["SmtpSettings:Host"];

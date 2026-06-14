@@ -56,57 +56,20 @@
                         </div>
                     }
 
-                    <form asp-action="Login" method="post" autocomplete="off">
-                        @Html.AntiForgeryToken()
-
-                        <div class="mb-3">
-                            <label class="rx-form-label">
-                                <i class="far fa-envelope me-2" style="color: var(--rx-red);"></i>Email / Username / Mobile
-                            </label>
-                            <input asp-for="Username" class="rx-input" placeholder="Enter your identifier" required />
-                        </div>
-
-                        <div class="mb-4">
-                            <label class="rx-form-label">
-                                <i class="fas fa-lock me-2" style="color: var(--rx-red);"></i>Password
-                            </label>
-                            <input asp-for="Password" type="password" class="rx-input" placeholder="••••••••" required />
-                        </div>
-
-                        <!-- Remember Me & Forgot Password -->
-                        <div class="d-flex justify-content-between align-items-center mb-4">
-                            <div class="form-check">
-                                <input class="form-check-input rx-check" type="checkbox" name="rememberMe" id="rememberMe" />
-                                <label class="form-check-label text-white-50 small" for="rememberMe">
-                                    Keep me signed in
-                                </label>
-                            </div>
-                            <a href="/Auth/ForgotPassword" class="rx-link small">Forgot Password?</a>
-                        </div>
-
-                        <button type="submit" class="rx-btn-signin">
-                            <i class="fas fa-sign-in-alt me-2"></i> Sign In
-                        </button>
-                    </form>
-
-                    <div class="rx-divider"></div>
-
                     <!-- Social Login Buttons -->
-                    <div class="row g-2 mb-3">
-                        <div class="col-6">
-                            <a href="/Auth/GoogleLogin" class="rx-btn-soc w-100 d-flex align-items-center justify-content-center gap-2">
-                                <img src="https://www.google.com/favicon.ico" width="16" alt="Google" /> Google
-                            </a>
-                        </div>
-                        <div class="col-6">
-                            <a href="/Auth/FacebookLogin" class="rx-btn-soc w-100 d-flex align-items-center justify-content-center gap-2">
-                                <i class="fab fa-facebook-f text-primary"></i> Facebook
-                            </a>
-                        </div>
+                    <div class="d-flex flex-column gap-3 mb-4 mt-2">
+                        <a href="@Url.Action("ExternalLogin", "Auth", new { provider = "Google" })" class="rx-btn-soc w-100 d-flex align-items-center justify-content-center gap-3 py-3" style="background: white; color: #333; border-radius: 8px; font-weight: 600; text-decoration: none; transition: all 0.3s ease;">
+                            <img src="https://www.google.com/favicon.ico" width="24" alt="Google" /> Continue with Google
+                        </a>
+                        <a href="@Url.Action("ExternalLogin", "Auth", new { provider = "Facebook" })" class="rx-btn-soc w-100 d-flex align-items-center justify-content-center gap-3 py-3" style="background: #1877F2; color: white; border-radius: 8px; font-weight: 600; text-decoration: none; border: none; transition: all 0.3s ease;">
+                            <i class="fab fa-facebook-f fs-5"></i> Continue with Facebook
+                        </a>
                     </div>
 
                     <!-- Sign Up Link -->
-                    <div class="text-center">
+                    <div class="text-center mt-4">
+                        <p class="text-white-50 small mb-0">By continuing, you agree to our Terms & Privacy Policy.</p>
+                        <br/>
                         <p class="text-white-50 small mb-0">Don't have an account?</p>
                         <a href="/Auth/Register" class="rx-link fw-bold">
                             Create Account <i class="fas fa-arrow-right ms-2"></i>
