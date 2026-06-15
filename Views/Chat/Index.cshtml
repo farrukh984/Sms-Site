@@ -2112,6 +2112,8 @@
         var currentFacingMode = 'user'; // 'user' = front, 'environment' = back
         var pendingIceCandidates = [];
         var callChatId = null;
+        var callReceiverId = null;  // The other person's userId for the current call
+        var callCallerId = null;    // Caller's userId (for receiver side)
         var pendingAttachmentFile = null;
         var pendingAttachmentType = null;
 
@@ -2142,6 +2144,7 @@
             currentCallType = type;
             isCaller = true;
             isMicMuted = false; isVideoOff = false; isSpeakerMuted = false;
+            callReceiverId = activeOtherUserId || null; // track who we are calling
             var targetName = document.getElementById("activeChatName").textContent;
             openCallOverlay(targetName, type, true, callChatId);
             
@@ -2162,11 +2165,27 @@
         }
 
         function declineCall() {
+            // Receiver declined: log as missed call (only caller logs)
+            if (!isCaller && callCallerId) {
+                // Notify caller to log missed call - handled by caller's CallEnded
+            }
             connection.invoke("EndCall", callChatId.toString());
             closeCallOverlay();
         }
 
         function endActiveCall() {
+            // Caller or receiver ending active call
+            var durationSec = callStartTime ? Math.floor((Date.now() - callStartTime) / 1000) : 0;
+            if (isCaller && callReceiverId) {
+                var callStatus = durationSec > 0 ? "Completed" : "Missed";
+                var callTypeStr = currentCallType === 'video' ? 'Video' : 'Audio';
+                $.post('/Call/LogCall', {
+                    receiverId: callReceiverId,
+                    callType: callTypeStr,
+                    status: callStatus,
+                    durationSeconds: durationSec
+                });
+            }
             connection.invoke("EndCall", callChatId.toString());
             closeCallOverlay();
         }
@@ -2281,6 +2300,7 @@
             isCaller = false; isScreenSharing = false;
             isMicMuted = false; isVideoOff = false; isSpeakerMuted = false;
             callChatId = null;
+            callReceiverId = null; callCallerId = null; callStartTime = null;
         }
 
         // â”€â”€â”€ openCallOverlay â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -2722,6 +2742,8 @@
 
             connection.on("IncomingCall", function(chatId, callerId, callerName, type) {
                 if (callerId != currentUserId) {
+                    // Store caller ID so receiver can reference it
+                    callCallerId = callerId;
                     // Show incoming call overlay
                     openCallOverlay(callerName, type, false, chatId);
                 }
@@ -2782,6 +2804,18 @@
 
 
             connection.on("CallEnded", function(chatId) {
+                // If caller and call ended externally (receiver declined = 0 duration, or dropped)
+                if (isCaller && callReceiverId) {
+                    var durationSec = callStartTime ? Math.floor((Date.now() - callStartTime) / 1000) : 0;
+                    var callStatus = durationSec > 0 ? "Completed" : "Missed";
+                    var callTypeStr = currentCallType === 'video' ? 'Video' : 'Audio';
+                    $.post('/Call/LogCall', {
+                        receiverId: callReceiverId,
+                        callType: callTypeStr,
+                        status: callStatus,
+                        durationSeconds: durationSec
+                    });
+                }
                 closeCallOverlay();
             });
 
@@ -3345,6 +3379,33 @@
                             </div>
                         `;
                     }
+                } else if (type === "Call" || type == 6) {
+                    var callParts = (content || "Voice call|No answer").split('|');
+                    var callTypeStr = callParts[0];
+                    var callResultStr = callParts.length > 1 ? callParts[1] : "No answer";
+                    
+                    var callIconClass = callTypeStr.toLowerCase().includes("video") ? "fas fa-video" : "fas fa-phone-alt";
+                    var isMissedCall = callResultStr.toLowerCase().includes("no answer");
+                    
+                    var bubbleBg = isOutgoing ? "#3a2b71" : "#2a2c31";
+                    var iconBg = isOutgoing ? "rgba(0,0,0,0.3)" : "rgba(255,255,255,0.1)";
+                    var arrowIconHtml = isOutgoing ? `<i class="fas fa-arrow-up-right" style="position:absolute; bottom:-2px; right:-6px; font-size:10px; color:white; background:${bubbleBg}; border-radius:50%; padding:2px;"></i>` : `<i class="fas fa-arrow-down-left" style="position:absolute; bottom:-2px; left:-6px; font-size:10px; color:${isMissedCall ? '#ff4d4f' : 'white'}; background:${bubbleBg}; border-radius:50%; padding:2px;"></i>`;
+
+                    contentHtml = `
+                        <div style="display:flex; align-items:center; gap:14px; padding: 2px;">
+                            <div style="width:46px; height:46px; border-radius:50%; background:${iconBg}; display:flex; align-items:center; justify-content:center; position:relative;">
+                                <i class="${callIconClass}" style="color:white; font-size:20px;"></i>
+                                ${arrowIconHtml}
+                            </div>
+                            <div style="display:flex; flex-direction:column;">
+                                <div style="font-family:'Dancing Script', cursive; font-size:22px; font-weight:700; color:white; line-height:1.2;">${callTypeStr}</div>
+                                <div style="font-family:'Dancing Script', cursive; font-size:18px; color:rgba(255,255,255,0.7);">${callResultStr}</div>
+                            </div>
+                            <div style="font-family:'Dancing Script', cursive; font-size:16px; color:rgba(255,255,255,0.6); align-self:flex-end; margin-left:15px; margin-bottom:2px;">
+                                ${timeStr}
+                            </div>
+                        </div>
+                    `;
                 } else {
                     // Text Message
                     contentHtml = `${senderLabel}${replyHtml}<div style="white-space: pre-wrap; word-break: break-word;">${content}</div>`;
@@ -3382,18 +3443,26 @@
 
             var selectModeClass = window._isSelectModeActive ? ' select-mode' : '';
             
+            var bubbleStyle = (type === "Call" || type == 6) 
+                ? `position:relative; cursor:context-menu; background:${isOutgoing ? '#3a2b71' : '#2a2c31'}; padding:12px 16px; border-radius:16px; border-top-${isOutgoing ? 'right' : 'left'}-radius:0; box-shadow:0 1px 2px rgba(0,0,0,0.2); width:fit-content;`
+                : `position:relative; cursor:context-menu;`;
+                
+            var metaHtml = (type === "Call" || type == 6) ? '' : `
+                    <div class="message-meta">
+                        <span>${timeStr}</span>
+                        ${readCheck}
+                    </div>
+            `;
+
             var html = [
                 '<div class="message-wrapper ' + wrapperClass + selectModeClass + '" data-msgid="' + messageId + '" data-content="' + safeContent + '" data-type="' + (type || 'Text') + '" data-fileurl="' + safeFileUrl + '">',
                     '<div class="msg-select-checkbox" onclick="toggleMsgSelection(event, ' + messageId + ')"><i class="fas fa-check"></i></div>',
                     '<div class="msg-hover-arrow" onclick="showMsgContextMenuFromArrow(event, ' + messageId + ', \'' + safeContent + '\')"><i class="fas fa-chevron-down"></i></div>',
-                    '<div class="message-bubble" style="position:relative; cursor:context-menu;" oncontextmenu="showMsgContextMenu(event, ' + messageId + ', \'' + safeContent + '\')">',
+                    '<div class="message-bubble" style="' + bubbleStyle + '" oncontextmenu="showMsgContextMenu(event, ' + messageId + ', \'' + safeContent + '\')">',
                         contentHtml,
                         reactionsHtml,
                     '</div>',
-                    '<div class="message-meta">',
-                        '<span>' + timeStr + '</span>',
-                        readCheck,
-                    '</div>',
+                    metaHtml,
                 '</div>'
             ].join('');
 
