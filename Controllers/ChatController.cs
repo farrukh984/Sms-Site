@@ -271,7 +271,9 @@ namespace Site.Controllers
             var existingChatId = await _db.ChatParticipants
                 .Where(cp => cp.UserId == currentUserId)
                 .Select(cp => cp.ChatId)
-                .FirstOrDefaultAsync(chatId => _db.ChatParticipants.Any(cp => cp.ChatId == chatId && cp.UserId == targetUserId));
+                .FirstOrDefaultAsync(chatId => 
+                    _db.ChatParticipants.Any(cp => cp.ChatId == chatId && cp.UserId == targetUserId) &&
+                    !_db.Chats.Any(c => c.Id == chatId && c.IsGroup));
 
             if (existingChatId != 0)
             {
