@@ -997,6 +997,47 @@ namespace Site.Controllers
         }
 
         [HttpPost]
+        public async Task<IActionResult> DeleteChat(int chatId)
+        {
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdString, out int currentUserId)) return BadRequest();
+
+            var chat = await _db.Chats.FindAsync(chatId);
+            if (chat == null) return Json(new { success = false, message = "Chat not found." });
+
+            // Verify user is a participant
+            var participant = await _db.ChatParticipants
+                .FirstOrDefaultAsync(cp => cp.ChatId == chatId && cp.UserId == currentUserId);
+            if (participant == null) return Json(new { success = false, message = "You are not a participant of this chat." });
+
+            if (chat.IsGroup)
+            {
+                // For groups, just remove the user from participants (same as exit group)
+                _db.ChatParticipants.Remove(participant);
+                await _db.SaveChangesAsync();
+            }
+            else
+            {
+                // For direct chats: remove all messages and the user's participation
+                var messages = await _db.Messages.Where(m => m.ChatId == chatId).ToListAsync();
+                _db.Messages.RemoveRange(messages);
+                _db.ChatParticipants.Remove(participant);
+
+                // If no other participants remain, delete the chat itself
+                var remainingParticipants = await _db.ChatParticipants
+                    .CountAsync(cp => cp.ChatId == chatId && cp.UserId != currentUserId);
+                if (remainingParticipants == 0)
+                {
+                    _db.Chats.Remove(chat);
+                }
+
+                await _db.SaveChangesAsync();
+            }
+
+            return Json(new { success = true, message = "Chat deleted successfully." });
+        }
+
+        [HttpPost]
         public async Task<IActionResult> ExitGroup(int chatId)
         {
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
