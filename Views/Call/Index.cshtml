@@ -262,7 +262,7 @@
                                 <div class="chat-item-name">@otherName</div>
                                 <div class="chat-item-message">
                                     <i class="@arrowIcon @arrowClass mr-1" style="font-size: 11px;"></i>
-                                    <span class="@(isMissed ? "arrow-missed" : "text-gray-400")">@dateStr</span>
+                                    <span class="chat-item-time-text @(isMissed ? "arrow-missed" : "text-gray-400")">@dateStr</span>
                                     @if (!string.IsNullOrEmpty(duration))
                                     {
                                         <span> · @duration</span>
@@ -396,10 +396,40 @@
         var contactsList = [];
         var allCallLogs = [];
 
+        function formatCallDateTime(utcDateStr) {
+            var date = new Date(utcDateStr);
+            if (isNaN(date.getTime())) return utcDateStr;
+            
+            var now = new Date();
+            var yesterday = new Date();
+            yesterday.setDate(now.getDate() - 1);
+            
+            var timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            var isToday = now.toDateString() === date.toDateString();
+            var isYesterday = yesterday.toDateString() === date.toDateString();
+            
+            if (isToday) {
+                return "Today, " + timeStr;
+            } else if (isYesterday) {
+                return "Yesterday, " + timeStr;
+            } else {
+                var options = { month: 'short', day: 'numeric' };
+                return date.toLocaleDateString(undefined, options) + ", " + timeStr;
+            }
+        }
+
         // Parse logs into dynamic variable
         $(document).ready(function() {
-            // Read initial call logs from DOM
-            parseCallLogsFromDOM();
+            // Convert server-rendered UTC times to local browser timezone on load
+            $('.chat-item[data-callid]').each(function() {
+                var item = $(this);
+                var log = item.data('json');
+                if (log && log.startedAt) {
+                    var localFormatted = formatCallDateTime(log.startedAt);
+                    item.find('.chat-item-time-text').text(localFormatted);
+                }
+            });
         });
 
         function parseCallLogsFromDOM() {
@@ -590,6 +620,7 @@
                 var callIcon = log.callType === 'Video' ? 'fas fa-video' : 'fas fa-phone';
                 
                 var desc = log.callType + " Call (" + (isOutgoing ? "Outgoing" : "Incoming") + ")";
+                var localDateStr = formatCallDateTime(log.startedAt);
                 
                 var html = `
                     <div class="calls-activity-item animate-scale-in">
@@ -604,7 +635,7 @@
                             </div>
                         </div>
                         <div class="calls-activity-meta">
-                            <span class="calls-activity-time">${log.dateStr}</span>
+                            <span class="calls-activity-time">${localDateStr}</span>
                         </div>
                     </div>
                 `;
