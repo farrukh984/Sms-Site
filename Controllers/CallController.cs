@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Site.Data;
 using Site.Models;
 
+using System.Security.Claims;
+
 namespace Site.Controllers
 {
     public class CallController : Controller
@@ -15,7 +17,15 @@ namespace Site.Controllers
         }
 
         // ─── Guard ──────────────────────────────────────────────────
-        private int? CurrentUserId => HttpContext.Session.GetInt32("UserId");
+        private int? CurrentUserId
+        {
+            get
+            {
+                var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (int.TryParse(userIdString, out int id)) return id;
+                return null;
+            }
+        }
 
         public async Task<IActionResult> Index()
         {

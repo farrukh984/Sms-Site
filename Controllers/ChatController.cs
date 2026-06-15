@@ -1050,8 +1050,11 @@ namespace Site.Controllers
         [HttpPost]
         public async Task<IActionResult> ReportUser(int reportedUserId, string reason)
         {
-            var currentUserId = HttpContext.Session.GetInt32("UserId");
-            if (currentUserId == null) return Json(new { success = false, message = "Not logged in" });
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int currentUserId))
+            {
+                return Json(new { success = false, message = "Not logged in" });
+            }
             if (string.IsNullOrWhiteSpace(reason)) return Json(new { success = false, message = "Please provide a reason" });
             if (reportedUserId == currentUserId) return Json(new { success = false, message = "You cannot report yourself" });
 
@@ -1060,7 +1063,7 @@ namespace Site.Controllers
 
             var report = new Site.Models.Report
             {
-                ReporterId = currentUserId.Value,
+                ReporterId = currentUserId,
                 ReportedUserId = reportedUserId,
                 Reason = reason,
                 Status = "Pending",
