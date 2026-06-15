@@ -4707,12 +4707,12 @@
         async function submitReport() {
             var reason = document.getElementById('reportReason').value.trim();
             if (!reason) { showToast('<i class="fas fa-exclamation-circle" style="margin-right:8px;"></i> Please enter a reason', 'error'); return; }
-            if (!currentChatUserId) { showToast('<i class="fas fa-exclamation-circle" style="margin-right:8px;"></i> No user selected', 'error'); return; }
+            if (!activeOtherUserId) { showToast('<i class="fas fa-exclamation-circle" style="margin-right:8px;"></i> No user selected', 'error'); return; }
             try {
                 const res = await fetch('/Chat/ReportUser', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: `reportedUserId=${currentChatUserId}&reason=${encodeURIComponent(reason)}`
+                    body: `reportedUserId=${activeOtherUserId}&reason=${encodeURIComponent(reason)}`
                 });
                 const data = await res.json();
                 closeReportModal();
