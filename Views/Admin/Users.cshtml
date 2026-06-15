@@ -76,9 +76,14 @@
                             }
                         </td>
                         <td>
-                            <a href="/Admin/UserDetail/@u.Id" class="btn-outline" style="padding:6px 12px;font-size:11px;display:inline-flex;">
-                                <i class="fas fa-eye"></i> VIEW
-                            </a>
+                            <div style="display:flex; gap: 8px;">
+                                <a href="/Admin/UserDetail/@u.Id" class="btn-outline" style="padding:6px 12px;font-size:11px;display:inline-flex;align-items:center;">
+                                    <i class="fas fa-eye" style="margin-right:4px;"></i> VIEW
+                                </a>
+                                <button onclick="deleteUser(@u.Id)" class="btn-outline" style="padding:6px 12px;font-size:11px;display:inline-flex;align-items:center;color:#ef4444;border-color:rgba(239,68,68,0.5);background:rgba(239,68,68,0.1);cursor:pointer;" onmouseover="this.style.background='rgba(239,68,68,0.2)'" onmouseout="this.style.background='rgba(239,68,68,0.1)'">
+                                    <i class="fas fa-trash" style="margin-right:4px;"></i> DELETE
+                                </button>
+                            </div>
                         </td>
                     </tr>
                     i++;
@@ -95,6 +100,25 @@
             document.querySelectorAll('#usersTable tbody tr').forEach(row => {
                 row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
             });
+        }
+
+        async function deleteUser(userId) {
+            if (!confirm('⚠️ PERMANENTLY DELETE this user? This cannot be undone! A deletion email will be sent.')) return;
+            try {
+                const res = await fetch('/Admin/DeleteUser', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: `userId=${userId}&reason=Admin deletion`
+                });
+                const data = await res.json();
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert(data.message || 'Error deleting user');
+                }
+            } catch (e) {
+                alert('Failed to delete user');
+            }
         }
     </script>
 }
