@@ -2853,10 +2853,11 @@
         }
 
         // Load Chats
-        function loadChatsList() {
+        function loadChatsList(callback) {
             $.get("/Chat/GetChats", function(data) {
                 chatsList = data;
                 renderChatsList();
+                if (callback) callback();
             });
         }
 
@@ -5400,7 +5401,31 @@
             }
 
             initSignalR();
-            loadChatsList();
+            
+            // Auto start call or load conversation from URL params
+            var urlParams = new URLSearchParams(window.location.search);
+            var qChatId = urlParams.get('chatId');
+            var qStartCall = urlParams.get('startCall');
+            
+            loadChatsList(function() {
+                if (qChatId) {
+                    var chat = chatsList.find(function(c) { return (c.id || c.Id) == qChatId; });
+                    if (chat) {
+                        openConversation(
+                            chat.id || chat.Id, 
+                            chat.name || chat.Name, 
+                            chat.avatar || chat.Avatar, 
+                            chat.otherUserId || chat.OtherUserId, 
+                            chat.isGroup || chat.IsGroup
+                        );
+                        if (qStartCall === 'audio' || qStartCall === 'video') {
+                            setTimeout(function() {
+                                startCall(qStartCall);
+                            }, 1200);
+                        }
+                    }
+                }
+            });
             
             // Close overlays when clicking outside
             $(document).mouseup(function(e) {
