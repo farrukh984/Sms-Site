@@ -2755,10 +2755,23 @@
 
             connection.on("IncomingCall", function(chatId, callerId, callerName, type) {
                 if (callerId != currentUserId) {
+                    if (callChatId || document.getElementById("callOverlay").style.display === "flex") {
+                        // User is currently in a call or call overlay is active
+                        connection.invoke("CallBusy", chatId, currentUserId.toString());
+                        return;
+                    }
+
                     // Store caller ID so receiver can reference it
                     callCallerId = callerId;
                     // Show incoming call overlay
                     openCallOverlay(callerName, type, false, chatId);
+                }
+            });
+
+            connection.on("CallIsBusy", function(chatId, busyUserId) {
+                if (isCaller && callChatId == chatId) {
+                    document.getElementById("callLabel").textContent = "User is busy on another call...";
+                    setTimeout(closeCallOverlay, 3000);
                 }
             });
 

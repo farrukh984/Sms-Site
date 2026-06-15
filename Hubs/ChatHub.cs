@@ -183,6 +183,26 @@ namespace Site.Hubs
             }
         }
 
+        public async Task CallBusy(string chatId, string busyUserId)
+        {
+            if (int.TryParse(chatId, out int cId))
+            {
+                var participantIds = _db.ChatParticipants
+                    .Where(cp => cp.ChatId == cId)
+                    .Select(cp => cp.UserId.ToString())
+                    .ToList();
+
+                foreach (var pId in participantIds)
+                {
+                    await Clients.Group($"User_{pId}").SendAsync("CallIsBusy", chatId, busyUserId);
+                }
+            }
+            else
+            {
+                await Clients.Group(chatId).SendAsync("CallIsBusy", chatId, busyUserId);
+            }
+        }
+
         public async Task AnswerCall(string chatId, bool accepted)
         {
             if (int.TryParse(chatId, out int cId))
