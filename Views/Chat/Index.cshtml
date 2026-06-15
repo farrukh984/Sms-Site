@@ -402,6 +402,19 @@
                         <i class="fas fa-chevron-right" style="color: var(--text-muted); font-size: 10px;"></i>
                     </div>
                 </div>
+
+                <div style="background: rgba(255,255,255,0.02); border-radius: 16px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.03); overflow: hidden;">
+                    <div class="chat-setting-row" onclick="blockUser()" style="display: flex; align-items: center; padding: 14px 16px; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='rgba(254, 76, 76, 0.1)'" onmouseout="this.style.background='transparent'">
+                        <i class="fas fa-ban" style="width: 24px; color: var(--accent-red); font-size: 14px;"></i>
+                        <div style="flex: 1; margin-left: 12px; font-size: 13px; color: var(--accent-red);">Block <span id="drawerBlockName"></span></div>
+                    </div>
+                    <div style="height: 1px; background: rgba(255,255,255,0.03); margin: 0 16px;"></div>
+                    
+                    <div class="chat-setting-row" onclick="openReportModal()" style="display: flex; align-items: center; padding: 14px 16px; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='rgba(254, 76, 76, 0.1)'" onmouseout="this.style.background='transparent'">
+                        <i class="fas fa-thumbs-down" style="width: 24px; color: var(--accent-red); font-size: 14px;"></i>
+                        <div style="flex: 1; margin-left: 12px; font-size: 13px; color: var(--accent-red);">Report <span id="drawerReportName"></span></div>
+                    </div>
+                </div>
             </div>
 
             <!-- Group Info Section -->
@@ -2989,6 +3002,8 @@
                         document.getElementById("drawerGender").textContent = info.gender;
                         document.getElementById("drawerJoined").textContent = info.joinedDate;
                         document.getElementById("drawerAvatar").src = info.profilePicture;
+                        document.getElementById("drawerBlockName").textContent = info.fullName;
+                        document.getElementById("drawerReportName").textContent = info.fullName;
 
                         // render media grid
                         var grid = document.getElementById("drawerMediaGrid");
