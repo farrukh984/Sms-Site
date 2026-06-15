@@ -441,6 +441,15 @@ namespace Site.Controllers
                 return RedirectToAction("RegisterVerifyOTP");
             }
 
+            // Check if user is suspended
+            if (user.SuspendedUntil.HasValue && user.SuspendedUntil.Value > DateTime.UtcNow)
+            {
+                var until = user.SuspendedUntil.Value.ToLocalTime().ToString("dd MMM yyyy, hh:mm tt");
+                ViewBag.Error = $"🚫 Your account has been suspended until {until}. Please contact support if you believe this is an error.";
+                return View(model);
+            }
+
+
             // Sign in
             var claims = new List<Claim>
             {

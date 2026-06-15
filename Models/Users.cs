@@ -40,6 +40,10 @@ namespace Site.Models
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime? LastSeen { get; set; }
 
+        // Moderation fields
+        public int WarningCount { get; set; } = 0;
+        public DateTime? SuspendedUntil { get; set; }
+
         // Profile fields
         public string? About { get; set; }
         public string? Address { get; set; }

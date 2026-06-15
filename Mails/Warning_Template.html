@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMS SITE - Warning Notice</title>
+    <style>
+        body { margin: 0; padding: 0; background: #0a0a0f; font-family: 'Segoe UI', sans-serif; }
+        .wrapper { max-width: 600px; margin: 0 auto; background: #0a0a0f; }
+        .header { background: linear-gradient(135deg, #1a0a2e, #2d1b69); padding: 40px 30px; text-align: center; border-bottom: 2px solid #ff6b35; }
+        .logo { font-size: 28px; font-weight: 800; color: #fff; letter-spacing: 2px; }
+        .logo span { color: #ff6b35; }
+        .badge { display: inline-block; background: #ff6b35; color: #fff; padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 700; letter-spacing: 1px; margin-top: 12px; }
+        .body { padding: 40px 30px; }
+        .warning-icon { text-align: center; margin-bottom: 24px; }
+        .warning-icon svg { width: 64px; height: 64px; }
+        h2 { color: #ff6b35; font-size: 24px; margin: 0 0 16px; text-align: center; }
+        p { color: #a0a0b8; font-size: 15px; line-height: 1.7; margin: 0 0 16px; }
+        .highlight { color: #fff; font-weight: 600; }
+        .warning-box { background: rgba(255, 107, 53, 0.1); border: 1px solid rgba(255, 107, 53, 0.3); border-radius: 12px; padding: 20px; margin: 24px 0; }
+        .warning-box p { color: #ff9a6c; margin: 0; }
+        .count-box { background: rgba(255, 107, 53, 0.15); border-radius: 12px; padding: 16px; text-align: center; margin: 20px 0; }
+        .count-box .num { font-size: 48px; font-weight: 800; color: #ff6b35; line-height: 1; }
+        .count-box .label { color: #a0a0b8; font-size: 13px; margin-top: 4px; }
+        .footer { background: #0f0f1a; padding: 24px 30px; text-align: center; border-top: 1px solid #1e1e3a; }
+        .footer p { color: #4a4a6a; font-size: 12px; margin: 0; }
+        .footer a { color: #7b5ea7; text-decoration: none; }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <div class="header">
+        <div class="logo">SMS <span>SITE</span></div>
+        <div class="badge">⚠️ WARNING NOTICE</div>
+    </div>
+    <div class="body">
+        <div class="warning-icon">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L1 21H23L12 2Z" fill="#ff6b35" opacity="0.2" stroke="#ff6b35" stroke-width="2" stroke-linejoin="round"/>
+                <path d="M12 9V13M12 17H12.01" stroke="#ff6b35" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+        </div>
+        <h2>Account Warning Issued</h2>
+        <p>Hello <span class="highlight">{{USER_NAME}}</span>,</p>
+        <p>Your account on <span class="highlight">SMS SITE</span> has received an official warning from our moderation team. This warning has been issued due to a violation of our community guidelines.</p>
+        <div class="warning-box">
+            <p><strong>Reason:</strong> {{REASON}}</p>
+        </div>
+        <div class="count-box">
+            <div class="num">{{WARNING_COUNT}}</div>
+            <div class="label">Warning(s) on your account</div>
+        </div>
+        <p>Please be aware that repeated violations may result in a <span class="highlight">temporary suspension</span> or <span class="highlight">permanent deletion</span> of your account. We encourage you to review our community guidelines and ensure your future interactions comply with our standards.</p>
+        <p>If you believe this warning was issued in error, please contact our support team.</p>
+    </div>
+    <div class="footer">
+        <p>This is an automated message from <a href="#">SMS SITE</a>. Please do not reply directly to this email.</p>
+        <p style="margin-top:8px;">© 2025 SMS SITE. All rights reserved.</p>
+    </div>
+</div>
+</body>
+</html>

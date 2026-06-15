@@ -23,6 +23,8 @@ namespace Site.Data
         public DbSet<Contact> Contacts { get; set; }
         public DbSet<Service> Services { get; set; }
         public DbSet<UserService> UserServices { get; set; }
+        public DbSet<Report> Reports { get; set; }
+        public DbSet<CallLog> CallLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -129,6 +131,32 @@ namespace Site.Data
                 .WithMany(s => s.UserServices)
                 .HasForeignKey(us => us.ServiceId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Report Relationships
+            modelBuilder.Entity<Report>()
+                .HasOne(r => r.Reporter)
+                .WithMany()
+                .HasForeignKey(r => r.ReporterId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Report>()
+                .HasOne(r => r.ReportedUser)
+                .WithMany()
+                .HasForeignKey(r => r.ReportedUserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // CallLog Relationships
+            modelBuilder.Entity<CallLog>()
+                .HasOne(cl => cl.Caller)
+                .WithMany()
+                .HasForeignKey(cl => cl.CallerId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<CallLog>()
+                .HasOne(cl => cl.Receiver)
+                .WithMany()
+                .HasForeignKey(cl => cl.ReceiverId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

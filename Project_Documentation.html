@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMS SITE - Project Presentation Guide</title>
+    <style>
+        body {
+            background-color: #525659;
+            margin: 0;
+            padding: 20px;
+            font-family: 'Calibri', 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+        }
+        .document {
+            background-color: white;
+            width: 21cm;
+            min-height: 29.7cm;
+            padding: 2cm;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            box-sizing: border-box;
+            color: #000;
+        }
+        h1 {
+            color: #2F5496;
+            text-align: center;
+            border-bottom: 2px solid #2F5496;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+            font-size: 28px;
+        }
+        h2 {
+            color: #2F5496;
+            margin-top: 30px;
+            font-size: 22px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+        h3 {
+            color: #444;
+            font-size: 18px;
+        }
+        p, li {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #333;
+        }
+        .code-inline {
+            background-color: #f4f4f4;
+            padding: 2px 5px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            color: #c7254e;
+        }
+        .urdu-text {
+            color: #555;
+            font-style: italic;
+            font-size: 15px;
+            background: #fdfce5;
+            padding: 5px 10px;
+            border-left: 4px solid #f2c037;
+            margin: 10px 0;
+        }
+        .page-break {
+            page-break-after: always;
+        }
+        @media print {
+            body {
+                background-color: white;
+                padding: 0;
+            }
+            .document {
+                box-shadow: none;
+                width: 100%;
+                padding: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="document">
+        <h1>SMS SITE - Complete Project Documentation<br><small style="font-size: 18px; color: #666;">Presentation & Architecture Guide</small></h1>
+
+        <h2>1. Project Overview & Technologies</h2>
+        <p>This application is a real-time messaging, audio, and video calling platform. It is built using modern web development standards to ensure speed, security, and scalability.</p>
+        <ul>
+            <li><strong>Backend Framework:</strong> ASP.NET Core MVC (net10.0)</li>
+            <li><strong>Database:</strong> PostgreSQL (Neon Tech) with Entity Framework Core ORM</li>
+            <li><strong>Real-Time Engine:</strong> Microsoft SignalR</li>
+            <li><strong>Media Storage:</strong> Cloudinary (for profile pictures and chat attachments)</li>
+            <li><strong>Frontend:</strong> HTML5, Vanilla CSS, JavaScript, WebRTC</li>
+        </ul>
+        <div class="urdu-text"><strong>Samjhane ke liye:</strong> Yeh project ASP.NET Core par bana hai. Database PostgreSQL hai jo cloud par hosted hai. Real-time chat aur calling ke liye SignalR aur WebRTC ka istemal kiya gaya hai.</div>
+
+        <h2>2. Installed Packages (Dependencies)</h2>
+        <p>The following major NuGet packages are installed in the project (visible in <code>Site.csproj</code>):</p>
+        <ul>
+            <li><span class="code-inline">CloudinaryDotNet</span>: Used to upload and retrieve media (images/videos) to the Cloudinary cloud storage so the main server doesn't get overloaded.</li>
+            <li><span class="code-inline">Npgsql.EntityFrameworkCore.PostgreSQL</span>: The database provider that connects Entity Framework to our PostgreSQL database.</li>
+            <li><span class="code-inline">Microsoft.AspNetCore.Authentication.Google & Facebook</span>: These packages natively handle the Social Login flow for Google and Facebook without requiring manual API setups.</li>
+            <li><span class="code-inline">Microsoft.EntityFrameworkCore.Tools</span>: Used for Code-First database migrations.</li>
+        </ul>
+        <div class="urdu-text"><strong>Samjhane ke liye:</strong> Packages ka matlab hai bani banayi libraries. Database se connect hone ke liye Npgsql, tasweerein save karne ke liye Cloudinary, aur Google/Facebook login ke liye inke official packages install kiye gaye hain.</div>
+
+        <h2>3. Real-Time Chat (Bina Reload Kiye Kaise Chal Raha Hai?)</h2>
+        <p>The core feature of the application is real-time messaging without page reloads. This is achieved using <strong>Microsoft SignalR</strong>.</p>
+        <h3>How it works under the hood:</h3>
+        <p>Traditional web applications use "HTTP Requests", meaning the browser has to ask the server "Do I have new messages?" and refresh the page. Instead of this, our app uses <strong>WebSockets</strong> via SignalR.</p>
+        <p>SignalR establishes a persistent, always-open connection between the user's browser and the server (via <code>ChatHub.cs</code>). When User A sends a message, the server instantly "pushes" this message through the open tunnel to User B. JavaScript catches this push and appends the message to the screen in milliseconds. That is why the page never reloads.</p>
+        <div class="urdu-text"><strong>Samjhane ke liye:</strong> Chat bina reload kiye <strong>SignalR (WebSockets)</strong> ki madad se chalti hai. Ye browser aur server ke darmiyan ek open connection bana deta hai. Jaise hi koi message bhejta hai, server khud doosre bande ko message "push" kar deta hai, isliye page refresh nahi karna parta.</div>
+
+        <div class="page-break"></div>
+
+        <h2>4. Voice & Video Calls (Call Ke Liye Kya Use Hua Hai?)</h2>
+        <p>The audio and video calling feature is powered by <strong>WebRTC (Web Real-Time Communication)</strong>.</p>
+        <p><strong>WebRTC</strong> is a powerful browser technology that allows direct <strong>Peer-to-Peer (P2P)</strong> communication. This means once the call is connected, the video and voice data does not go through our server; it travels directly from User A's internet to User B's internet. This ensures zero lag, high quality, and low server cost.</p>
+        <h3>SignalR's role in calls:</h3>
+        <p>Before WebRTC can connect the two users directly, they need to find each other. We use SignalR as the <strong>Signaling Server</strong>. It sends the "Ringing" notification, and exchanges network coordinates (called SDP Offers/Answers and ICE Candidates). Once the coordinates are exchanged, WebRTC takes over and the direct call begins.</p>
+        <div class="urdu-text"><strong>Samjhane ke liye:</strong> Calls ke liye <strong>WebRTC</strong> use hua hai jo Peer-to-Peer (direct) connection banata hai. Yani data server pe jaye bina direct ek user se doosre user tak jata hai. Call milane (Ringing aur network info share karne) ke liye humne SignalR use kiya hai.</div>
+
+        <h2>5. Camera & Voice Access (Microphone / Cam Kaise Access Hota Hai?)</h2>
+        <p>To access the user's hardware (Camera and Microphone), the project uses the built-in HTML5 <strong>MediaDevices API</strong>.</p>
+        <p>When a user initiates or accepts a call, the JavaScript code executes the following function:</p>
+        <p><span class="code-inline">navigator.mediaDevices.getUserMedia({ video: true, audio: true })</span></p>
+        <p><strong>How it flows:</strong></p>
+        <ol>
+            <li>The browser intercepts this code and shows a popup asking the user for permission: "Allow Camera and Microphone".</li>
+            <li>If the user clicks "Allow", the browser hardware generates a <code>MediaStream</code>.</li>
+            <li>This stream is attached to an HTML <code>&lt;video&gt;</code> tag so the user can see their own face.</li>
+            <li>Simultaneously, this stream is injected into the WebRTC Peer Connection and transmitted securely to the other user.</li>
+        </ol>
+        <div class="urdu-text"><strong>Samjhane ke liye:</strong> Camera aur Mic access karne ke liye JavaScript ka <code>getUserMedia</code> function chalaya gaya hai. Is se browser user se permission mangta hai. Permission milne ke baad browser ek video/audio stream deta hai jo hum screen par bhi dikhate hain aur doosre bande ko bhi bhej dete hain.</div>
+
+        <h2>6. Security & Onboarding Flow</h2>
+        <p>The project implements a highly secure onboarding pipeline for new users:</p>
+        <ul>
+            <li><strong>OTP Verification:</strong> Email verification using dynamic OTPs sent via SMTP to ensure identity.</li>
+            <li><strong>Social Auth:</strong> Seamless integration with Google and Facebook OAuth.</li>
+            <li><strong>Multi-Factor Steps:</strong> Setup of a 4-digit PIN and Biometric (Fingerprint/FaceID) integration via WebAuthn API for mobile devices.</li>
+            <li><strong>Welcome Notification:</strong> A fully styled secure email is dispatched automatically using our custom SMTP service once the user completes the profile onboarding.</li>
+        </ul>
+        <div class="urdu-text"><strong>Samjhane ke liye:</strong> Security ke liye OTP email verification banayi hai. Google/Facebook login bhi hai. User ko apni profile complete karne, 4-digit PIN rakhne aur Fingerprint lagane ka option bhi diya gaya hai. Jab sab complete ho jata hai to usay ek khoobsurat Welcome Email khud-ba-khud chali jati hai.</div>
+    </div>
+
+</body>
+</html>

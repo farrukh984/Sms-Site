@@ -1045,6 +1045,33 @@ namespace Site.Controllers
                 currentUserIsAdmin = currentUserIsAdmin
             });
         }
+
+        // ─── Report User ─────────────────────────────────────────────────────────
+        [HttpPost]
+        public async Task<IActionResult> ReportUser(int reportedUserId, string reason)
+        {
+            var currentUserId = HttpContext.Session.GetInt32("UserId");
+            if (currentUserId == null) return Json(new { success = false, message = "Not logged in" });
+            if (string.IsNullOrWhiteSpace(reason)) return Json(new { success = false, message = "Please provide a reason" });
+            if (reportedUserId == currentUserId) return Json(new { success = false, message = "You cannot report yourself" });
+
+            var reportedUser = await _db.Users.FindAsync(reportedUserId);
+            if (reportedUser == null) return Json(new { success = false, message = "User not found" });
+
+            var report = new Site.Models.Report
+            {
+                ReporterId = currentUserId.Value,
+                ReportedUserId = reportedUserId,
+                Reason = reason,
+                Status = "Pending",
+                CreatedAt = DateTime.UtcNow
+            };
+
+            _db.Reports.Add(report);
+            await _db.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Report submitted. Our team will review it shortly." });
+        }
     }
 
     public class ReactionDetail

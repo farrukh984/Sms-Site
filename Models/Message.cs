@@ -9,7 +9,8 @@ namespace Site.Models
         Audio,
         Document,
         Location,
-        Contact
+        Contact,
+        Call
     }
 
     public class Message

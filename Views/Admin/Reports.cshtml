@@ -1,0 +1,179 @@
+@model List<Site.Models.Report>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "User Reports";
+}
+
+<style>
+    .reports-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+    .reports-title { font-size: 24px; font-weight: 700; color: #fff; }
+    .reports-title span { color: #7c3aed; }
+    .badge-pending { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); padding: 3px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .badge-reviewed { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); padding: 3px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .report-card { background: #12121f; border: 1px solid #1e1e3a; border-radius: 16px; padding: 20px 24px; margin-bottom: 16px; transition: border-color 0.2s; }
+    .report-card:hover { border-color: #7c3aed; }
+    .report-card .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+    .user-info { display: flex; align-items: center; gap: 10px; }
+    .avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #7c3aed, #3b82f6); display: flex; align-items: center; justify-content: center; font-weight: 700; color: #fff; font-size: 15px; overflow: hidden; }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .user-name { font-weight: 600; color: #fff; font-size: 14px; }
+    .user-email { color: #6b7280; font-size: 12px; }
+    .report-reason { background: #0f0f1a; border-radius: 10px; padding: 12px 16px; color: #a0a0b8; font-size: 14px; margin-bottom: 14px; border-left: 3px solid #7c3aed; }
+    .report-meta { color: #4a4a6a; font-size: 12px; margin-bottom: 14px; }
+    .action-btns { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn-warn { background: rgba(245,158,11,0.1); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); padding: 7px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .btn-warn:hover { background: rgba(245,158,11,0.2); }
+    .btn-suspend2 { background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); padding: 7px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .btn-suspend2:hover { background: rgba(239,68,68,0.2); }
+    .btn-suspend3 { background: rgba(239,68,68,0.15); color: #dc2626; border: 1px solid rgba(239,68,68,0.4); padding: 7px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .btn-suspend3:hover { background: rgba(239,68,68,0.25); }
+    .btn-delete { background: rgba(127,29,29,0.3); color: #fca5a5; border: 1px solid rgba(239,68,68,0.5); padding: 7px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .btn-delete:hover { background: rgba(127,29,29,0.5); }
+    .btn-reviewed { background: rgba(16,185,129,0.1); color: #10b981; border: 1px solid rgba(16,185,129,0.3); padding: 7px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .btn-reviewed:hover { background: rgba(16,185,129,0.2); }
+    .empty-state { text-align: center; padding: 80px 20px; color: #4a4a6a; }
+    .empty-state .icon { font-size: 48px; margin-bottom: 16px; }
+    .reporter-tag { font-size: 12px; color: #6b7280; }
+    .arrow { color: #4a4a6a; margin: 0 6px; }
+    .toast { position: fixed; bottom: 30px; right: 30px; background: #1e1e3a; border: 1px solid #7c3aed; color: #fff; padding: 14px 22px; border-radius: 12px; font-size: 14px; z-index: 9999; display: none; animation: fadeIn 0.3s; }
+    @@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<div class="reports-header">
+    <div class="reports-title">User <span>Reports</span></div>
+    <span class="badge-pending">@Model.Count(r => r.Status == "Pending") Pending</span>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="empty-state">
+        <div class="icon">📋</div>
+        <div style="font-size:18px;color:#6b7280;font-weight:600;">No Reports Yet</div>
+        <div style="margin-top:8px;">All user reports will appear here.</div>
+    </div>
+}
+else
+{
+    foreach (var report in Model)
+    {
+        var reportedName = report.ReportedUser?.FullName ?? report.ReportedUser?.Username ?? "Unknown";
+        var reporterName = report.Reporter?.FullName ?? report.Reporter?.Username ?? "Unknown";
+        var initials = reportedName.Length > 0 ? reportedName[0].ToString().ToUpper() : "?";
+
+        <div class="report-card" id="report-@report.Id">
+            <div class="top">
+                <div style="display:flex;align-items:center;gap:14px;">
+                    <div class="user-info">
+                        <div class="avatar">
+                            @if (!string.IsNullOrEmpty(report.ReportedUser?.ProfilePicture))
+                            {
+                                <img src="@report.ReportedUser.ProfilePicture" alt="pic" />
+                            }
+                            else
+                            {
+                                @initials
+                            }
+                        </div>
+                        <div>
+                            <div class="user-name">@reportedName</div>
+                            <div class="user-email">@report.ReportedUser?.Email</div>
+                        </div>
+                    </div>
+                    <div class="reporter-tag">
+                        <span class="arrow">←</span> Reported by <strong style="color:#a0a0b8;">@reporterName</strong>
+                    </div>
+                </div>
+                @if (report.Status == "Pending")
+                {
+                    <span class="badge-pending">Pending</span>
+                }
+                else
+                {
+                    <span class="badge-reviewed">Reviewed</span>
+                }
+            </div>
+
+            <div class="report-reason">
+                <strong>Reason:</strong> @report.Reason
+            </div>
+            <div class="report-meta">Reported on @report.CreatedAt.ToLocalTime().ToString("dd MMM yyyy, hh:mm tt")</div>
+
+            <div class="action-btns">
+                <button class="btn-warn" onclick="warnUser(@report.ReportedUserId, '@report.Reason', @report.Id)">⚠️ Warn</button>
+                <button class="btn-suspend2" onclick="suspendUser(@report.ReportedUserId, 2, '@report.Reason', @report.Id)">🚫 Suspend 2 Days</button>
+                <button class="btn-suspend3" onclick="suspendUser(@report.ReportedUserId, 3, '@report.Reason', @report.Id)">🚫 Suspend 3 Days</button>
+                <button class="btn-delete" onclick="deleteUser(@report.ReportedUserId, '@report.Reason', @report.Id)">🗑️ Delete Account</button>
+                <button class="btn-reviewed" onclick="markReviewed(@report.Id)">✅ Mark Reviewed</button>
+            </div>
+        </div>
+    }
+}
+
+<div class="toast" id="toast"></div>
+
+@section Scripts {
+<script>
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.innerText = msg;
+    t.style.display = 'block';
+    setTimeout(() => t.style.display = 'none', 3000);
+}
+
+async function warnUser(userId, reason, reportId) {
+    if (!confirm('Issue a warning to this user? A warning email will be sent.')) return;
+    const res = await fetch('/Admin/WarnUser', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `userId=${userId}&reason=${encodeURIComponent(reason)}`
+    });
+    const data = await res.json();
+    showToast(data.message);
+    if (data.success) markReviewed(reportId, false);
+}
+
+async function suspendUser(userId, days, reason, reportId) {
+    if (!confirm(`Suspend this user for ${days} day(s)? A suspension email will be sent.`)) return;
+    const res = await fetch('/Admin/SuspendUser', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `userId=${userId}&days=${days}&reason=${encodeURIComponent(reason)}`
+    });
+    const data = await res.json();
+    showToast(data.message);
+    if (data.success) markReviewed(reportId, false);
+}
+
+async function deleteUser(userId, reason, reportId) {
+    if (!confirm('⚠️ PERMANENTLY DELETE this user? This cannot be undone! A deletion email will be sent.')) return;
+    const res = await fetch('/Admin/DeleteUser', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `userId=${userId}&reason=${encodeURIComponent(reason)}`
+    });
+    const data = await res.json();
+    showToast(data.message);
+    if (data.success) {
+        const card = document.getElementById(`report-${reportId}`);
+        if (card) card.remove();
+    }
+}
+
+async function markReviewed(reportId, removeCard = true) {
+    const res = await fetch('/Admin/MarkReportReviewed', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `reportId=${reportId}`
+    });
+    const data = await res.json();
+    if (data.success && removeCard) {
+        showToast('Report marked as reviewed');
+        const card = document.getElementById(`report-${reportId}`);
+        if (card) {
+            card.style.opacity = '0.4';
+            setTimeout(() => card.remove(), 600);
+        }
+    }
+}
+</script>
+}

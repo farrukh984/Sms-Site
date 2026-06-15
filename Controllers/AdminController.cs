@@ -2,18 +2,22 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Site.Data;
 using Site.Models;
+using System.Net;
+using System.Net.Mail;
 
 namespace Site.Controllers
 {
     public class AdminController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly IConfiguration _config;
         private const string AdminEmail = "moin69603@gmail.com";
         private const string AdminPassword = "admin123";
 
-        public AdminController(AppDbContext context)
+        public AdminController(AppDbContext context, IConfiguration config)
         {
             _context = context;
+            _config = config;
         }
 
         // ─── Auth ───────────────────────────────────────────────────
@@ -37,6 +41,7 @@ namespace Site.Controllers
             ViewBag.ServiceCount = await _context.Services.CountAsync();
             ViewBag.ActiveServiceCount = await _context.Services.CountAsync(s => s.IsActive);
             ViewBag.PurchaseCount = await _context.UserServices.CountAsync();
+            ViewBag.PendingReports = await _context.Reports.CountAsync(r => r.Status == "Pending");
             ViewBag.RecentUsers  = await _context.Users
                 .OrderByDescending(u => u.CreatedAt)
                 .Take(5)
@@ -64,6 +69,103 @@ namespace Site.Controllers
                 .ToListAsync();
             ViewBag.Purchases = purchases;
             return View(user);
+        }
+
+        // ─── Moderation Actions ─────────────────────────────────────
+
+        [HttpPost]
+        public async Task<IActionResult> WarnUser(int userId, string reason = "Violation of community guidelines")
+        {
+            if (!IsAdmin()) return Json(new { success = false });
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) return Json(new { success = false, message = "User not found" });
+
+            user.WarningCount += 1;
+            await _context.SaveChangesAsync();
+
+            // Send warning email
+            try
+            {
+                var template = await System.IO.File.ReadAllTextAsync(Path.Combine(Directory.GetCurrentDirectory(), "Mails", "Warning_Template.html"));
+                template = template.Replace("{{USER_NAME}}", user.FullName ?? user.Username)
+                                   .Replace("{{REASON}}", reason)
+                                   .Replace("{{WARNING_COUNT}}", user.WarningCount.ToString());
+                SendAdminEmail(user.Email, "⚠️ Warning Notice - SMS SITE", template);
+            }
+            catch { }
+
+            return Json(new { success = true, message = $"Warning issued. Total warnings: {user.WarningCount}" });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SuspendUser(int userId, int days, string reason = "Repeated violations")
+        {
+            if (!IsAdmin()) return Json(new { success = false });
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) return Json(new { success = false, message = "User not found" });
+
+            user.SuspendedUntil = DateTime.UtcNow.AddDays(days);
+            await _context.SaveChangesAsync();
+
+            // Send suspension email
+            try
+            {
+                var template = await System.IO.File.ReadAllTextAsync(Path.Combine(Directory.GetCurrentDirectory(), "Mails", "Suspend_Template.html"));
+                template = template.Replace("{{USER_NAME}}", user.FullName ?? user.Username)
+                                   .Replace("{{REASON}}", reason)
+                                   .Replace("{{DAYS}}", days.ToString())
+                                   .Replace("{{SUSPEND_DATE}}", user.SuspendedUntil.Value.ToLocalTime().ToString("dd MMM yyyy, hh:mm tt"));
+                SendAdminEmail(user.Email, $"🚫 Account Suspended for {days} Days - SMS SITE", template);
+            }
+            catch { }
+
+            return Json(new { success = true, message = $"User suspended for {days} day(s)." });
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteUser(int userId, string reason = "Severe violation of community guidelines")
+        {
+            if (!IsAdmin()) return Json(new { success = false });
+            var user = await _context.Users.FindAsync(userId);
+            if (user == null) return Json(new { success = false, message = "User not found" });
+
+            // Send deletion email before deleting
+            try
+            {
+                var template = await System.IO.File.ReadAllTextAsync(Path.Combine(Directory.GetCurrentDirectory(), "Mails", "Delete_Template.html"));
+                template = template.Replace("{{USER_NAME}}", user.FullName ?? user.Username)
+                                   .Replace("{{REASON}}", reason);
+                SendAdminEmail(user.Email, "❌ Account Permanently Deleted - SMS SITE", template);
+            }
+            catch { }
+
+            _context.Users.Remove(user);
+            await _context.SaveChangesAsync();
+
+            return Json(new { success = true, message = "User permanently deleted." });
+        }
+
+        // ─── Reports ────────────────────────────────────────────────
+        public async Task<IActionResult> Reports()
+        {
+            if (!IsAdmin()) return RedirectToAction("Login", "Auth");
+            var reports = await _context.Reports
+                .Include(r => r.Reporter)
+                .Include(r => r.ReportedUser)
+                .OrderByDescending(r => r.CreatedAt)
+                .ToListAsync();
+            return View(reports);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> MarkReportReviewed(int reportId)
+        {
+            if (!IsAdmin()) return Json(new { success = false });
+            var report = await _context.Reports.FindAsync(reportId);
+            if (report == null) return Json(new { success = false });
+            report.Status = "Reviewed";
+            await _context.SaveChangesAsync();
+            return Json(new { success = true });
         }
 
         // ─── Services CRUD ──────────────────────────────────────────
@@ -126,6 +228,28 @@ namespace Site.Controllers
             }
             TempData["Success"] = "Service deleted.";
             return RedirectToAction("Services");
+        }
+
+        // ─── Email Helper ────────────────────────────────────────────
+        private void SendAdminEmail(string toEmail, string subject, string htmlBody)
+        {
+            string smtpHost = _config["SmtpSettings:Host"] ?? "";
+            int smtpPort = int.Parse(_config["SmtpSettings:Port"] ?? "587");
+            string smtpUser = _config["SmtpSettings:Username"] ?? "";
+            string smtpPass = _config["SmtpSettings:Password"] ?? "";
+            string fromName = _config["SmtpSettings:FromName"] ?? "SMS SITE";
+
+            using var client = new SmtpClient(smtpHost, smtpPort);
+            client.EnableSsl = true;
+            client.Credentials = new NetworkCredential(smtpUser, smtpPass);
+
+            using var message = new MailMessage();
+            message.From = new MailAddress(smtpUser, fromName);
+            message.To.Add(toEmail);
+            message.Subject = subject;
+            message.Body = htmlBody;
+            message.IsBodyHtml = true;
+            client.Send(message);
         }
     }
 }

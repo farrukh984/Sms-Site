@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMS SITE - Account Suspended</title>
+    <style>
+        body { margin: 0; padding: 0; background: #0a0a0f; font-family: 'Segoe UI', sans-serif; }
+        .wrapper { max-width: 600px; margin: 0 auto; background: #0a0a0f; }
+        .header { background: linear-gradient(135deg, #1a0a2e, #2d1b69); padding: 40px 30px; text-align: center; border-bottom: 2px solid #f59e0b; }
+        .logo { font-size: 28px; font-weight: 800; color: #fff; letter-spacing: 2px; }
+        .logo span { color: #f59e0b; }
+        .badge { display: inline-block; background: #f59e0b; color: #000; padding: 6px 18px; border-radius: 20px; font-size: 12px; font-weight: 700; letter-spacing: 1px; margin-top: 12px; }
+        .body { padding: 40px 30px; }
+        .icon { text-align: center; margin-bottom: 24px; font-size: 60px; }
+        h2 { color: #f59e0b; font-size: 24px; margin: 0 0 16px; text-align: center; }
+        p { color: #a0a0b8; font-size: 15px; line-height: 1.7; margin: 0 0 16px; }
+        .highlight { color: #fff; font-weight: 600; }
+        .info-box { background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 12px; padding: 20px; margin: 24px 0; }
+        .info-box p { color: #fcd34d; margin: 0 0 8px; }
+        .info-box p:last-child { margin: 0; }
+        .days-box { background: rgba(245, 158, 11, 0.15); border-radius: 12px; padding: 20px; text-align: center; margin: 20px 0; }
+        .days-box .num { font-size: 56px; font-weight: 800; color: #f59e0b; line-height: 1; }
+        .days-box .label { color: #a0a0b8; font-size: 14px; margin-top: 6px; }
+        .footer { background: #0f0f1a; padding: 24px 30px; text-align: center; border-top: 1px solid #1e1e3a; }
+        .footer p { color: #4a4a6a; font-size: 12px; margin: 0; }
+        .footer a { color: #7b5ea7; text-decoration: none; }
+    </style>
+</head>
+<body>
+<div class="wrapper">
+    <div class="header">
+        <div class="logo">SMS <span>SITE</span></div>
+        <div class="badge">🚫 ACCOUNT SUSPENDED</div>
+    </div>
+    <div class="body">
+        <div class="icon">🔒</div>
+        <h2>Your Account Has Been Suspended</h2>
+        <p>Hello <span class="highlight">{{USER_NAME}}</span>,</p>
+        <p>Your account on <span class="highlight">SMS SITE</span> has been temporarily suspended by our moderation team due to repeated violations of our community guidelines.</p>
+        <div class="info-box">
+            <p><strong>Reason:</strong> {{REASON}}</p>
+            <p><strong>Suspended Until:</strong> {{SUSPEND_DATE}}</p>
+        </div>
+        <div class="days-box">
+            <div class="num">{{DAYS}}</div>
+            <div class="label">Day(s) Suspension</div>
+        </div>
+        <p>During this period, you will <span class="highlight">not be able to log in</span> to your account. All your data will be preserved and your account will be automatically restored after the suspension period ends.</p>
+        <p>If you believe this action was taken in error, please contact our support team immediately.</p>
+    </div>
+    <div class="footer">
+        <p>This is an automated message from <a href="#">SMS SITE</a>. Please do not reply directly to this email.</p>
+        <p style="margin-top:8px;">© 2025 SMS SITE. All rights reserved.</p>
+    </div>
+</div>
+</body>
+</html>
