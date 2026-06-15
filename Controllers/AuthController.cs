@@ -275,17 +275,21 @@ namespace Site.Controllers
         }
 
         [HttpGet]
-        public IActionResult OnboardProfile()
+        public async Task<IActionResult> OnboardProfile()
         {
             if (TempData["RegEmail"] == null)
                 return RedirectToAction("Register");
+
+            var email = TempData.Peek("RegEmail")?.ToString();
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == email);
+            ViewBag.ShowMobileField = user != null && (user.MobileNumber == "0000000000" || string.IsNullOrEmpty(user.MobileNumber));
 
             TempData.Keep();
             return View();
         }
 
         [HttpPost]
-        public async Task<IActionResult> OnboardProfile(string fullName, string nickname, string dob, string gender, IFormFile? profilePic)
+        public async Task<IActionResult> OnboardProfile(string fullName, string nickname, string dob, string gender, IFormFile? profilePic, string? mobileNumber)
         {
             TempData.Keep();
             int? userId = TempData["RegUserId"] as int?;
@@ -305,6 +309,36 @@ namespace Site.Controllers
             if (user == null)
             {
                 return RedirectToAction("Register");
+            }
+
+            if (user.MobileNumber == "0000000000" || string.IsNullOrEmpty(user.MobileNumber))
+            {
+                if (string.IsNullOrEmpty(mobileNumber))
+                {
+                    ViewBag.Error = "Mobile number is required.";
+                    ViewBag.ShowMobileField = true;
+                    return View();
+                }
+
+                var normalizedPhone = NormalizePhoneNumber(mobileNumber);
+                if (string.IsNullOrEmpty(normalizedPhone))
+                {
+                    ViewBag.Error = "Please enter a valid mobile number.";
+                    ViewBag.ShowMobileField = true;
+                    return View();
+                }
+
+                var allVerifiedUsers = await _db.Users.Where(u => u.Id != user.Id && u.IsVerified).ToListAsync();
+                var phoneExists = allVerifiedUsers.Any(u => u.MobileNumber != null && u.MobileNumber != "0000000000" && NormalizePhoneNumber(u.MobileNumber) == normalizedPhone);
+                
+                if (phoneExists)
+                {
+                    ViewBag.Error = "This mobile number is already registered.";
+                    ViewBag.ShowMobileField = true;
+                    return View();
+                }
+
+                user.MobileNumber = mobileNumber.Trim();
             }
 
             user.FullName = fullName;

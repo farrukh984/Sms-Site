@@ -231,14 +231,23 @@ namespace Site.Controllers
                 .ToListAsync();
 
             var contactsList = new List<object>();
+            var seenUserIds = new HashSet<int>();
 
             foreach (var contact in myContacts)
             {
                 var normalizedContactPhone = NormalizePhoneNumber(contact.ContactNumber);
+                
+                // Exclude dummy numbers from syncing/matching contacts
+                if (string.IsNullOrEmpty(normalizedContactPhone) || normalizedContactPhone == "0000000000" || normalizedContactPhone == "00000000")
+                {
+                    continue;
+                }
+
                 var matchedUser = verifiedUsers.FirstOrDefault(u => NormalizePhoneNumber(u.MobileNumber) == normalizedContactPhone);
 
-                if (matchedUser != null)
+                if (matchedUser != null && !seenUserIds.Contains(matchedUser.Id))
                 {
+                    seenUserIds.Add(matchedUser.Id);
                     contactsList.Add(new
                     {
                         matchedUser.Id,
@@ -639,7 +648,8 @@ namespace Site.Controllers
                 Gender = user.Gender ?? "Not Specified",
                 JoinedDate = user.CreatedAt.ToString("MMMM dd, yyyy"),
                 Media = userMedia,
-                IsContact = isContact
+                IsContact = isContact,
+                ContactId = matchedContact?.Id ?? 0
             });
         }
 
@@ -652,6 +662,20 @@ namespace Site.Controllers
             if (string.IsNullOrWhiteSpace(firstName) || string.IsNullOrWhiteSpace(number))
             {
                 return Json(new { success = false, message = "First Name and Contact Number are required." });
+            }
+
+            var normalizedInput = NormalizePhoneNumber(number);
+            if (string.IsNullOrEmpty(normalizedInput))
+            {
+                return Json(new { success = false, message = "Please enter a valid phone number." });
+            }
+
+            // Check if contact with same normalized phone number is already added
+            var userContacts = await _db.Contacts.Where(c => c.OwnerId == currentUserId).ToListAsync();
+            var contactExists = userContacts.Any(c => NormalizePhoneNumber(c.ContactNumber) == normalizedInput);
+            if (contactExists)
+            {
+                return Json(new { success = false, message = "This contact number is already in your contacts list." });
             }
 
             var contact = new Contact
@@ -668,7 +692,6 @@ namespace Site.Controllers
 
             // Find matching user using normalized comparison
             var verifiedUsers = await _db.Users.Where(u => u.IsVerified).ToListAsync();
-            var normalizedInput = NormalizePhoneNumber(number);
             var targetUser = verifiedUsers.FirstOrDefault(u => NormalizePhoneNumber(u.MobileNumber) == normalizedInput);
 
             int? targetUserId = targetUser?.Id;
@@ -686,6 +709,11 @@ namespace Site.Controllers
 
             var contacts = await _db.Contacts
                 .Where(c => c.OwnerId == currentUserId)
+                .ToListAsync();
+
+            var uniqueContacts = contacts
+                .GroupBy(c => NormalizePhoneNumber(c.ContactNumber))
+                .Select(g => g.First())
                 .OrderBy(c => c.FirstName)
                 .ThenBy(c => c.LastName)
                 .Select(c => new
@@ -696,9 +724,27 @@ namespace Site.Controllers
                     c.ContactNumber,
                     FullName = c.FirstName + " " + c.LastName
                 })
-                .ToListAsync();
+                .ToList();
 
-            return Json(contacts);
+            return Json(uniqueContacts);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteContact(int contactId)
+        {
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdString, out int currentUserId)) return BadRequest();
+
+            var contact = await _db.Contacts.FirstOrDefaultAsync(c => c.Id == contactId && c.OwnerId == currentUserId);
+            if (contact == null)
+            {
+                return Json(new { success = false, message = "Contact not found." });
+            }
+
+            _db.Contacts.Remove(contact);
+            await _db.SaveChangesAsync();
+
+            return Json(new { success = true, message = "Contact deleted successfully." });
         }
 
         [HttpPost]

@@ -75,6 +75,16 @@
                             <input type="text" name="fullName" class="rx-input" placeholder="e.g. Jane Smith" required />
                         </div>
 
+                        @if (ViewBag.ShowMobileField == true)
+                        {
+                            <div class="mb-3">
+                                <label class="rx-form-label">
+                                    <i class="fas fa-phone me-2" style="color: var(--rx-red);"></i>Mobile Number
+                                </label>
+                                <input type="text" name="mobileNumber" class="rx-input" placeholder="e.g. +1234567890" required />
+                            </div>
+                        }
+
                         <div class="mb-3">
                             <label class="rx-form-label">
                                 <i class="far fa-smile me-2" style="color: var(--rx-red);"></i>Nickname
