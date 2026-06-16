@@ -3129,28 +3129,23 @@ body.select-mode-active .message-wrapper .msg-hover-arrow {
         overflow: hidden;
     }
 
-    /* === BOTTOM NAV BAR (full-width flat) === */
+    /* === BOTTOM NAV PILL === */
     .chat-sidebar-nav {
         display: flex !important;
         flex-direction: row !important;
         position: fixed !important;
-        bottom: 0 !important;
-        left: 0 !important;
-        right: 0 !important;
-        transform: none !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        height: 64px !important;
-        border-radius: 0 !important;
+        bottom: 14px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        width: 96% !important;
+        max-width: 460px !important;
+        height: 70px !important;
+        border-radius: 36px !important;
         z-index: 1000 !important;
-        border-right: none !important;
-        border-top: 1px solid rgba(255,255,255,0.07) !important;
-        border-bottom: none !important;
-        border-left: none !important;
-        border-right: none !important;
-        padding: 0 4px !important;
-        background: #16171c !important;
-        box-shadow: 0 -4px 24px rgba(0,0,0,0.4) !important;
+        border: 1px solid rgba(255,255,255,0.06) !important;
+        padding: 0 8px !important;
+        background: #1a1b20 !important;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.55), 0 2px 8px rgba(0,0,0,0.3) !important;
     }
 
     .chat-sidebar-nav::after { display: none !important; }
@@ -3160,7 +3155,7 @@ body.select-mode-active .message-wrapper .msg-hover-arrow {
         width: 100% !important;
         justify-content: space-evenly !important;
         gap: 0 !important;
-        align-items: stretch !important;
+        align-items: center !important;
         height: 100% !important;
     }
 
@@ -3171,7 +3166,7 @@ body.select-mode-active .message-wrapper .msg-hover-arrow {
         max-width: none !important;
         height: 100% !important;
         min-height: unset !important;
-        padding: 8px 0 6px !important;
+        padding: 10px 4px 8px !important;
         border-radius: 0 !important;
         background: transparent !important;
         box-shadow: none !important;
@@ -3179,11 +3174,11 @@ body.select-mode-active .message-wrapper .msg-hover-arrow {
         flex-direction: column !important;
         align-items: center !important;
         justify-content: center !important;
-        gap: 3px !important;
+        gap: 4px !important;
     }
 
     .nav-menu-item.active {
-        background: rgba(254, 76, 76, 0.08) !important;
+        background: transparent !important;
         box-shadow: none !important;
     }
 
@@ -3194,36 +3189,37 @@ body.select-mode-active .message-wrapper .msg-hover-arrow {
         color: var(--accent-red) !important;
         filter: drop-shadow(0 0 6px rgba(254, 76, 76, 0.5)) !important;
     }
-    
+
     .nav-menu-item.active .mobile-nav-label {
         color: var(--accent-red) !important;
     }
 
     .nav-menu-item i, .nav-menu-item svg {
-        font-size: 20px !important;
-        width: 20px !important;
-        height: 20px !important;
+        font-size: 22px !important;
+        width: 22px !important;
+        height: 22px !important;
+        display: block !important;
     }
 
     .mobile-nav-label {
         display: block !important;
         font-size: 10px !important;
-        font-weight: 500 !important;
+        font-weight: 600 !important;
         font-family: 'Outfit', sans-serif !important;
-        color: rgba(255,255,255,0.45);
-        text-align: center;
-        line-height: 1;
-        white-space: nowrap;
-        letter-spacing: 0px;
+        color: rgba(255,255,255,0.4);
+        text-align: center !important;
+        line-height: 1 !important;
+        white-space: nowrap !important;
     }
 
     .desktop-only-nav-item { display: none !important; }
     .mobile-only-nav-item { display: flex !important; }
+
     /* === CHAT LIST PANEL === */
     .chat-list-panel {
         width: 100% !important;
         height: 100vh !important;
-        padding-bottom: 68px !important;
+        padding-bottom: 98px !important;
         background: var(--bg-main) !important;
         border-right: none !important;
         box-sizing: border-box !important;
