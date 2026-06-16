@@ -157,7 +157,7 @@ namespace Site.Controllers
                 var callLogs = _context.CallLogs.Where(x => x.CallerId == userId || x.ReceiverId == userId);
                 _context.CallLogs.RemoveRange(callLogs);
 
-                var contacts = _context.Contacts.Where(x => x.OwnerId == userId || x.ContactUserId == userId);
+                var contacts = _context.Contacts.Where(x => x.OwnerId == userId);
                 _context.Contacts.RemoveRange(contacts);
 
                 var messages = _context.Messages.Where(x => x.SenderId == userId);
