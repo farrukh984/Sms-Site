@@ -710,7 +710,7 @@
    ══════════════════════════════════════════════════════════════ */
 @media (max-width: 768px) {
     #ai-chat-trigger {
-        bottom: 20px;
+        bottom: 85px;
         right: 18px;
         width: 52px;
         height: 52px;
@@ -724,7 +724,7 @@
 
     #ai-chat-panel {
         right: 12px;
-        bottom: 84px;
+        bottom: 150px;
         width: calc(100vw - 24px);
         max-width: 420px;
         height: 65vh;
@@ -738,11 +738,17 @@
    ══════════════════════════════════════════════════════════════ */
 @media (max-width: 480px) {
     #ai-chat-trigger {
-        bottom: 16px;
+        bottom: 85px;
         right: 14px;
         width: 50px;
         height: 50px;
         border-radius: 15px;
+    }
+
+    #ai-chat-trigger.open {
+        opacity: 0;
+        pointer-events: none;
+        transform: scale(0);
     }
 
     #ai-chat-trigger svg {
