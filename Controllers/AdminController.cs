@@ -139,10 +139,54 @@ namespace Site.Controllers
             }
             catch { }
 
-            _context.Users.Remove(user);
-            await _context.SaveChangesAsync();
+            try 
+            {
+                // Remove dependent records to satisfy Restrict/NoAction foreign key constraints
+                var statusViewers = _context.StatusViewers.Where(x => x.ViewerId == userId);
+                _context.StatusViewers.RemoveRange(statusViewers);
 
-            return Json(new { success = true, message = "User permanently deleted." });
+                var channelFollowers = _context.ChannelFollowers.Where(x => x.UserId == userId);
+                _context.ChannelFollowers.RemoveRange(channelFollowers);
+
+                var channelMessages = _context.ChannelMessages.Where(x => x.SenderId == userId);
+                _context.ChannelMessages.RemoveRange(channelMessages);
+
+                var reports = _context.Reports.Where(x => x.ReporterId == userId || x.ReportedUserId == userId);
+                _context.Reports.RemoveRange(reports);
+
+                var callLogs = _context.CallLogs.Where(x => x.CallerId == userId || x.ReceiverId == userId);
+                _context.CallLogs.RemoveRange(callLogs);
+
+                var contacts = _context.Contacts.Where(x => x.OwnerId == userId || x.ContactUserId == userId);
+                _context.Contacts.RemoveRange(contacts);
+
+                var messages = _context.Messages.Where(x => x.SenderId == userId);
+                _context.Messages.RemoveRange(messages);
+
+                var participants = _context.ChatParticipants.Where(x => x.UserId == userId);
+                _context.ChatParticipants.RemoveRange(participants);
+
+                var statuses = _context.Statuses.Where(x => x.UserId == userId);
+                _context.Statuses.RemoveRange(statuses);
+
+                var channels = _context.Channels.Where(x => x.OwnerId == userId);
+                _context.Channels.RemoveRange(channels);
+
+                var communities = _context.Communities.Where(x => x.OwnerId == userId);
+                _context.Communities.RemoveRange(communities);
+                
+                var userServices = _context.UserServices.Where(x => x.UserId == userId);
+                _context.UserServices.RemoveRange(userServices);
+
+                _context.Users.Remove(user);
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true, message = "User permanently deleted." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.InnerException?.Message ?? ex.Message });
+            }
         }
 
         // ─── Reports ────────────────────────────────────────────────
