@@ -130,6 +130,15 @@
 
             get: function() { return this.current; }
         };
+
+        // Global function to trigger profile click action
+        function triggerProfileClick() {
+            if (typeof viewOwnProfile === "function") {
+                viewOwnProfile();
+            } else {
+                window.location.href = "/Settings/Edit";
+            }
+        }
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)
