@@ -6,6 +6,20 @@
    ============================================================ */
 
 :root {
+    /* === CORE COLORS (DARK THEME) === */
+    --bg-main: #121212;
+    --bg-secondary: #1e1e24;
+    --bg-card: #1a1a1f;
+
+    /* Sidebar Navigation Additions */
+    --mobile-nav-display: none;
+}
+
+.mobile-nav-label { display: none; }
+.desktop-only-nav-item { display: flex; align-items: center; justify-content: center; width: 100%; }
+.mobile-only-nav-item { display: none !important; }
+
+:root {
     --bg-main: #121214;
     --bg-panel: #1A1B20;
     --bg-card: #1E1F24;

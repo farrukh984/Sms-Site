@@ -3162,15 +3162,23 @@ body.select-mode-active .message-wrapper .msg-hover-arrow {
     .nav-menu-bottom { display: none !important; }
 
     .nav-menu-item {
-        width: 48px !important;
-        height: 48px !important;
-        border-radius: 16px !important;
+        flex: 1 !important;
+        max-width: 62px !important;
+        height: auto !important;
+        min-height: 54px !important;
+        padding: 6px 2px !important;
+        border-radius: 14px !important;
         background: transparent !important;
         box-shadow: none !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 4px !important;
     }
 
     .nav-menu-item.active {
-        background: rgba(254, 76, 76, 0.12) !important;
+        background: rgba(254, 76, 76, 0.08) !important;
         box-shadow: none !important;
     }
 
@@ -3181,13 +3189,29 @@ body.select-mode-active .message-wrapper .msg-hover-arrow {
         color: var(--accent-red) !important;
         filter: drop-shadow(0 0 6px rgba(254, 76, 76, 0.5)) !important;
     }
-
-    .nav-menu-item i, .nav-menu-item svg {
-        font-size: 20px !important;
-        width: 20px !important;
-        height: 20px !important;
+    
+    .nav-menu-item.active .mobile-nav-label {
+        color: var(--accent-red) !important;
     }
 
+    .nav-menu-item i, .nav-menu-item svg {
+        font-size: 22px !important;
+        width: 22px !important;
+        height: 22px !important;
+    }
+
+    .mobile-nav-label {
+        display: block !important;
+        font-size: 11px !important;
+        font-weight: 600 !important;
+        font-family: 'Outfit', sans-serif !important;
+        color: var(--text-secondary);
+        text-align: center;
+        line-height: 1;
+    }
+
+    .desktop-only-nav-item { display: none !important; }
+    .mobile-only-nav-item { display: flex !important; }
     /* === CHAT LIST PANEL === */
     .chat-list-panel {
         width: 100% !important;
