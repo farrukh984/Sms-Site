@@ -136,16 +136,18 @@
             <!-- Channel Input Bar (Only visible to the Owner/Creator of the channel) -->
             <div class="chat-input-bar" id="channelInputBar" style="display: none;">
                 <input type="file" id="channelFileInput" style="display: none;" onchange="uploadChannelFile()" />
-                <button class="chat-input-action-btn" onclick="triggerChannelFileUpload()" title="Attach image/video">📎</button>
-                
-                <div class="chat-input-container">
-                    <input type="text" id="channelMessageInput" class="chat-input-box" placeholder="Broadcast a message..." oninput="toggleChannelSendMic()" onkeydown="handleChannelInputKeydown(event)" />
+
+                <div style="display: flex; align-items: center; gap: 15px; width: 100%; position: relative;">
+                    <div class="chat-input-container" style="background: #1b1d22 !important; border: 1px solid transparent !important; box-shadow: inset 4px 4px 10px #131418, inset -4px -4px 10px #23262c !important; border-radius: 30px;">
+                        <button class="chat-input-action-btn" onclick="triggerChannelFileUpload()" title="Attach image/video"><i class="fas fa-paperclip" style="color: var(--accent-red); font-size: 18px;"></i></button>
+                        <input type="text" id="channelMessageInput" class="chat-input-box" placeholder="Broadcast a message..." oninput="toggleChannelSendMic()" onkeydown="handleChannelInputKeydown(event)" />
+                    </div>
+
+                    <!-- Dynamic Send/Mic Toggle Button -->
+                    <button class="neu-btn neu-btn-circle active" id="channelSendOrMicBtn" onclick="channelSendOrRecord()" style="width: 50px; height: 50px; background: var(--accent-red); color: white; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" title="Send or Record">
+                        <i id="channelSendOrMicIcon" class="fas fa-microphone" style="font-size: 16px;"></i>
+                    </button>
                 </div>
-                
-                <!-- Dynamic Send/Mic Toggle Button -->
-                <button class="neu-btn neu-btn-circle active" id="channelSendOrMicBtn" onclick="channelSendOrRecord()" style="width: 50px; height: 50px; background: var(--accent-red); color: white;" title="Send or Record">
-                    <span id="channelSendOrMicIcon">🎤</span>
-                </button>
             </div>
             
             <!-- Read-only footer (For followers) -->
@@ -656,11 +658,11 @@
     // Dynamic button icon toggler (Mic vs Send)
     function toggleChannelSendMic() {
         const text = $('#channelMessageInput').val().trim();
-        const icon = $('#channelSendOrMicIcon');
+        const icon = document.getElementById('channelSendOrMicIcon');
         if (text.length > 0) {
-            icon.text('➤');
+            icon.className = 'fas fa-paper-plane';
         } else {
-            icon.text('🎤');
+            icon.className = 'fas fa-microphone';
         }
     }
 

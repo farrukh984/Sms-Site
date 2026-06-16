@@ -150,14 +150,17 @@
             <!-- Message Input Bar (Conditional) -->
             <div class="chat-input-bar" id="communityChatInputBar" style="display: flex;">
                 <input type="file" id="communityFileInput" style="display: none;" onchange="uploadCommunityFile()" />
-                <button class="chat-input-action-btn" onclick="triggerCommunityFileUpload()" title="Attach file">📎</button>
 
-                <div class="chat-input-container">
-                    <input type="text" id="communityMessageInput" class="chat-input-box" placeholder="Type a message..." onkeydown="handleCommunityInputKeydown(event)" />
+                <div style="display: flex; align-items: center; gap: 15px; width: 100%; position: relative;">
+                    <div class="chat-input-container" style="background: #1b1d22 !important; border: 1px solid transparent !important; box-shadow: inset 4px 4px 10px #131418, inset -4px -4px 10px #23262c !important; border-radius: 30px;">
+                        <button class="chat-input-action-btn" onclick="triggerCommunityFileUpload()" title="Attach file"><i class="fas fa-paperclip" style="color: var(--accent-red); font-size: 18px;"></i></button>
+                        <input type="text" id="communityMessageInput" class="chat-input-box" placeholder="Type a message..." onkeydown="handleCommunityInputKeydown(event)" />
+                    </div>
+
+                    <button class="neu-btn neu-btn-circle active" onclick="sendCommunityMessage()" style="width: 50px; height: 50px; background: var(--accent-red); color: white; display: flex; align-items: center; justify-content: center; flex-shrink: 0;" title="Send message">
+                        <i class="fas fa-paper-plane" style="font-size: 16px;"></i>
+                    </button>
                 </div>
-                <button class="neu-btn neu-btn-circle active" onclick="sendCommunityMessage()" style="width: 50px; height: 50px; background: var(--accent-red); color: white;" title="Send message">
-                    <span>➤</span>
-                </button>
             </div>
 
             <!-- Read-only footer (If announcements group and not admin) -->
