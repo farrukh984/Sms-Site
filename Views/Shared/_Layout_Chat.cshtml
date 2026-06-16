@@ -85,6 +85,7 @@
         }
     </style>
     @await RenderSectionAsync("Styles", required: false)
+    <link rel="stylesheet" href="~/css/ai-chat.css" asp-append-version="true" />
 </head>
 <body style="margin: 0; padding: 0; overflow: auto; min-height: 100vh; width: 100vw; background-color: var(--bg-main);">
     
@@ -118,5 +119,7 @@
     </script>
 
     @await RenderSectionAsync("Scripts", required: false)
+    <!-- AI Assistant Widget -->
+    <script src="~/js/ai-chat.js" asp-append-version="true"></script>
 </body>
 </html>
